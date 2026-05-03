@@ -1,66 +1,86 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
 
-export default function Home() {
+import React from 'react';
+import { useApp } from '@/context/AppContext';
+import { FileText, Users, Package, TrendingUp } from 'lucide-react';
+import styles from './page.module.css';
+import { clsx } from 'clsx';
+
+export default function Dashboard() {
+  const { quotations, clients, inventory } = useApp();
+
+  const stats = [
+    { name: 'Total Quotations', value: quotations.length, icon: FileText, color: 'blue' },
+    { name: 'Total Clients', value: clients.length, icon: Users, color: 'purple' },
+    { name: 'Inventory Items', value: inventory.length, icon: Package, color: 'rose' },
+    { name: 'Total Revenue', value: `$${quotations.reduce((acc, q) => acc + q.total, 0).toLocaleString()}`, icon: TrendingUp, color: 'emerald' },
+  ];
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="fade-in">
+      <header className={styles.header}>
+        <h2 className={styles.title}>Dashboard</h2>
+        <p className={styles.subtitle}>Welcome back! Here's an overview of your quotations.</p>
+      </header>
+
+      <div className={styles.statsGrid}>
+        {stats.map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <div key={stat.name} className={clsx('glass-panel', styles.statCard)}>
+              <div className={clsx(styles.statIcon, styles[stat.color])}>
+                <Icon size={24} />
+              </div>
+              <div className={styles.statContent}>
+                <p className={styles.statLabel}>{stat.name}</p>
+                <h3 className={styles.statValue}>{stat.value}</h3>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <section className={styles.recentSection}>
+        <div className={styles.sectionHeader}>
+          <h3 className={styles.sectionTitle}>Recent Quotations</h3>
+          <button className="glass-button px-4 py-2 rounded-lg text-sm">View All</button>
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        
+        <div className={clsx('glass-panel', styles.tableContainer)}>
+          {quotations.length === 0 ? (
+            <div className={styles.emptyState}>
+              <p>No quotations found. Create your first one to get started!</p>
+            </div>
+          ) : (
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Number</th>
+                  <th>Client</th>
+                  <th>Date</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {quotations.slice(0, 5).map((q) => (
+                  <tr key={q.id}>
+                    <td className="font-semibold">{q.number}</td>
+                    <td>{clients.find(c => c.id === q.clientId)?.name || 'Unknown'}</td>
+                    <td>{new Date(q.date).toLocaleDateString()}</td>
+                    <td className="font-bold">${q.total.toLocaleString()}</td>
+                    <td>
+                      <span className={clsx(styles.status, styles[q.status])}>
+                        {q.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
-      </main>
+      </section>
     </div>
   );
 }

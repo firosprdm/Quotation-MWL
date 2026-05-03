@@ -1,0 +1,19 @@
+.container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main {
+  flex: 1;
+  margin-left: 260px;
+  padding: 40px;
+  width: calc(100% - 260px);
+}
+
+@media (max-width: 1024px) {
+  .main {
+    margin-left: 0;
+    width: 100%;
+    padding: 24px;
+  }
+}

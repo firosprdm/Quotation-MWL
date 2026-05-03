@@ -1,0 +1,310 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  color: var(--text-secondary);
+}
+
+.addButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 14px;
+  font-weight: 600;
+  background: var(--primary);
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.addButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+}
+
+.tabs {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 32px;
+  border-radius: 12px;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-glass);
+  transition: all 0.3s ease;
+  min-width: 180px;
+}
+
+.tab:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.tabActive {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
+}
+
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.kpiCard {
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-radius: 20px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.kpiCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.kpiActive {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.05) !important;
+  transform: translateY(-5px) scale(1.02);
+}
+
+.kpiIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconBlue { background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); color: #60a5fa; }
+.iconRed { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #f87171; }
+.iconPurple { background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.2); color: #c084fc; }
+.iconGreen { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); color: #34d399; }
+
+.tableWrapper {
+  overflow: hidden;
+  border-radius: 20px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  text-align: left;
+  padding: 8px 16px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  border-bottom: 1px solid var(--border-glass);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.table td {
+  padding: 6px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  color: var(--text-secondary);
+}
+
+.table tr {
+  transition: background-color 0.2s ease;
+}
+
+.table tr:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.badge {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.badgeAsset { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+.badgeLiability { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+.badgeEquity { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
+.badgeRevenue { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+.badgeExpense { background: rgba(249, 115, 22, 0.15); color: #fb923c; }
+
+/* Reports Styles */
+.reportControls {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.reportTabs {
+  display: flex;
+  gap: 12px;
+}
+
+.reportTab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 32px;
+  border-radius: 12px;
+  font-weight: 500;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.4);
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  background: transparent;
+  min-width: 180px;
+}
+
+.reportTab:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.reportTabActive {
+  background: rgba(59, 130, 246, 0.08);
+  color: #60a5fa;
+  border-color: rgba(59, 130, 246, 0.15);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.05);
+}
+
+.downloadBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 24px;
+  border-radius: 12px;
+  font-weight: 500;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-glass);
+  color: white;
+  transition: all 0.3s ease;
+  min-width: 130px;
+}
+
+.downloadBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.downloadPulse {
+  animation: pulse-download 2s infinite ease-in-out;
+}
+
+@keyframes pulse-download {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1) translateY(2px); opacity: 0.8; }
+}
+
+.reportSection {
+  margin-bottom: 20px;
+}
+
+.reportSectionTitle {
+  font-size: 16px;
+  font-weight: 500;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.reportRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 12px;
+  font-size: 13px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.reportRow:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.reportTotalRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-top: 4px;
+  margin-bottom: 16px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Journal Entry Specifics */
+.journalGroup {
+  border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+}
+
+.journalEntryMain {
+  font-weight: 700;
+  color: white;
+}
+
+.journalLine {
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.journalLine:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.amountDebit {
+  color: #34d399; /* emerald-400 */
+  font-family: var(--font-mono);
+  font-weight: 700;
+  text-align: right;
+}
+
+.amountCredit {
+  color: #fb923c; /* orange-400 */
+  font-family: var(--font-mono);
+  font-weight: 700;
+  text-align: right;
+}
+
+.entryHeader {
+  background: rgba(59, 130, 246, 0.05);
+  border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+}

@@ -1,0 +1,299 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  color: var(--text-secondary);
+}
+
+.addButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 14px;
+  font-weight: 600;
+  background: var(--primary);
+  color: white;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.searchBar {
+  padding: 8px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.searchIcon {
+  color: var(--text-muted);
+}
+
+.searchInput {
+  background: transparent;
+  border: none;
+  color: white;
+  width: 100%;
+  padding: 12px 0;
+  font-size: 16px;
+  outline: none;
+}
+
+.tableWrapper {
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  text-align: left;
+  padding: 16px 24px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.table td {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-glass);
+  color: var(--text-secondary);
+}
+
+.status {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  cursor: pointer;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.status:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.status.sent { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border-color: rgba(59, 130, 246, 0.2); }
+.status.waiting { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.2); }
+.status.approved { background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.2); }
+.status.rejected { background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.2); }
+.status.revised { background: rgba(139, 92, 246, 0.15); color: #a78bfa; border-color: rgba(139, 92, 246, 0.2); }
+
+.status option {
+  background: #1e293b;
+  color: white;
+}
+
+.statusSelect {
+  padding: 6px 12px;
+  font-size: 13px;
+  border-radius: 8px;
+  background: rgba(16, 185, 129, 0.1);
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.3);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.statusSelect:hover {
+  background: rgba(16, 185, 129, 0.15);
+}
+
+.workPending {
+  background: rgba(245, 158, 11, 0.1) !important;
+  color: #fbbf24 !important;
+  border-color: rgba(245, 158, 11, 0.2) !important;
+}
+
+.workOngoing {
+  background: rgba(59, 130, 246, 0.1) !important;
+  color: #60a5fa !important;
+  border-color: rgba(59, 130, 246, 0.2) !important;
+  animation: pulse-blue 2s infinite alternate;
+}
+
+.workDone {
+  background: rgba(16, 185, 129, 0.15) !important;
+  color: #34d399 !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+@keyframes pulse-blue {
+  0% { box-shadow: 0 0 0px rgba(59, 130, 246, 0); }
+  100% { box-shadow: 0 0 10px rgba(59, 130, 246, 0.3); }
+}
+
+.smallSelect {
+  width: 120px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.smallInput {
+  width: 160px;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+.downloadBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.downloadBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.downloadIcon {
+  animation: downloadPulse 2s infinite ease-in-out;
+}
+
+@keyframes downloadPulse {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 1; }
+  50% { transform: translateY(3px) scale(1.1); opacity: 0.8; }
+}
+
+.certReady {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.3)) !important;
+  color: #34d399 !important;
+  border: 1px solid rgba(16, 185, 129, 0.4) !important;
+}
+
+.certReady:hover {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(5, 150, 105, 0.4)) !important;
+}
+
+.certNotReady {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #94a3b8 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+.deleteBtn:hover {
+  color: #f87171 !important;
+  border-color: #f87171 !important;
+}
+
+.actionBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-glass);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.actionBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  transform: translateY(-2px) scale(1.1);
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.actionBtn:active {
+  transform: translateY(0) scale(0.95);
+}
+
+.emptyState {
+  text-align: center;
+  padding: 60px !important;
+}
+
+.statCard {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 24px;
+  border-radius: 16px;
+}
+
+.statIcon {
+  width: 48px;
+  height: 48px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.paymentDone {
+  background: rgba(16, 185, 129, 0.15) !important;
+  color: #34d399 !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.1);
+}
+
+.paymentPending {
+  background: rgba(245, 158, 11, 0.1) !important;
+  color: #fbbf24 !important;
+  border-color: rgba(245, 158, 11, 0.2) !important;
+  animation: status-pulse-yellow 2s infinite alternate;
+}
+
+.paymentOverdue {
+  background: rgba(239, 68, 68, 0.15) !important;
+  color: #f87171 !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  animation: status-pulse-red 1.5s infinite alternate;
+  font-weight: 800 !important;
+  letter-spacing: 0.5px;
+}
+
+@keyframes status-pulse-yellow {
+  0% { box-shadow: 0 0 0px rgba(245, 158, 11, 0); }
+  100% { box-shadow: 0 0 12px rgba(245, 158, 11, 0.25); }
+}
+
+@keyframes status-pulse-red {
+  0% { box-shadow: 0 0 0px rgba(239, 68, 68, 0); transform: scale(1); }
+  100% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); transform: scale(1.02); }
+}
+
