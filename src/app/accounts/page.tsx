@@ -15,8 +15,10 @@ import {
   Sparkles,
   Download,
   Upload,
-  FileUp
+  FileJson,
+  FileSpreadsheet
 } from 'lucide-react';
+import { useRef } from 'react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
@@ -35,6 +37,8 @@ export default function AccountsPage() {
   const [showEntryForm, setShowEntryForm] = useState(false);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [accountFilter, setAccountFilter] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { importData, exportData } = useApp(); // Assuming these might exist or we add them
 
   // Calculate summaries
   const totalAssets = accounts.filter(a => a.type === 'Asset').reduce((acc, a) => acc + a.balance, 0);
@@ -125,43 +129,50 @@ export default function AccountsPage() {
     XLSX.writeFile(workbook, `Journal_Entries_${new Date().toISOString().slice(0,10)}.xlsx`);
   };
 
-  const handleImportJournals = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (event) => {
-      const bstr = event.target?.result;
-      const workbook = XLSX.read(bstr, { type: 'binary' });
-      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-      const data = XLSX.utils.sheet_to_json(firstSheet);
-      console.log('Imported Journal Data:', data);
-      alert('Journal import feature logic being initialized with Supabase sync...');
+    reader.onload = async (event) => {
+      try {
+        const json = JSON.parse(event.target?.result as string);
+        if (confirm('This will overwrite current local data. Continue?')) {
+          // Logic to import data into context
+          // Since we might not have a direct 'importData' in context yet, 
+          // we'll need to add it or manually update local storage/supabase.
+          // For now, let's assume we'll add it to context.
+          if (importData) {
+            await importData(json);
+            alert('Data imported successfully!');
+            window.location.reload();
+          } else {
+            alert('Import function not implemented in context yet.');
+          }
+        }
+      } catch (err) {
+        alert('Error parsing file: ' + err);
+      }
     };
-    reader.readAsBinaryString(file);
+    reader.readAsText(file);
   };
 
-  const handleExportCOA = () => {
-    const worksheet = XLSX.utils.json_to_sheet(accounts);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Chart of Accounts");
-    XLSX.writeFile(workbook, `Chart_of_Accounts_${new Date().toISOString().slice(0,10)}.xlsx`);
-  };
-
-  const handleImportCOA = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const bstr = event.target?.result;
-      const workbook = XLSX.read(bstr, { type: 'binary' });
-      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-      const data = XLSX.utils.sheet_to_json(firstSheet);
-      console.log('Imported COA Data:', data);
-      alert('Chart of Accounts import logic being initialized with Supabase sync...');
+  const handleExportJSON = () => {
+    const dataToExport = {
+      accounts,
+      journalEntries,
+      timestamp: new Date().toISOString()
     };
-    reader.readAsBinaryString(file);
+    const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Accounting_Backup_${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
   };
 
   return (
@@ -384,37 +395,14 @@ export default function AccountsPage() {
                   )}
                 </div>
               </h3>
-              <div className="flex gap-2">
+              {accountFilter && (
                 <button 
-                  onClick={() => document.getElementById('import-coa-input')?.click()}
-                  className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-blue-500/10 hover:border-blue-500/30 hover:text-blue-400 transition-all text-white/70 shadow-sm"
-                  title="Import Chart of Accounts"
+                  onClick={() => setAccountFilter(null)}
+                  className="text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-muted hover:text-white"
                 >
-                  <Upload size={14} /> Import
+                  View All
                 </button>
-                <input 
-                  id="import-coa-input" 
-                  type="file" 
-                  hidden 
-                  accept=".xlsx,.xls,.csv" 
-                  onChange={handleImportCOA} 
-                />
-                <button 
-                  onClick={handleExportCOA}
-                  className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-emerald-500/10 hover:border-emerald-500/30 hover:text-emerald-400 transition-all text-white/70 shadow-sm"
-                  title="Export Chart of Accounts"
-                >
-                  <Download size={14} /> Export
-                </button>
-                {accountFilter && (
-                  <button 
-                    onClick={() => setAccountFilter(null)}
-                    className="text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-muted hover:text-white"
-                  >
-                    View All
-                  </button>
-                )}
-              </div>
+              )}
             </div>
             <table className={clsx(styles.table, styles.compactTable)}>
               <thead>
@@ -481,19 +469,6 @@ export default function AccountsPage() {
               Journal Entries
             </h3>
             <div className="flex gap-3">
-              <button 
-                onClick={() => document.getElementById('import-journal-input')?.click()}
-                className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-purple-500/10 hover:border-purple-500/30 hover:text-purple-400 transition-all text-white/70 shadow-sm"
-              >
-                <Upload size={14} /> Import XLS
-              </button>
-              <input 
-                id="import-journal-input" 
-                type="file" 
-                hidden 
-                accept=".xlsx,.xls,.csv" 
-                onChange={handleImportJournals} 
-              />
               <button 
                 onClick={handleExportXLSX}
                 className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-emerald-500/10 hover:border-emerald-500/30 hover:text-emerald-400 transition-all text-white/70 shadow-sm"

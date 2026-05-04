@@ -154,6 +154,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           payroll: payroll || [],
           fixedAssets: fixedAssets || [],
           settings: settings || prev.settings,
+          defaultNotes: settings?.defaultNotes || prev.defaultNotes,
         }));
       } catch (e) {
         console.error('Failed to load data from Supabase', e);
@@ -368,6 +369,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const updateDefaultNotes = async (notes: string) => {
     setData(prev => ({ ...prev, defaultNotes: notes }));
+    await supabase.from('company_settings').upsert({ id: 1, defaultNotes: notes });
   };
 
   const updateSettings = async (settings: CompanySettings) => {
