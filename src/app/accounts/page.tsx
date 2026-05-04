@@ -199,6 +199,31 @@ export default function AccountsPage() {
         <QuickAddModal onClose={() => setShowQuickAdd(false)} />
       )}
 
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        style={{ display: 'none' }} 
+        accept=".json" 
+        onChange={handleFileChange} 
+      />
+
+      <div className="fixed bottom-8 right-8 z-50 flex gap-3">
+        <button 
+          onClick={handleExportJSON}
+          className="w-12 h-12 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-slate-800 transition-all shadow-xl group"
+          title="Export JSON Backup"
+        >
+          <FileJson size={20} className="group-hover:scale-110 transition-transform" />
+        </button>
+        <button 
+          onClick={handleImportClick}
+          className="w-12 h-12 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-slate-800 transition-all shadow-xl group"
+          title="Import JSON Backup"
+        >
+          <Upload size={20} className="group-hover:scale-110 transition-transform" />
+        </button>
+      </div>
+
       <header className={styles.header}>
         <div>
           <h2 className={styles.title}>Accounts</h2>

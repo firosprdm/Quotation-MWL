@@ -45,6 +45,8 @@ interface AppContextType extends AppState {
   reconcileJournalEntry: (id: string, bankRef: string) => void;
   addFixedAsset: (asset: Omit<FixedAsset, 'id'>) => void;
   runDepreciation: (month: number, year: number) => void;
+  importData: (json: any) => Promise<void>;
+  exportData: () => any;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -694,6 +696,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const exportData = () => {
+    return data;
+  };
+
+  const importData = async (json: any) => {
+    if (!json || typeof json !== 'object') return;
+    
+    // Overwrite local state
+    setData(prev => ({ ...prev, ...json }));
+
+    // Supabase update logic (destructive)
+    const tables = ['accounts', 'journal_entries', 'clients', 'inventory', 'quotations', 'fixed_assets', 'payroll_records'];
+    for (const table of tables) {
+      if (json[table]) {
+        await supabase.from(table).delete().neq('id', '0');
+        await supabase.from(table).insert(json[table]);
+      }
+    }
+  };
+
   return (
     <AppContext.Provider value={{ 
       ...data, 
@@ -714,7 +736,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       updateJournalEntry,
       reconcileJournalEntry,
       addFixedAsset,
-      runDepreciation
+      runDepreciation,
+      importData,
+      exportData
     }}>
       {children}
     </AppContext.Provider>
