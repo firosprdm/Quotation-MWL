@@ -9,7 +9,10 @@ import {
   Calendar, 
   CheckCircle2,
   FileSpreadsheet,
-  AlertCircle
+  AlertCircle,
+  Check,
+  Clock,
+  ShieldAlert
 } from 'lucide-react';
 import styles from './payroll.module.css';
 import { clsx } from 'clsx';
@@ -20,8 +23,36 @@ export default function PayrollPage() {
   const { payroll, employees, addPayrollRecord, updatePayrollRecord, isLoaded } = useApp();
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [sortField, setSortField] = useState<string>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('asc');
+    }
+  };
 
   const currentPayroll = payroll.filter(p => p.month === selectedMonth && p.year === selectedYear);
+
+  const sortedPayroll = [...currentPayroll].sort((a, b) => {
+    let aVal: any, bVal: any;
+    
+    if (sortField === 'name') {
+      aVal = employees.find(e => e.id === a.employeeId)?.name || '';
+      bVal = employees.find(e => e.id === b.employeeId)?.name || '';
+    } else {
+      aVal = (a as any)[sortField];
+      bVal = (b as any)[sortField];
+    }
+
+    if (typeof aVal === 'string') {
+      return sortOrder === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+    }
+    return sortOrder === 'asc' ? aVal - bVal : bVal - aVal;
+  });
 
   const generatePayroll = async () => {
     if (currentPayroll.length > 0) {
@@ -126,18 +157,50 @@ export default function PayrollPage() {
 
       <div className={styles.statsGrid}>
         <div className={clsx('glass-panel', styles.statCard)}>
-          <p className={styles.statLabel}>Total Net Pay</p>
-          <p className={styles.statValue}>{formatCurrency(totalPayroll)}</p>
+          <div className="flex justify-between items-start">
+            <div>
+              <p className={styles.statLabel}>Total Net Pay</p>
+              <p className={styles.statValue}>{formatCurrency(totalPayroll)}</p>
+            </div>
+            <div className={clsx(styles.statIcon, styles.blue)}>
+              <Banknote size={20} />
+            </div>
+          </div>
         </div>
         <div className={clsx('glass-panel', styles.statCard)}>
-          <p className={styles.statLabel}>GOSI Liability</p>
-          <p className={styles.statValue}>{formatCurrency(totalGosi)}</p>
+          <div className="flex justify-between items-start">
+            <div>
+              <p className={styles.statLabel}>GOSI Liability</p>
+              <p className={styles.statValue}>{formatCurrency(totalGosi)}</p>
+            </div>
+            <div className={clsx(styles.statIcon, styles.purple)}>
+              <ShieldAlert size={20} />
+            </div>
+          </div>
         </div>
         <div className={clsx('glass-panel', styles.statCard)}>
-          <p className={styles.statLabel}>WPS Status</p>
-          <p className={clsx(styles.statValue, currentPayroll.some(p => p.status === 'Paid') ? 'text-emerald-400' : 'text-amber-400')}>
-            {currentPayroll.length > 0 ? (currentPayroll.every(p => p.status === 'Paid') ? 'Fully Paid' : 'Pending Payment') : 'Not Generated'}
-          </p>
+          <div className="flex justify-between items-start">
+            <div>
+              <p className={styles.statLabel}>WPS Status</p>
+              <p className={clsx(styles.statValue, currentPayroll.every(p => p.status === 'Paid') ? 'text-emerald-400' : 'text-amber-400')}>
+                {currentPayroll.length > 0 ? (currentPayroll.every(p => p.status === 'Paid') ? 'Fully Paid' : 'Pending') : 'N/A'}
+              </p>
+            </div>
+            <div className={clsx(styles.statIcon, currentPayroll.every(p => p.status === 'Paid') ? styles.green : styles.amber)}>
+              <CheckCircle2 size={20} />
+            </div>
+          </div>
+        </div>
+        <div className={clsx('glass-panel', styles.statCard)}>
+          <div className="flex justify-between items-start">
+            <div>
+              <p className={styles.statLabel}>Pending Payment</p>
+              <p className={styles.statValue}>{formatCurrency(currentPayroll.filter(p => p.status !== 'Paid').reduce((s, p) => s + p.netSalary, 0))}</p>
+            </div>
+            <div className={clsx(styles.statIcon, styles.rose)}>
+              <Clock size={20} />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -152,21 +215,31 @@ export default function PayrollPage() {
             <span>Mark as Paid</span>
           </button>
         </div>
-      )}
+       )}
       <div className={clsx('glass-panel', styles.tableWrapper)}>
         <div className={styles.reportRowHeader}>
-          <span className="flex-1">Employee</span>
-          <span className="w-32 text-right">Basic</span>
-          <span className="w-32 text-right">Allowances</span>
-          <span className="w-32 text-right">GOSI (10%)</span>
-          <span className="w-32 text-right">Net Salary</span>
-          <span className="w-24 text-right">Status</span>
+          <span className="flex-[2] cursor-pointer hover:text-white" onClick={() => handleSort('name')}>
+            Employee {sortField === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
+          </span>
+          <span className="w-40 text-right cursor-pointer hover:text-white" onClick={() => handleSort('basicSalary')}>
+            Basic {sortField === 'basicSalary' && (sortOrder === 'asc' ? '↑' : '↓')}
+          </span>
+          <span className="w-40 text-right cursor-pointer hover:text-white" onClick={() => handleSort('housingAllowance')}>
+            Allowances {sortField === 'housingAllowance' && (sortOrder === 'asc' ? '↑' : '↓')}
+          </span>
+          <span className="w-40 text-right cursor-pointer hover:text-white" onClick={() => handleSort('gosiDeduction')}>
+            GOSI (10%) {sortField === 'gosiDeduction' && (sortOrder === 'asc' ? '↑' : '↓')}
+          </span>
+          <span className="w-40 text-right cursor-pointer hover:text-white" onClick={() => handleSort('netSalary')}>
+            Net Salary {sortField === 'netSalary' && (sortOrder === 'asc' ? '↑' : '↓')}
+          </span>
+          <span className="w-32 text-center">Status</span>
         </div>
         
         <div className={styles.reportSection}>
           {!isLoaded ? (
             <div className={styles.emptyState}>Loading...</div>
-          ) : currentPayroll.length === 0 ? (
+          ) : sortedPayroll.length === 0 ? (
             <div className={styles.emptyState}>
               <div className="flex flex-col items-center gap-4">
                 <AlertCircle size={48} className="text-white/10" />
@@ -175,24 +248,33 @@ export default function PayrollPage() {
               </div>
             </div>
           ) : (
-            currentPayroll.map((p) => {
+            sortedPayroll.map((p) => {
               const emp = employees.find(e => e.id === p.employeeId);
+              const isPaid = p.status === 'Paid';
+              
               return (
                 <div key={p.id} className={styles.reportRow}>
-                  <span className="flex-1">
+                  <span className="flex-[2]">
                     <div className="flex flex-col">
-                      <span className="font-medium text-white">{emp?.name || 'Unknown'}</span>
+                      <span className="font-bold text-white">{emp?.name || 'Unknown'}</span>
                       <span className="text-[10px] text-muted">{emp?.jobTitle}</span>
                     </div>
                   </span>
-                  <span className="w-32 text-right font-mono">{formatCurrency(p.basicSalary)}</span>
-                  <span className="w-32 text-right font-mono">{formatCurrency(p.housingAllowance + p.transportAllowance + p.otherAllowances)}</span>
-                  <span className="w-32 text-right font-mono text-rose-400/80">-{formatCurrency(p.gosiDeduction)}</span>
-                  <span className="w-32 text-right font-mono font-medium text-emerald-400">{formatCurrency(p.netSalary)}</span>
-                  <span className="w-24 text-right flex justify-end">
-                    <span className={clsx(styles.status, styles[p.status])}>
-                      {p.status}
-                    </span>
+                  <span className="w-40 text-right font-mono">{formatCurrency(p.basicSalary)}</span>
+                  <span className="w-40 text-right font-mono">{formatCurrency(p.housingAllowance + p.transportAllowance + p.otherAllowances)}</span>
+                  <span className="w-40 text-right font-mono text-rose-400">-{formatCurrency(p.gosiDeduction)}</span>
+                  <span className="w-40 text-right font-mono font-bold text-emerald-400">{formatCurrency(p.netSalary)}</span>
+                  <span className="w-32 flex justify-center">
+                    <button 
+                      onClick={() => updatePayrollRecord(p.id, { status: isPaid ? 'Processed' : 'Paid', paymentDate: isPaid ? undefined : Date.now() })}
+                      className={clsx(
+                        styles.statusButton, 
+                        isPaid ? styles.Paid : styles.Unpaid
+                      )}
+                    >
+                      {isPaid ? <Check size={14} /> : <Clock size={14} />}
+                      <span>{isPaid ? 'Paid' : 'Unpaid'}</span>
+                    </button>
                   </span>
                 </div>
               );

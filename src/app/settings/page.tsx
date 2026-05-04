@@ -25,7 +25,8 @@ import styles from './settings.module.css';
 import { clsx } from 'clsx';
 
 export default function SettingsPage() {
-  const { settings, updateSettings, exportData, importData } = useApp();
+  const { settings, updateSettings, exportData, importData, currentUser } = useApp();
+  const isAdmin = currentUser?.role === 'admin';
   const [formData, setFormData] = useState(settings);
   const [isSaving, setIsSaving] = useState(false);
   const [isOnboarding, setIsOnboarding] = useState(false);
@@ -245,6 +246,7 @@ export default function SettingsPage() {
                       className="glass-input" 
                       value={formData.name} 
                       onChange={e => setFormData({ ...formData, name: e.target.value })}
+                      disabled={!isAdmin}
                     />
                   </div>
                 </div>
@@ -258,6 +260,7 @@ export default function SettingsPage() {
                       className="glass-input" 
                       value={formData.vatNumber} 
                       onChange={e => setFormData({ ...formData, vatNumber: e.target.value })}
+                      disabled={!isAdmin}
                     />
                   </div>
                 </div>
@@ -271,6 +274,7 @@ export default function SettingsPage() {
                       className="glass-input" 
                       value={formData.contact} 
                       onChange={e => setFormData({ ...formData, contact: e.target.value })}
+                      disabled={!isAdmin}
                     />
                   </div>
                 </div>
@@ -284,6 +288,7 @@ export default function SettingsPage() {
                       className="glass-input" 
                       value={formData.salesPerson} 
                       onChange={e => setFormData({ ...formData, salesPerson: e.target.value })}
+                      disabled={!isAdmin}
                     />
                   </div>
                 </div>
@@ -298,6 +303,7 @@ export default function SettingsPage() {
                       value={formData.crNumber || ''} 
                       onChange={e => setFormData({ ...formData, crNumber: e.target.value })}
                       placeholder="e.g. 1010000000"
+                      disabled={!isAdmin}
                     />
                   </div>
                 </div>
@@ -577,10 +583,12 @@ export default function SettingsPage() {
                     accept=".json" 
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     onChange={handleImportData}
+                    disabled={!isAdmin}
                   />
                   <button 
                     type="button" 
                     className={clsx(styles.onboardBtn, "w-full bg-slate-500/10 text-slate-300 border-slate-500/30")}
+                    disabled={!isAdmin}
                   >
                     <Upload size={18} />
                     Restore Data
@@ -589,9 +597,9 @@ export default function SettingsPage() {
               </div>
             </section>
 
-            <button type="submit" className={styles.saveBtn} disabled={isSaving}>
+            <button type="submit" className={styles.saveBtn} disabled={isSaving || !isAdmin}>
               <Save size={20} />
-              {isSaving ? 'Saving Changes...' : 'Save Settings'}
+              {!isAdmin ? 'Admin Access Required' : (isSaving ? 'Saving Changes...' : 'Save Settings')}
             </button>
           </div>
         </div>

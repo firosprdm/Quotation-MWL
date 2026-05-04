@@ -77,7 +77,7 @@ const ZATCADownloadButton = ({ q, client, settings, className }: any) => {
 };
 
 export default function InvoicesPage() {
-  const { quotations = [], clients = [], settings, updateQuotation, finalizeInvoice, isLoaded } = useApp();
+  const { quotations = [], clients = [], settings, updateQuotation, finalizeInvoice, isLoaded, currentUser } = useApp();
   const [viewInvoice, setViewInvoice] = useState<any>(null);
   const [search, setSearch] = useState('');
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
@@ -295,8 +295,12 @@ export default function InvoicesPage() {
                             q.paymentStatus === 'Done' ? 'status-done' : (isOverdue ? 'status-overdue' : 'status-pending')
                           )}
                           value={q.paymentStatus === 'Done' ? 'Done' : (isOverdue ? 'OVERDUE' : 'Pending')}
+                          disabled={currentUser?.role === 'user' && q.paymentStatus === 'Done'}
                           onChange={(e) => {
                             const val = e.target.value;
+                            if (currentUser?.role === 'user' && q.paymentStatus === 'Done' && val !== 'Done') {
+                              return alert('Standard User cannot revert a Paid invoice.');
+                            }
                             updateQuotation(q.id, { paymentStatus: val === 'Done' ? 'Done' : 'Payment Pending' });
                           }}
                         >

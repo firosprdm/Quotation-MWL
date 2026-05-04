@@ -449,18 +449,18 @@ export const QuotationPDF = ({ quotation, client, settings }: Props) => {
             </View>
           </View>
 
-          {quotation.items.map((item, i) => (
-            <View key={item.id} style={[styles.tableRow, { backgroundColor: i % 2 === 0 ? '#fff' : '#fcfdfd' }]}>
+          {(quotation.items || []).filter(item => !!item).map((item, i) => (
+            <View key={item.id || i} style={[styles.tableRow, { backgroundColor: i % 2 === 0 ? '#fff' : '#fcfdfd' }]}>
               <View style={styles.colDesc}>
-                <Text style={styles.descEn}>{item.description}</Text>
+                <Text style={styles.descEn}>{String(item.description || '')}</Text>
                 <Text style={styles.descAr}>وصف المنتج بالعربية</Text>
               </View>
-              <Text style={styles.colUnit}>{item.unit}</Text>
-              <Text style={styles.colQty}>{item.quantity}</Text>
-              <Text style={styles.colPrice}>{item.price.toFixed(2)}</Text>
-              <Text style={styles.colExVat}>{item.total.toFixed(2)}</Text>
-              <Text style={styles.colVat}>{item.vatAmount.toFixed(2)}</Text>
-              <Text style={[styles.colTotal, { fontWeight: 'bold' }]}>{item.totalWithVat.toFixed(2)}</Text>
+              <Text style={styles.colUnit}>{String(item.unit || '')}</Text>
+              <Text style={styles.colQty}>{String(item.quantity || 0)}</Text>
+              <Text style={styles.colPrice}>{(item.price || 0).toFixed(2)}</Text>
+              <Text style={styles.colExVat}>{(item.total || 0).toFixed(2)}</Text>
+              <Text style={styles.colVat}>{(item.vatAmount || 0).toFixed(2)}</Text>
+              <Text style={[styles.colTotal, { fontWeight: 'bold' }]}>{(item.totalWithVat || 0).toFixed(2)}</Text>
             </View>
           ))}
         </View>
@@ -470,11 +470,11 @@ export const QuotationPDF = ({ quotation, client, settings }: Props) => {
           <View style={styles.summaryBlock}>
             <View style={styles.summaryRow}>
               <Text style={{ color: '#94a3b8' }}>Subtotal / المجموع الفرعي</Text>
-              <Text>SAR {quotation.subtotal.toFixed(2)}</Text>
+              <Text>SAR {(quotation.subtotal || 0).toFixed(2)}</Text>
             </View>
             <View style={styles.summaryRow}>
               <Text style={{ color: '#94a3b8' }}>VAT (15%) / الضريبة</Text>
-              <Text>SAR {quotation.vatAmount.toFixed(2)}</Text>
+              <Text>SAR {(quotation.vatAmount || 0).toFixed(2)}</Text>
             </View>
             <View style={styles.grandTotal}>
               <View style={styles.totalLabelBox}>
@@ -482,7 +482,7 @@ export const QuotationPDF = ({ quotation, client, settings }: Props) => {
                 <Text style={{ color: '#fff', fontSize: 8 }}>المجموع الكلي</Text>
               </View>
               <View style={styles.totalValueBox}>
-                <Text style={{ color: '#fff', fontSize: 13, fontWeight: 'bold' }}>SAR {quotation.grandTotal.toFixed(2)}</Text>
+                <Text style={{ color: '#fff', fontSize: 13, fontWeight: 'bold' }}>SAR {(quotation.grandTotal || 0).toFixed(2)}</Text>
               </View>
             </View>
           </View>

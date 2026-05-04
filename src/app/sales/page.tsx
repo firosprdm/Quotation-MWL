@@ -18,10 +18,15 @@ import { ViewQuotationModal } from '@/components/ViewQuotationModal';
 import { formatCurrency, formatNumber } from '@/lib/format';
 
 export default function SalesPage() {
-  const { quotations, clients, settings, updateQuotation } = useApp();
+  const { quotations, clients, settings, updateQuotation, currentUser } = useApp();
   const [viewQuotation, setViewQuotation] = useState<any>(null);
   const [search, setSearch] = useState('');
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
   
   // Filter for approved quotations only
   const salesQuotations = quotations.filter(q => q.status === 'approved');
@@ -177,6 +182,7 @@ export default function SalesPage() {
                       )}
                       value={q.salesStatus || 'PO pending'}
                       onChange={(e) => updateQuotation(q.id, { salesStatus: e.target.value as any })}
+                      disabled={currentUser?.role !== 'admin' && q.salesStatus === 'PO recieved'}
                     >
                       <option value="PO pending" className="text-gray-900">PO pending</option>
                       <option value="PO recieved" className="text-gray-900">PO recieved</option>
@@ -191,7 +197,7 @@ export default function SalesPage() {
                       >
                         <Eye size={16} />
                       </button>
-                      {clients.find(c => c.id === q.clientId) && (
+                      {isMounted && clients.find(c => c.id === q.clientId) && (
                         <PDFDownloadLink 
                           document={<QuotationPDF quotation={q} client={clients.find(c => c.id === q.clientId)!} settings={settings} />} 
                           fileName={`Sale_${q.number}.pdf`}

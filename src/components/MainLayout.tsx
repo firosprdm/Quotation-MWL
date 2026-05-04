@@ -3,12 +3,21 @@
 import React from 'react';
 import { Sidebar } from './Sidebar';
 import styles from './MainLayout.module.css';
-import { Calculator } from './Calculator';
-import calcStyles from './Calculator.module.css';
-import { Calculator as CalcIcon } from 'lucide-react';
+import { useApp } from '@/context/AppContext';
+import LoginPage from './LoginPage';
 
 export function MainLayout({ children }: { children: React.ReactNode }) {
-  const [isCalcOpen, setIsCalcOpen] = React.useState(false);
+  const { currentUser, isLoaded } = useApp();
+
+  if (!isLoaded) {
+    return <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
+      <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
+    </div>;
+  }
+
+  if (!currentUser) {
+    return <LoginPage />;
+  }
 
   return (
     <div className={styles.container}>
@@ -16,18 +25,6 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
       <main className={styles.main}>
         {children}
       </main>
-
-      {/* Floating Calculator Toggle */}
-      <button 
-        className={calcStyles.floatingBtn} 
-        onClick={() => setIsCalcOpen(!isCalcOpen)}
-        title="Open Calculator"
-      >
-        <CalcIcon size={24} />
-      </button>
-
-      {/* Calculator Modal */}
-      {isCalcOpen && <Calculator onClose={() => setIsCalcOpen(false)} />}
     </div>
   );
 }

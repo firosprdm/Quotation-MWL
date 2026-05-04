@@ -12,7 +12,10 @@ import {
   X,
   CreditCard,
   Briefcase,
-  UserCheck
+  UserCheck,
+  ArrowUpDown,
+  ChevronUp,
+  ChevronDown
 } from 'lucide-react';
 import styles from './employees.module.css';
 import { clsx } from 'clsx';
@@ -20,10 +23,14 @@ import { formatCurrency } from '@/lib/format';
 import { Employee } from '@/types';
 
 export default function EmployeesPage() {
-  const { employees, addEmployee, updateEmployee, deleteEmployee, isLoaded } = useApp();
+  const { employees, addEmployee, updateEmployee, deleteEmployee, isLoaded, currentUser } = useApp();
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+
+  type SortField = 'name' | 'iqamaNo' | 'jobTitle' | 'basicSalary' | 'allowances' | 'netPay' | 'status';
+  const [sortField, setSortField] = useState<SortField>('name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   const [formData, setFormData] = useState<Partial<Employee>>({
     name: '',
@@ -39,10 +46,46 @@ export default function EmployeesPage() {
     joinDate: Date.now()
   });
 
-  const filteredEmployees = employees.filter(e => 
-    e.name.toLowerCase().includes(search.toLowerCase()) || 
-    e.iqamaNo.includes(search)
-  );
+  const filteredEmployees = employees
+    .filter(e => 
+      e.name.toLowerCase().includes(search.toLowerCase()) || 
+      e.iqamaNo.includes(search)
+    )
+    .sort((a, b) => {
+      const getAllowances = (emp: Employee) => emp.housingAllowance + (emp.transportAllowance || 0) + (emp.otherAllowances || 0);
+      const getNetPay = (emp: Employee) => emp.basicSalary + getAllowances(emp);
+
+      let aValue: any = a[sortField as keyof Employee];
+      let bValue: any = b[sortField as keyof Employee];
+
+      if (sortField === 'allowances') {
+        aValue = getAllowances(a);
+        bValue = getAllowances(b);
+      } else if (sortField === 'netPay') {
+        aValue = getNetPay(a);
+        bValue = getNetPay(b);
+      }
+
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const SortIcon = ({ field }: { field: SortField }) => {
+    if (sortField !== field) return <ArrowUpDown size={14} className="ml-1 opacity-40 inline-block" />;
+    return sortDirection === 'asc' 
+      ? <ChevronUp size={14} className="ml-1 inline-block text-blue-400" />
+      : <ChevronDown size={14} className="ml-1 inline-block text-blue-400" />;
+  };
 
   const handleOpenAdd = () => {
     setEditingEmployee(null);
@@ -159,49 +202,69 @@ export default function EmployeesPage() {
       </div>
 
       <div className={clsx('glass-panel', styles.tableWrapper)}>
-      <div className={styles.reportSection}>
         {!isLoaded ? (
           <div className="text-center py-20 text-muted">Loading records...</div>
         ) : filteredEmployees.length === 0 ? (
           <div className="text-center py-20 text-muted">No employees found.</div>
         ) : (
-          filteredEmployees.map((emp) => (
-            <div key={emp.id} className={styles.reportRow}>
-              <div className="flex items-center gap-4 flex-1">
-                <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/20 text-blue-400 font-black">
-                  {emp.name[0]}
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[14px] text-white font-medium">{emp.name}</span>
-                  <span className="text-[10px] text-muted tracking-wide">{emp.nameAr}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-8 text-right">
-                <div className="flex flex-col">
-                  <span className="text-[9px] text-muted uppercase tracking-widest mb-1">Iqama No.</span>
-                  <span className="font-mono text-xs text-white/70">{emp.iqamaNo}</span>
-                </div>
-                <div className="flex flex-col w-[120px]">
-                  <span className="text-[9px] text-muted uppercase tracking-widest mb-1">Salary</span>
-                  <span className="font-mono text-[13px] text-emerald-400">{formatCurrency(emp.basicSalary)}</span>
-                </div>
-                <div className={clsx(styles.status, styles[emp.status], "text-[9px] px-2 py-0.5 uppercase tracking-tighter")}>
-                  {emp.status}
-                </div>
-                <div className="flex items-center gap-2">
-                  <button className="p-2 rounded-lg hover:bg-white/5 text-muted hover:text-white transition-colors" onClick={() => handleOpenEdit(emp)}>
-                    <Pencil size={14} />
-                  </button>
-                  <button className="p-2 rounded-lg hover:bg-red-500/10 text-muted hover:text-red-400 transition-colors" onClick={() => deleteEmployee(emp.id)}>
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))
+          <div className="overflow-x-auto">
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th onClick={() => handleSort('name')} className="cursor-pointer hover:text-white transition-colors select-none">Employee <SortIcon field="name" /></th>
+                  <th onClick={() => handleSort('iqamaNo')} className="cursor-pointer hover:text-white transition-colors select-none">Iqama No. <SortIcon field="iqamaNo" /></th>
+                  <th onClick={() => handleSort('jobTitle')} className="cursor-pointer hover:text-white transition-colors select-none">Job Title <SortIcon field="jobTitle" /></th>
+                  <th onClick={() => handleSort('basicSalary')} className="cursor-pointer hover:text-white transition-colors select-none">Basic Salary <SortIcon field="basicSalary" /></th>
+                  <th onClick={() => handleSort('allowances')} className="cursor-pointer hover:text-white transition-colors select-none">Allowances <SortIcon field="allowances" /></th>
+                  <th onClick={() => handleSort('netPay')} className="cursor-pointer hover:text-white transition-colors select-none">Net Pay <SortIcon field="netPay" /></th>
+                  <th onClick={() => handleSort('status')} className="cursor-pointer hover:text-white transition-colors select-none">Status <SortIcon field="status" /></th>
+                  <th className="text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredEmployees.map((emp) => (
+                  <tr key={emp.id}>
+                    <td>
+                      <div className={styles.employeeName}>
+                        <span>{emp.name}</span>
+                        <span>{emp.nameAr}</span>
+                      </div>
+                    </td>
+                    <td className="font-mono">{emp.iqamaNo}</td>
+                    <td>{emp.jobTitle}</td>
+                    <td className="font-mono text-emerald-400">{formatCurrency(emp.basicSalary)}</td>
+                    <td className="font-mono text-blue-400">{formatCurrency(emp.housingAllowance + emp.transportAllowance + emp.otherAllowances)}</td>
+                    <td className="font-mono font-bold text-white">{formatCurrency(emp.basicSalary + emp.housingAllowance + emp.transportAllowance + emp.otherAllowances)}</td>
+                    <td>
+                      <span className={clsx(styles.status, styles[emp.status.replace(/\s+/g, '')])}>
+                        {emp.status}
+                      </span>
+                    </td>
+                    <td>
+                      <div className={clsx(styles.actions, "justify-end")}>
+                        <button className={styles.actionBtn} onClick={() => handleOpenEdit(emp)}>
+                          <Pencil size={16} />
+                        </button>
+                        {currentUser?.role === 'admin' && (
+                          <button 
+                            className={clsx(styles.actionBtn, styles.deleteBtn)} 
+                            onClick={() => {
+                              if (confirm('Are you sure you want to delete this employee?')) {
+                                deleteEmployee(emp.id);
+                              }
+                            }}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
-      </div>
       </div>
 
       {isModalOpen && (

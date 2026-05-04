@@ -35,8 +35,13 @@ export default function EditQuotation() {
   const [termsAndConditions, setTermsAndConditions] = useState('');
   const [discount, setDiscount] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const [quotationNumber, setQuotationNumber] = useState('');
   const [revision, setRevision] = useState(0);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const [searchItem, setSearchItem] = useState('');
   const [showItemResults, setShowItemResults] = useState(false);
@@ -409,7 +414,7 @@ export default function EditQuotation() {
                 {isSaving ? 'Updating...' : 'Save & Revised'}
               </button>
 
-              {selectedClient && items.length > 0 && (
+              {isMounted && selectedClient && items.length > 0 && (
                 <PDFDownloadLink 
                   document={<QuotationPDF quotation={{ 
                     id, 

@@ -40,6 +40,11 @@ function BuilderForm() {
 • Payment: 100% Payment as per the agreed terms.
 • Quality: Highest quality standards as per requirements.`);
   const [isSaving, setIsSaving] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const [searchItem, setSearchItem] = useState('');
   const [showItemResults, setShowItemResults] = useState(false);
@@ -433,7 +438,7 @@ function BuilderForm() {
                 {isSaving ? 'Processing...' : 'Finalize & Save'}
               </button>
 
-              {selectedClient && items.length > 0 && (
+              {isMounted && selectedClient && items.length > 0 && (
                 <PDFDownloadLink 
                   document={isInvoiceMode ? 
                     <InvoicePDF quotation={{ ...currentQuotation, id: 'preview', number: 'PREVIEW' }} client={selectedClient} settings={settings} /> :

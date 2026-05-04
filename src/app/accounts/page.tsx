@@ -448,44 +448,52 @@ export default function AccountsPage() {
                 </button>
               )}
             </div>
-            <div className={styles.reportSection}>
-              {accounts
-                .filter(acc => {
-                  if (!accountFilter) return true;
-                  if (accountFilter === 'Profit') return acc.type === 'Revenue' || acc.type === 'Expense';
-                  return acc.type === accountFilter;
-                })
-                .map(acc => (
-                  <div key={acc.id} className={styles.reportRow}>
-                    <div className="flex items-center gap-3">
-                      <span className="font-mono text-[10px] text-blue-400/80 bg-blue-500/5 px-2 py-0.5 rounded border border-blue-500/10">
-                        {acc.code}
-                      </span>
-                      <span className="text-white text-[13px] tracking-tight">{acc.name}</span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className={clsx(
-                        styles.badge,
-                        acc.type === 'Asset' && styles.badgeAsset,
-                        acc.type === 'Liability' && styles.badgeLiability,
-                        acc.type === 'Equity' && styles.badgeEquity,
-                        acc.type === 'Revenue' && styles.badgeRevenue,
-                        acc.type === 'Expense' && styles.badgeExpense,
-                        "text-[9px] px-1.5 py-0.5 uppercase tracking-tighter"
-                      )}>
-                        {acc.type}
-                      </span>
-                      <span className={clsx(
-                        "font-mono text-[11px] tracking-tight px-2 py-0.5 rounded border min-w-[100px] text-right",
-                        acc.balance > 0 ? "text-emerald-400 bg-emerald-500/5 border-emerald-500/10" : 
-                        acc.balance < 0 ? "text-red-400 bg-red-500/5 border-red-500/10" : 
-                        "text-muted/20 bg-white/5 border-transparent"
-                      )}>
-                        {acc.balance !== 0 ? acc.balance.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '0.00'}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+            <div className="overflow-x-auto">
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>Account Code</th>
+                    <th>Account Name</th>
+                    <th>Type</th>
+                    <th className="text-right">Balance (SAR)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {accounts
+                    .filter(acc => {
+                      if (!accountFilter) return true;
+                      if (accountFilter === 'Profit') return acc.type === 'Revenue' || acc.type === 'Expense';
+                      return acc.type === accountFilter;
+                    })
+                    .map(acc => (
+                      <tr key={acc.id}>
+                        <td className="font-mono text-blue-400/80">{acc.code}</td>
+                        <td className="text-white font-medium">{acc.name}</td>
+                        <td>
+                          <span className={clsx(
+                            styles.badge,
+                            acc.type === 'Asset' && styles.badgeAsset,
+                            acc.type === 'Liability' && styles.badgeLiability,
+                            acc.type === 'Equity' && styles.badgeEquity,
+                            acc.type === 'Revenue' && styles.badgeRevenue,
+                            acc.type === 'Expense' && styles.badgeExpense,
+                            "text-[9px] px-1.5 py-0.5 uppercase tracking-tighter inline-block"
+                          )}>
+                            {acc.type}
+                          </span>
+                        </td>
+                        <td className={clsx(
+                          "font-mono text-right font-medium",
+                          acc.balance > 0 ? "text-emerald-400" : 
+                          acc.balance < 0 ? "text-red-400" : 
+                          "text-muted"
+                        )}>
+                          {acc.balance !== 0 ? acc.balance.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '0.00'}
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -513,72 +521,65 @@ export default function AccountsPage() {
               </button>
             </div>
           </div>
-          <div className={styles.reportSection}>
-            {journalEntries.length === 0 ? (
-              <div className="text-center py-20 text-muted">
-                <div className="flex flex-col items-center gap-4">
-                  <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
-                    <BookOpen size={32} className="text-muted/30" />
-                  </div>
-                  <p className="font-normal tracking-wide">No journal entries recorded yet.</p>
-                </div>
-              </div>
-            ) : (
-              journalEntries.map(entry => (
-                <div key={entry.id} className={clsx(styles.reportRow, "flex-col !items-stretch !p-0 overflow-hidden mb-6 border border-white/10 bg-white/[0.02] rounded-3xl")}>
-                  <div className="flex justify-between items-center p-5 bg-white/[0.04] border-b border-white/5">
-                    <div className="flex items-center gap-5">
-                      <div className="flex flex-col">
-                        <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest leading-none mb-1">{new Date(entry.date).toLocaleDateString()}</span>
-                        <span className="text-[14px] text-white/90 font-medium tracking-tight">{entry.description}</span>
-                      </div>
-                    </div>
-                    {entry.reference && (
-                      <span className="px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-[10px] text-blue-400 font-black uppercase tracking-[0.2em]">
-                        REF: {entry.reference}
-                      </span>
-                    )}
-                  </div>
-                  <div className="p-3 space-y-1 bg-slate-950/20">
-                    {entry.lines.map((line, idx) => {
+          <div className="overflow-x-auto">
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Description</th>
+                  <th>Ref</th>
+                  <th>Account</th>
+                  <th className="text-right">Debit</th>
+                  <th className="text-right">Credit</th>
+                </tr>
+              </thead>
+              <tbody>
+                {journalEntries.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="text-center py-20 text-muted">
+                      No journal entries recorded yet.
+                    </td>
+                  </tr>
+                ) : (
+                  journalEntries.flatMap(entry => 
+                    entry.lines.map((line, idx) => {
                       const acc = accounts.find(a => a.id === line.accountId);
                       return (
-                        <div key={idx} className="flex justify-between items-center px-5 py-3 hover:bg-white/[0.04] rounded-xl transition-all duration-300 group">
-                          <div className="flex items-center gap-4">
-                            <div className={clsx(
-                              "w-2 h-2 rounded-full",
-                              line.debit > 0 ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" : "bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.5)]"
-                            )} />
-                            <div className="flex flex-col">
-                              <span className="text-[13px] text-white/80 group-hover:text-white transition-colors">
-                                {acc?.code} — {acc?.name}
-                              </span>
-                              <span className="text-[9px] text-muted/50 uppercase tracking-widest">{acc?.type}</span>
-                            </div>
-                          </div>
-                          <div className="flex gap-6">
-                            <div className="w-[100px] text-right">
-                              {line.debit > 0 && (
-                                <span className="font-mono text-[12px] text-emerald-400 tracking-tight">
-                                  {line.debit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                </span>
-                              )}
-                            </div>
-                            <div className="w-[100px] text-right">
-                              {line.credit > 0 && (
-                                <span className="font-mono text-[12px] text-orange-400 tracking-tight">
-                                  {line.credit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
+                        <tr key={`${entry.id}-${idx}`}>
+                          {idx === 0 ? (
+                            <>
+                              <td rowSpan={entry.lines.length} className="font-mono text-blue-400 align-top">
+                                {new Date(entry.date).toLocaleDateString()}
+                              </td>
+                              <td rowSpan={entry.lines.length} className="align-top text-white font-medium">
+                                {entry.description}
+                              </td>
+                              <td rowSpan={entry.lines.length} className="align-top">
+                                {entry.reference && (
+                                  <span className="px-2 py-1 rounded bg-blue-500/10 text-blue-400 text-[10px] font-bold uppercase border border-blue-500/20">
+                                    {entry.reference}
+                                  </span>
+                                )}
+                              </td>
+                            </>
+                          ) : null}
+                          <td>
+                            <span className="text-white/80">{acc?.code} — {acc?.name}</span>
+                            <span className="ml-2 text-[9px] text-muted/50 uppercase tracking-widest bg-white/5 px-1.5 py-0.5 rounded">{acc?.type}</span>
+                          </td>
+                          <td className="text-right font-mono text-emerald-400">
+                            {line.debit > 0 ? line.debit.toLocaleString(undefined, { minimumFractionDigits: 2 }) : ''}
+                          </td>
+                          <td className="text-right font-mono text-orange-400">
+                            {line.credit > 0 ? line.credit.toLocaleString(undefined, { minimumFractionDigits: 2 }) : ''}
+                          </td>
+                        </tr>
                       );
-                    })}
-                  </div>
-                </div>
-              ))
-            )}
+                    })
+                  )
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       )}      {activeTab === 'recon' && (

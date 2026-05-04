@@ -79,7 +79,8 @@ export default function Dashboard() {
       const monthlyRevenue = journalEntries
         .filter(je => new Date(je.date).toLocaleDateString('en-US', { month: 'short' }) === monthStr)
         .reduce((sum, je) => {
-          const revLine = je.lines.find(l => l.accountId === 'acc-9');
+          const linesArray = Array.isArray(je.lines) ? je.lines : (typeof je.lines === 'string' ? JSON.parse(je.lines) : []);
+          const revLine = linesArray.find((l: any) => l.accountId === 'acc-9');
           return sum + (revLine?.credit || 0);
         }, 0);
       return { name: monthStr, revenue: monthlyRevenue };
@@ -180,11 +181,11 @@ export default function Dashboard() {
               <div className="flex items-center justify-center h-full text-muted">Loading chart...</div>
             ) : (
               <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={chartData}>
+                <BarChart data={chartData}>
                   <defs>
                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.2}/>
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
@@ -210,16 +211,15 @@ export default function Dashboard() {
                       backdropFilter: 'blur(10px)'
                     }}
                     itemStyle={{ color: '#3b82f6' }}
+                    cursor={{fill: 'rgba(255,255,255,0.05)'}}
                   />
-                  <Area 
-                    type="monotone" 
+                  <Bar 
                     dataKey="revenue" 
-                    stroke="#3b82f6" 
-                    strokeWidth={3}
-                    fillOpacity={1} 
                     fill="url(#colorRevenue)" 
+                    radius={[4, 4, 0, 0]}
+                    barSize={40}
                   />
-                </AreaChart>
+                </BarChart>
               </ResponsiveContainer>
             )}
           </div>

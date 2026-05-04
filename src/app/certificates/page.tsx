@@ -9,9 +9,14 @@ import { PDFDownloadLink } from '@react-pdf/renderer';
 import { CertificatePDF } from '@/components/CertificatePDF';
 
 export default function CertificatesPage() {
-  const { quotations, clients, settings, updateQuotation } = useApp();
+  const { quotations, clients, settings, updateQuotation, currentUser } = useApp();
   const [search, setSearch] = React.useState('');
   const [sortConfig, setSortConfig] = React.useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
+  const [isMounted, setIsMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
   
   // As per requirement, show all approved quotations here
   const approvedQuotations = quotations.filter(q => q.status === 'approved');
@@ -96,19 +101,19 @@ export default function CertificatesPage() {
         <table className={styles.table}>
           <thead>
             <tr>
-              <th className="w-40 cursor-pointer hover:text-white transition-colors" onClick={() => requestSort('number')}>
+              <th className="w-40 cursor-pointer hover:text-white transition-colors whitespace-nowrap" onClick={() => requestSort('number')}>
                 Quotation No. <SortIcon column="number" />
               </th>
-              <th className="cursor-pointer hover:text-white transition-colors" onClick={() => requestSort('client')}>
+              <th className="w-[300px] cursor-pointer hover:text-white transition-colors whitespace-nowrap" onClick={() => requestSort('client')}>
                 Client <SortIcon column="client" />
               </th>
-              <th className="w-[300px] cursor-pointer hover:text-white transition-colors" onClick={() => requestSort('reference')}>
+              <th className="cursor-pointer hover:text-white transition-colors whitespace-nowrap" onClick={() => requestSort('reference')}>
                 Reference (PO/Ticket) <SortIcon column="reference" />
               </th>
-              <th className="w-48 cursor-pointer hover:text-white transition-colors" onClick={() => requestSort('status')}>
+              <th className="w-36 cursor-pointer hover:text-white transition-colors whitespace-nowrap" onClick={() => requestSort('status')}>
                 Work Status <SortIcon column="status" />
               </th>
-              <th className="text-right">Action</th>
+              <th className="w-32 text-right whitespace-nowrap">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -125,39 +130,39 @@ export default function CertificatesPage() {
                 
                 return (
                   <tr key={q.id}>
-                    <td className="font-bold text-white">
+                    <td className="font-bold text-white whitespace-nowrap">
                       {q.number}
                       {q.revision > 0 && <span className="text-xs text-muted ml-1">-R{q.revision}</span>}
                     </td>
-                    <td>{client?.name || 'Unknown'}</td>
-                    <td>
-                      <div className="flex flex-col gap-2">
+                    <td className="whitespace-nowrap truncate max-w-[300px]">{client?.name || 'Unknown'}</td>
+                    <td className="whitespace-nowrap align-middle">
+                      <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] text-muted uppercase font-bold w-16">PO #</span>
+                          <span className="text-[10px] text-muted uppercase font-bold">PO</span>
                           <input
                             type="text"
                             placeholder="Enter PO..."
-                            className={clsx('glass-input', styles.smallInput)}
+                            className="glass-input w-52 py-1 px-3 text-xs h-8"
                             value={q.poNumber || ''}
                             onChange={(e) => updateQuotation(q.id, { poNumber: e.target.value })}
                           />
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] text-muted uppercase font-bold w-16">Ticket #</span>
+                          <span className="text-[10px] text-muted uppercase font-bold">Ticket</span>
                           <input
                             type="text"
                             placeholder="Enter Ticket..."
-                            className={clsx('glass-input', styles.smallInput)}
+                            className="glass-input w-52 py-1 px-3 text-xs h-8"
                             value={q.ticketNumber || ''}
                             onChange={(e) => updateQuotation(q.id, { ticketNumber: e.target.value })}
                           />
                         </div>
                       </div>
                     </td>
-                    <td>
+                    <td className="whitespace-nowrap align-middle">
                       <select
                         className={clsx(
-                          'glass-input', 
+                          'glass-input w-full py-1 px-2 text-xs h-8', 
                           styles.statusSelect,
                           q.workStatus === 'Work Done' ? 'status-done' : 
                           q.workStatus === 'Work On going' ? 'status-ongoing' : 
@@ -165,33 +170,37 @@ export default function CertificatesPage() {
                         )}
                         value={q.workStatus || 'Work pending'}
                         onChange={(e) => updateQuotation(q.id, { workStatus: e.target.value as any })}
+                        disabled={currentUser?.role !== 'admin' && q.workStatus === 'Work Done'}
                       >
                         <option value="Work pending" className="text-gray-900">Work pending</option>
                         <option value="Work On going" className="text-gray-900">Work On going</option>
                         <option value="Work Done" className="text-gray-900">Work Done</option>
                       </select>
                     </td>
-                    <td>
+                    <td className="whitespace-nowrap align-middle">
                       <div className="flex justify-end">
-                        {client ? (
+                        {isMounted && client ? (
                           <PDFDownloadLink 
                             document={<CertificatePDF quotation={q} client={client} settings={settings} />} 
                             fileName={`Certificate_${q.number}.pdf`}
                             className={clsx(
                               styles.downloadBtn,
-                              isCompleted ? styles.certReady : styles.certNotReady
+                              isCompleted ? styles.certReady : styles.certNotReady,
+                              'px-3 py-1.5' // Tighter padding for button
                             )}
                           >
                             {/* @ts-ignore */}
                             {({ loading }) => (
-                              <>
-                                <Download size={18} className={styles.downloadIcon} />
-                                <span>{loading ? 'Generating...' : 'Download Certificate'}</span>
-                              </>
+                              <div className="flex items-center gap-2">
+                                <Download size={14} className={styles.downloadIcon} />
+                                <span className="text-xs font-semibold">{loading ? 'Gen...' : 'Download'}</span>
+                              </div>
                             )}
                           </PDFDownloadLink>
+                        ) : client ? (
+                          <div className="px-3 py-1.5 h-8 w-24 bg-slate-800/50 rounded animate-pulse" />
                         ) : (
-                          <span className="text-sm text-red-400">Client Missing</span>
+                          <span className="text-xs text-red-400">Missing</span>
                         )}
                       </div>
                     </td>

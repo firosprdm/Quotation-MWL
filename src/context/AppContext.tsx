@@ -47,6 +47,8 @@ interface AppContextType extends AppState {
   runDepreciation: (month: number, year: number) => void;
   importData: (json: any) => Promise<void>;
   exportData: () => any;
+  login: (username: string, password: string) => boolean;
+  logout: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -118,6 +120,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   });
 
   const [isLoaded, setIsLoaded] = useState(false);
+
+  // Load from local storage for auth
+  useEffect(() => {
+    const savedUser = localStorage.getItem('marina_user');
+    if (savedUser) {
+      try {
+        setData(prev => ({ ...prev, currentUser: JSON.parse(savedUser) }));
+      } catch (e) {
+        localStorage.removeItem('marina_user');
+      }
+    }
+  }, []);
 
   // Load from Supabase
   useEffect(() => {
@@ -614,6 +628,32 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           newAccounts[cashIdx] = { ...newAccounts[cashIdx], balance: newAccounts[cashIdx].balance - newP.netSalary };
           accountsToUpdate.push(newAccounts[payIdx], newAccounts[cashIdx]);
         }
+      } else if (oldP.status === 'Paid' && newP.status !== 'Paid') {
+        // Reversal logic for accidental payment marking
+        const payableAcc = newAccounts.find(a => a.code === '2400');
+        const cashAcc = newAccounts.find(a => a.code === '1000');
+        const emp = prev.employees.find(e => e.id === newP.employeeId);
+
+        if (payableAcc && cashAcc) {
+          const jEntry: JournalEntry = {
+            id: crypto.randomUUID(),
+            date: Date.now(),
+            description: `Salary Payment Reversed - ${emp?.name || 'Employee'} (${newP.month}/${newP.year})`,
+            reference: `PAY-REV-${newP.year}-${newP.month}`,
+            lines: [
+              { accountId: cashAcc.id, debit: newP.netSalary, credit: 0 },
+              { accountId: payableAcc.id, debit: 0, credit: newP.netSalary }
+            ]
+          };
+          newEntries.unshift(jEntry);
+          entriesToPush.push(jEntry);
+
+          const payIdx = newAccounts.findIndex(a => a.id === payableAcc.id);
+          const cashIdx = newAccounts.findIndex(a => a.id === cashAcc.id);
+          newAccounts[payIdx] = { ...newAccounts[payIdx], balance: newAccounts[payIdx].balance + newP.netSalary };
+          newAccounts[cashIdx] = { ...newAccounts[cashIdx], balance: newAccounts[cashIdx].balance + newP.netSalary };
+          accountsToUpdate.push(newAccounts[payIdx], newAccounts[cashIdx]);
+        }
       }
 
       return { ...prev, payroll: newPayroll, accounts: newAccounts, journalEntries: newEntries };
@@ -755,6 +795,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const login = (username: string, password: string): boolean => {
+    if (username === 'Afrin@1989' && password === 'Afrin@1989') {
+      const user: any = { username, role: 'admin', name: 'Afrin' };
+      setData(prev => ({ ...prev, currentUser: user }));
+      localStorage.setItem('marina_user', JSON.stringify(user));
+      return true;
+    }
+    if (username === 'Marina@2026' && password === 'Marina@2026') {
+      const user: any = { username, role: 'user', name: 'Marina User' };
+      setData(prev => ({ ...prev, currentUser: user }));
+      localStorage.setItem('marina_user', JSON.stringify(user));
+      return true;
+    }
+    return false;
+  };
+
+  const logout = () => {
+    setData(prev => ({ ...prev, currentUser: undefined }));
+    localStorage.removeItem('marina_user');
+  };
+
   return (
     <AppContext.Provider value={{ 
       ...data, 
@@ -777,7 +838,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       addFixedAsset,
       runDepreciation,
       importData,
-      exportData
+      exportData,
+      login,
+      logout
     }}>
       {children}
     </AppContext.Provider>

@@ -7,15 +7,36 @@ import styles from './inventory.module.css';
 import { clsx } from 'clsx';
 
 export default function InventoryPage() {
-  const { inventory, addItem, updateItem, deleteItem } = useApp();
+  const { inventory, addItem, updateItem, deleteItem, currentUser } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({ description: '', unit: '', price: 0 });
+  const [sortField, setSortField] = useState<'description' | 'unit' | 'price'>('description');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  const handleSort = (field: 'description' | 'unit' | 'price') => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('asc');
+    }
+  };
 
   const filteredItems = inventory.filter(i => 
     i.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const sortedItems = [...filteredItems].sort((a, b) => {
+    let comparison = 0;
+    if (sortField === 'price') {
+      comparison = a.price - b.price;
+    } else {
+      comparison = (a[sortField] || '').localeCompare(b[sortField] || '');
+    }
+    return sortOrder === 'asc' ? comparison : -comparison;
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,6 +60,11 @@ export default function InventoryPage() {
     setFormData({ description: '', unit: '', price: 0 });
     setEditingId(null);
     setIsModalOpen(true);
+  };
+
+  const SortIcon = ({ field }: { field: string }) => {
+    if (sortField !== field) return <span className="opacity-20 ml-1">⇅</span>;
+    return <span className="ml-1 text-primary">{sortOrder === 'asc' ? '↑' : '↓'}</span>;
   };
 
   return (
@@ -68,45 +94,63 @@ export default function InventoryPage() {
         />
       </div>
 
-      <div className={styles.reportSection}>
-        {filteredItems.length === 0 ? (
-          <div className={styles.emptyState}>No items found.</div>
-        ) : (
-          filteredItems.map((item) => (
-            <div key={item.id} className={styles.reportRow}>
-              <div className="flex items-center gap-4 flex-1">
-                <div className={styles.iconBox}><Tag size={16} className="text-blue-400" /></div>
-                <div className="flex flex-col">
-                  <span className="text-[14px] text-white tracking-tight">{item.description}</span>
-                  <span className="text-[10px] text-muted uppercase tracking-widest">{item.unit}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-8">
-                <div className="flex flex-col text-right w-[120px]">
-                  <span className="text-[9px] text-muted uppercase tracking-widest mb-1">Unit Price</span>
-                  <span className="font-mono text-[13px] text-emerald-400">
-                    SAR {item.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button 
-                    className="p-2 rounded-lg hover:bg-white/5 text-muted hover:text-white transition-colors"
-                    onClick={() => openEditModal(item)}
-                  >
-                    <Edit2 size={16} />
-                  </button>
-                  <button 
-                    className="p-2 rounded-lg hover:bg-red-500/10 text-muted hover:text-red-400 transition-colors"
-                    onClick={() => deleteItem(item.id)}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))
-        )}
+      <div className={clsx('glass-panel', styles.tableWrapper)}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th onClick={() => handleSort('description')} className="cursor-pointer hover:text-white transition-colors">
+                Description <SortIcon field="description" />
+              </th>
+              <th onClick={() => handleSort('unit')} className="cursor-pointer hover:text-white transition-colors">
+                Unit <SortIcon field="unit" />
+              </th>
+              <th onClick={() => handleSort('price')} className="cursor-pointer hover:text-white transition-colors">
+                Price <SortIcon field="price" />
+              </th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sortedItems.length === 0 ? (
+              <tr>
+                <td colSpan={4} className={styles.emptyState}>No items found.</td>
+              </tr>
+            ) : (
+              sortedItems.map((item) => (
+                <tr key={item.id}>
+                  <td className={styles.itemDescription}>
+                    <div className={styles.iconBox}><Tag size={16} /></div>
+                    {item.description}
+                  </td>
+                  <td className={styles.itemUnit}>{item.unit}</td>
+                  <td className={styles.itemPrice}>SAR {item.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                  <td>
+                    <div className={styles.actions}>
+                      <button 
+                        className={styles.actionBtn}
+                        onClick={() => openEditModal(item)}
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                      {currentUser?.role === 'admin' && (
+                        <button 
+                          className={clsx(styles.actionBtn, styles.delete)}
+                          onClick={() => {
+                            if (confirm('Are you sure you want to delete this item?')) {
+                              deleteItem(item.id);
+                            }
+                          }}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
 
       {isModalOpen && (

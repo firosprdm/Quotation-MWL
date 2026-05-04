@@ -151,14 +151,14 @@ export function FixedAssetRegister() {
 
       <div className="glass-panel overflow-hidden border border-white/5">
         <div className="overflow-x-auto">
-          <table className={clsx(styles.table, styles.compactTable)}>
+          <table className={styles.table}>
             <thead>
               <tr>
-                <th className="pl-5" style={{ width: '40%' }}>Asset Details</th>
-                <th style={{ width: '15%' }}>Category</th>
-                <th style={{ width: '15%' }}>Purchased</th>
-                <th className="text-right" style={{ width: '15%' }}>Cost</th>
-                <th className="text-right pr-5" style={{ width: '15%' }}>Monthly Dep.</th>
+                <th>Asset Details</th>
+                <th>Category</th>
+                <th>Purchased</th>
+                <th className="text-right">Cost</th>
+                <th className="text-right">Monthly Dep.</th>
               </tr>
             </thead>
             <tbody>
@@ -174,29 +174,27 @@ export function FixedAssetRegister() {
                   const monthlyDep = (asset.cost - asset.salvageValue) / (asset.usefulLife * 12);
                   return (
                     <tr key={asset.id} className="group hover:bg-white/[0.03] transition-colors border-b border-white/5">
-                      <td className="pl-5">
+                      <td className="whitespace-nowrap">
                         <div className="flex flex-col">
-                          <span className="text-white text-[13px] tracking-tight">{asset.name}</span>
-                          <span className="text-[9px] text-muted uppercase tracking-widest mt-0.5">ID: {asset.id.slice(0,8)}</span>
+                          <span className="text-white">{asset.name}</span>
+                          <span className="text-muted uppercase mt-0.5">ID: {asset.id.slice(0,8)}</span>
                         </div>
                       </td>
-                      <td>
-                        <span className="px-1.5 py-0.5 rounded-md bg-white/5 border border-white/10 text-[9px] uppercase text-muted">
+                      <td className="whitespace-nowrap">
+                        <span className="uppercase text-muted">
                           {asset.category}
                         </span>
                       </td>
-                      <td>
-                        <span className="font-mono text-[11px] text-muted/60">
-                          {new Date(asset.purchaseDate).toLocaleDateString()}
-                        </span>
+                      <td className="font-mono text-muted/60 whitespace-nowrap">
+                        {new Date(asset.purchaseDate).toLocaleDateString()}
                       </td>
-                      <td className="text-right">
-                        <span className="font-mono text-[11px] text-white px-2 py-0.5 rounded border border-white/5 bg-white/5">
+                      <td className="text-right whitespace-nowrap">
+                        <span className="font-mono text-white">
                           {formatCurrency(asset.cost)}
                         </span>
                       </td>
-                      <td className="text-right pr-5">
-                        <span className="font-mono text-[11px] text-blue-400 px-2 py-0.5 rounded border border-blue-500/10 bg-blue-500/5">
+                      <td className="text-right whitespace-nowrap">
+                        <span className="font-mono text-blue-400">
                           {formatCurrency(monthlyDep)}
                         </span>
                       </td>

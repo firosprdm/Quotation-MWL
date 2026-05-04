@@ -173,6 +173,14 @@ export interface FixedAsset {
   depreciationExpenseAccountId: string; // The expense account
 }
 
+export type UserRole = 'admin' | 'user';
+
+export interface User {
+  username: string;
+  role: UserRole;
+  name: string;
+}
+
 export interface AppState {
   clients: Client[];
   inventory: InventoryItem[];
@@ -184,4 +192,5 @@ export interface AppState {
   fixedAssets: FixedAsset[]; // New for Fixed Asset Module
   defaultNotes?: string;
   settings: CompanySettings;
+  currentUser?: User;
 }

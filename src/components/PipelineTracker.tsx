@@ -28,7 +28,10 @@ import { formatCurrency } from '@/lib/format';
 
 export const PipelineTracker = () => {
   const { quotations, clients } = useApp();
-  const [sortConfig, setSortConfig] = useState<{ key: 'date' | 'number' | 'total', direction: 'asc' | 'desc' }>({ key: 'date', direction: 'desc' });
+  const [sortConfig, setSortConfig] = useState<{ 
+    key: 'date' | 'number' | 'total' | 'status' | 'salesStatus' | 'workStatus' | 'paymentStatus', 
+    direction: 'asc' | 'desc' 
+  }>({ key: 'date', direction: 'desc' });
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
 
   const activeQuotations = React.useMemo(() => {
@@ -42,10 +45,16 @@ export const PipelineTracker = () => {
         aValue = a.grandTotal;
         bValue = b.grandTotal;
       } else {
-        aValue = a[sortConfig.key];
-        bValue = b[sortConfig.key];
+        aValue = (a as any)[sortConfig.key] || '';
+        bValue = (b as any)[sortConfig.key] || '';
       }
       
+      if (typeof aValue === 'string') {
+        return sortConfig.direction === 'asc' 
+          ? aValue.localeCompare(bValue) 
+          : bValue.localeCompare(aValue);
+      }
+
       if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
       if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
       return 0;
@@ -54,7 +63,7 @@ export const PipelineTracker = () => {
     return items.slice(0, 15);
   }, [quotations, sortConfig]);
 
-  const toggleSort = (key: 'date' | 'number' | 'total') => {
+  const toggleSort = (key: 'date' | 'number' | 'total' | 'status' | 'salesStatus' | 'workStatus' | 'paymentStatus') => {
     setSortConfig(prev => ({
       key,
       direction: prev.key === key && prev.direction === 'desc' ? 'asc' : 'desc'
@@ -64,6 +73,11 @@ export const PipelineTracker = () => {
   const selectedQuotation = quotations.find(q => q.id === selectedProjectId);
 
   if (activeQuotations.length === 0) return null;
+
+  const SortArrow = ({ field }: { field: string }) => {
+    if (sortConfig.key !== field) return <span className="opacity-20 ml-1">⇅</span>;
+    return <span className="ml-1 text-white">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>;
+  };
 
   return (
     <motion.section 
@@ -82,23 +96,31 @@ export const PipelineTracker = () => {
       <div className="glass-panel overflow-hidden border border-white/10 shadow-2xl">
         <div className="flex flex-col">
           {/* Header Row - Aligned with Dashboard Tables */}
-          <div className="hidden lg:grid grid-cols-12 gap-12 px-16 min-h-[1.2cm] h-[1.2cm] text-[0.75rem] uppercase font-medium tracking-widest text-slate-500 border-b border-white/5 items-center bg-white/[0.02]">
-            <div className="col-span-1 cursor-pointer hover:text-white transition-colors pl-[10mm]" onClick={() => toggleSort('number')}>
-              Number {sortConfig.key === 'number' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+          <div className="hidden lg:grid grid-cols-[1.5fr_2.5fr_6fr_2fr] gap-8 px-8 min-h-[1.2cm] h-[1.2cm] text-[0.75rem] uppercase font-medium tracking-widest text-slate-500 border-b border-white/5 items-center bg-white/[0.02]">
+            <div className="cursor-pointer hover:text-white transition-colors truncate" onClick={() => toggleSort('number')}>
+              Number <SortArrow field="number" />
             </div>
-            <div className="col-span-2 cursor-pointer hover:text-white transition-colors pr-6" onClick={() => toggleSort('date')}>
-              Client {sortConfig.key === 'date' && (sortConfig.direction === 'asc' ? '↓' : '↑')}
+            <div className="cursor-pointer hover:text-white transition-colors truncate" onClick={() => toggleSort('date')}>
+              Client <SortArrow field="date" />
             </div>
             
-            <div className="col-span-7 grid grid-cols-4 gap-12 text-center">
-              <div className="text-blue-400 font-medium opacity-60">Quotation</div>
-              <div className="text-amber-400 font-medium opacity-60">PO Status</div>
-              <div className="text-fuchsia-400 font-medium opacity-60">Execution</div>
-              <div className="text-emerald-400 font-medium opacity-60">Financial</div>
+            <div className="grid grid-cols-4 gap-6 text-center h-full items-center">
+              <div className="text-blue-400 font-medium cursor-pointer hover:brightness-125 transition-all truncate" onClick={() => toggleSort('status')}>
+                Quotation <SortArrow field="status" />
+              </div>
+              <div className="text-amber-400 font-medium cursor-pointer hover:brightness-125 transition-all truncate" onClick={() => toggleSort('salesStatus')}>
+                PO Status <SortArrow field="salesStatus" />
+              </div>
+              <div className="text-fuchsia-400 font-medium cursor-pointer hover:brightness-125 transition-all truncate" onClick={() => toggleSort('workStatus')}>
+                Execution <SortArrow field="workStatus" />
+              </div>
+              <div className="text-emerald-400 font-medium cursor-pointer hover:brightness-125 transition-all truncate" onClick={() => toggleSort('paymentStatus')}>
+                Financial <SortArrow field="paymentStatus" />
+              </div>
             </div>
 
-            <div className="col-span-2 text-right cursor-pointer hover:text-white transition-colors pr-[10mm]" onClick={() => toggleSort('total')}>
-              Amount {sortConfig.key === 'total' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+            <div className="text-right cursor-pointer hover:text-white transition-colors truncate" onClick={() => toggleSort('total')}>
+              Amount <SortArrow field="total" />
             </div>
           </div>
 
@@ -111,16 +133,16 @@ export const PipelineTracker = () => {
                 <div 
                   key={q.id} 
                   className={clsx(
-                    "grid grid-cols-1 lg:grid-cols-12 gap-12 items-center px-16 min-h-[1.2cm] h-[1.2cm] border-b border-white/[0.05] hover:bg-white/[0.04] transition-all duration-200 group/row cursor-pointer",
+                    "grid grid-cols-1 lg:grid-cols-[1.5fr_2.5fr_6fr_2fr] gap-8 items-center px-8 min-h-[1.2cm] h-[1.2cm] border-b border-white/[0.05] hover:bg-white/[0.04] transition-all duration-200 group/row cursor-pointer",
                     idx === activeQuotations.length - 1 && "border-b-0"
                   )}
                   onClick={() => setSelectedProjectId(q.id)}
                 >
                   
-                  <div className="col-span-1 font-medium text-white/90 text-[0.875rem] lg:block hidden tracking-tight pl-[10mm]">
+                  <div className="font-medium text-white/90 text-[0.875rem] hidden lg:block tracking-tight truncate">
                     {q.invoiceNumber || q.number}
                   </div>
-                  <div className="col-span-2 text-slate-300 text-[0.875rem] font-medium truncate pr-6">
+                  <div className="text-slate-300 text-[0.875rem] font-medium truncate">
                     <span className="lg:hidden text-slate-500 font-medium mr-2">
                       {q.invoiceNumber || q.number}
                     </span>
@@ -128,7 +150,7 @@ export const PipelineTracker = () => {
                   </div>
 
                   {/* High-Visibility Modular Phase Tracker - Grid Synchronized for Perfect Alignment */}
-                  <div className="col-span-7 grid grid-cols-4 gap-12 h-full py-1">
+                  <div className="grid grid-cols-4 gap-6 h-full py-1">
                     
                     {/* Zone 1: Quotation */}
                     <div className="flex items-center justify-center gap-2 h-full bg-blue-500/[0.03] border border-blue-500/10 rounded-lg px-2">
@@ -165,7 +187,7 @@ export const PipelineTracker = () => {
                     </div>
                   </div>
 
-                  <div className="col-span-2 text-right font-bold text-emerald-400 text-[0.875rem] tabular-nums pr-[10mm]">
+                  <div className="text-right font-bold text-emerald-400 text-[0.875rem] tabular-nums truncate">
                     {formatCurrency(q.grandTotal)}
                   </div>
                 </div>

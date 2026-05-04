@@ -10,7 +10,7 @@ import { Client } from '@/types';
 import { formatCurrency, formatNumber } from '@/lib/format';
 
 export default function ClientsPage() {
-  const { clients, quotations, addClient, updateClient, deleteClient } = useApp();
+  const { clients, quotations, addClient, updateClient, deleteClient, currentUser } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -179,21 +179,23 @@ export default function ClientsPage() {
                 >
                   <Edit2 size={16} />
                 </button>
-                <button 
-                  className={clsx(styles.actionBtn, styles.delete)}
-                  onClick={async (e) => {
-                    e.stopPropagation();
-                    if(confirm('Are you sure you want to delete this client?')) {
-                      try {
-                        await deleteClient(client.id);
-                      } catch (err) {
-                        alert('Error deleting client: ' + err);
+                {currentUser?.role === 'admin' && (
+                  <button 
+                    className={clsx(styles.actionBtn, styles.delete)}
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      if(confirm('Are you sure you want to delete this client?')) {
+                        try {
+                          await deleteClient(client.id);
+                        } catch (err) {
+                          alert('Error deleting client: ' + err);
+                        }
                       }
-                    }
-                  }}
-                >
-                  <Trash2 size={16} />
-                </button>
+                    }}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )}
               </div>
             </div>
             

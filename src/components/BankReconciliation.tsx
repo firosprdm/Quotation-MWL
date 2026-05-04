@@ -87,7 +87,7 @@ export function BankReconciliation() {
   return (
     <div className="animate-in fade-in">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-7">
+        <div className="lg:col-span-5">
           <div className="glass-panel min-h-[400px]">
             <div className="p-6 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
               <h3 className="text-xl font-bold flex items-center gap-3">
@@ -103,31 +103,33 @@ export function BankReconciliation() {
                   accept=".csv,.xlsx,.xls"
                 />
                 <button 
-                  className="px-4 py-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold uppercase tracking-widest hover:bg-blue-500/20 transition-all flex items-center gap-2"
+                  className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 hover:bg-blue-500/20 transition-all shadow-sm"
                   onClick={() => fileInputRef.current?.click()}
+                  title="Import Bank Transactions"
                 >
-                  <Upload size={14} /> Import
+                  <Upload size={16} />
                 </button>
               </div>
             </div>
 
             {bankTransactions.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-32 text-center px-10">
-                <div className="w-20 h-20 rounded-full bg-blue-500/5 flex items-center justify-center border border-blue-500/10 mb-6">
-                  <Upload size={32} className="text-blue-400/50" />
-                </div>
-                <h4 className="text-lg font-bold text-white mb-2">Statement Required</h4>
-                <p className="text-muted text-sm max-w-xs italic">Upload your bank statement to begin matching.</p>
+              <div className="flex items-center justify-center py-12">
+                <button 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="inline-flex items-center justify-center gap-3 px-8 py-3 rounded-xl font-medium text-sm text-white/70 bg-white/5 border border-white/10 hover:bg-white/10 hover:text-white transition-all min-w-[180px] shadow-sm"
+                >
+                  <Upload size={18} /> Upload Statement
+                </button>
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className={clsx(styles.table, styles.compactTable)}>
+                <table className={styles.table}>
                   <thead>
                     <tr>
-                      <th className="pl-5" style={{ width: '15%' }}>Date</th>
-                      <th style={{ width: '45%' }}>Description</th>
-                      <th className="text-right" style={{ width: '20%' }}>Amount</th>
-                      <th className="text-right pr-5" style={{ width: '20%' }}>Match</th>
+                      <th>Date</th>
+                      <th>Description</th>
+                      <th className="text-right">Amount</th>
+                      <th className="text-right">Match</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -141,35 +143,30 @@ export function BankReconciliation() {
                   ) : (
                     bankTransactions.map((tx, idx) => (
                       <tr key={idx} className="group hover:bg-white/[0.03] transition-colors border-b border-white/5">
-                        <td className="pl-5 text-[10px] font-mono text-muted/60">{tx.date}</td>
+                        <td className="font-mono text-muted/60 whitespace-nowrap">{tx.date}</td>
                         <td>
                           <div className="flex flex-col">
-                            <span className="text-white text-[13px] tracking-tight truncate max-w-[180px]">{tx.description}</span>
+                            <span className="text-white">{tx.description}</span>
                             {tx.matchedEntryId && (
-                              <span className="text-[8px] text-emerald-400 font-bold uppercase mt-1 flex items-center gap-1">
-                                <CheckCircle2 size={8} /> Auto-suggest
+                              <span className="text-emerald-400 uppercase mt-1 flex items-center gap-1 text-[10px]">
+                                <CheckCircle2 size={10} /> Auto-suggest
                               </span>
                             )}
                           </div>
                         </td>
-                        <td className="text-right">
-                          <span className={clsx(
-                            "px-2 py-0.5 rounded border font-mono text-[11px]",
-                            tx.amount > 0 ? "text-emerald-400 bg-emerald-500/5 border-emerald-500/10" : "text-red-400 bg-red-500/5 border-red-500/10"
-                          )}>
-                            {formatCurrency(tx.amount)}
-                          </span>
+                        <td className={clsx("text-right font-mono", tx.amount > 0 ? "text-emerald-400" : "text-red-400")}>
+                          {formatCurrency(tx.amount)}
                         </td>
-                        <td className="pr-5 text-right">
+                        <td className="text-right">
                           {tx.matchedEntryId ? (
                             <button 
                               onClick={() => handleReconcile(idx)}
-                              className="px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[9px] font-bold uppercase hover:bg-emerald-500/20 transition-all shadow-sm"
+                              className="px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 uppercase hover:bg-emerald-500/20 transition-all shadow-sm"
                             >
                               Confirm
                             </button>
                           ) : (
-                            <span className="text-[9px] text-muted/30 italic">Manual</span>
+                            <span className="text-muted/30 italic uppercase">Manual</span>
                           )}
                         </td>
                       </tr>
@@ -182,7 +179,7 @@ export function BankReconciliation() {
           </div>
         </div>
 
-        <div className="lg:col-span-5">
+        <div className="lg:col-span-7">
           <div className="glass-panel min-h-[400px]">
             <div className="p-6 border-b border-white/5 flex justify-between items-center bg-purple-500/[0.02]">
               <h3 className="text-xl font-black flex items-center gap-3">
@@ -194,35 +191,44 @@ export function BankReconciliation() {
               </span>
             </div>
 
-            <div className="p-4 space-y-3">
-              {unreconciledEntries.length === 0 ? (
-                <div className="py-20 text-center text-muted flex flex-col items-center gap-4">
-                  <CheckCircle2 size={40} className="text-emerald-500/20" />
-                  <p className="text-xs uppercase tracking-widest font-bold">Ledger is clean!</p>
-                </div>
-              ) : (
-                unreconciledEntries.map(entry => {
-                  const entryAmount = entry.lines.reduce((acc, l) => acc + (l.debit - l.credit), 0);
-                  return (
-                    <div key={entry.id} className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-purple-500/30 transition-all">
-                      <div className="flex justify-between items-start mb-1">
-                        <span className="text-[9px] font-mono text-muted uppercase tracking-[0.2em]">{new Date(entry.date).toLocaleDateString()}</span>
-                        <span className={clsx(
-                          "font-mono font-bold text-xs",
-                          entryAmount > 0 ? "text-emerald-400" : "text-red-400"
-                        )}>
-                          {formatCurrency(entryAmount)}
-                        </span>
-                      </div>
-                      <p className="text-sm font-bold text-white mb-2 leading-tight">{entry.description}</p>
-                      <div className="flex justify-between items-center pt-2 border-t border-white/5">
-                        <span className="text-[8px] text-muted font-black uppercase">Ref: {entry.reference || 'N/A'}</span>
-                        <button className="text-[8px] text-blue-400 font-black uppercase hover:text-blue-300 transition-colors">Match</button>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
+            <div className="overflow-x-auto">
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Ref</th>
+                    <th className="text-right">Amount</th>
+                    <th className="text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {unreconciledEntries.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="text-center py-20 text-muted">
+                        Ledger is clean!
+                      </td>
+                    </tr>
+                  ) : (
+                    unreconciledEntries.map(entry => {
+                      const entryAmount = entry.lines.reduce((acc, l) => acc + (l.debit - l.credit), 0);
+                      return (
+                        <tr key={entry.id} className="group hover:bg-white/[0.03] transition-colors border-b border-white/5">
+                          <td className="font-mono text-muted/60 whitespace-nowrap">{new Date(entry.date).toLocaleDateString()}</td>
+                          <td className="text-white">{entry.description}</td>
+                          <td className="text-muted/60 whitespace-nowrap">{entry.reference || 'N/A'}</td>
+                          <td className={clsx("text-right font-mono", entryAmount > 0 ? "text-emerald-400" : "text-red-400")}>
+                            {formatCurrency(entryAmount)}
+                          </td>
+                          <td className="text-right">
+                            <button className="px-3 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 uppercase hover:bg-blue-500/20 transition-all shadow-sm">Match</button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

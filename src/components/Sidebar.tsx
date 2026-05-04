@@ -18,10 +18,13 @@ import {
   Banknote,
   ShieldAlert,
   GitBranch,
-  FilePieChart
+  FilePieChart,
+  BarChart3
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import styles from './Sidebar.module.css';
+import { useApp } from '@/context/AppContext';
+import { LogOut } from 'lucide-react';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/' },
@@ -31,6 +34,7 @@ const navItems = [
   { icon: Receipt, label: 'Invoices', href: '/invoices' },
   { icon: Wallet, label: 'Accounts', href: '/accounts' },
   { icon: FilePieChart, label: 'Reports', href: '/reports' },
+  { icon: BarChart3, label: 'Graphs', href: '/graphs' },
   { icon: Users2, label: 'Employees', href: '/employees' },
   { icon: Banknote, label: 'Payroll', href: '/payroll' },
   { icon: ShieldAlert, label: 'MISA Portal', href: '/misa' },
@@ -41,6 +45,7 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { currentUser, logout } = useApp();
 
   return (
     <aside className={styles.sidebar}>
@@ -48,7 +53,10 @@ export function Sidebar() {
         <div className={styles.logoIcon}>
           <FileText size={24} className="text-white" />
         </div>
-        <h1 className={styles.logoText}>Marina<span>Quote</span></h1>
+        <div className={styles.logoTextWrapper}>
+          <h1 className={styles.logoTextMain}>MARINA</h1>
+          <p className={styles.logoTextSub}>WorldLink</p>
+        </div>
       </div>
 
       <nav className={styles.nav}>
@@ -69,11 +77,19 @@ export function Sidebar() {
 
       <div className={styles.footer}>
         <div className={styles.userProfile}>
-          <div className={styles.avatar}>A</div>
+          <div className={styles.avatar}>{currentUser?.name?.[0] || 'U'}</div>
           <div className={styles.userInfo}>
-            <p className={styles.userName}>Admin User</p>
-            <p className={styles.userRole}>Sales Manager</p>
+            <p className={styles.userName}>{currentUser?.name || 'User'}</p>
+            <p className={styles.userRole}>{currentUser?.role === 'admin' ? 'Administrator' : 'Standard User'}</p>
           </div>
+          <button 
+            onClick={() => logout()} 
+            className={styles.logoutBtn}
+            title="Logout"
+          >
+            <LogOut size={16} />
+            <span className="text-[10px] font-bold uppercase ml-1">Logout</span>
+          </button>
         </div>
       </div>
     </aside>
