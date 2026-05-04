@@ -44,18 +44,22 @@ export function JournalEntryForm({ onClose }: Props) {
   const isBalanced = totalDebit === totalCredit && totalDebit > 0;
   const canSubmit = isBalanced && description.trim() !== '' && lines.every(l => l.accountId !== '');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
 
-    addJournalEntry({
-      date: new Date(date).getTime(),
-      description,
-      reference,
-      lines: lines.filter(l => l.debit > 0 || l.credit > 0)
-    });
-    
-    onClose();
+    try {
+      await addJournalEntry({
+        date: new Date(date).getTime(),
+        description,
+        reference,
+        lines: lines.filter(l => l.debit > 0 || l.credit > 0)
+      });
+      onClose();
+    } catch (error) {
+      console.error('Failed to save journal entry:', error);
+      alert('Error saving journal entry.');
+    }
   };
 
   return (

@@ -15,6 +15,7 @@ import { clsx } from 'clsx';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { QuotationPDF } from '@/components/QuotationPDF';
 import { ViewQuotationModal } from '@/components/ViewQuotationModal';
+import { formatCurrency, formatNumber } from '@/lib/format';
 
 export default function SalesPage() {
   const { quotations, clients, settings, updateQuotation } = useApp();
@@ -110,7 +111,7 @@ export default function SalesPage() {
           </div>
           <div>
             <label className="text-xs text-muted uppercase font-bold">Total Revenue</label>
-            <p className="text-xl font-bold text-white">SAR {totalSales.toLocaleString()}</p>
+            <p className="text-xl font-bold text-white">{formatCurrency(totalSales)}</p>
           </div>
         </div>
       </header>
@@ -166,10 +167,14 @@ export default function SalesPage() {
                   </td>
                   <td>{clients.find(c => c.id === q.clientId)?.name || 'Unknown'}</td>
                   <td>{new Date(q.date).toLocaleDateString()}</td>
-                  <td className="font-bold text-green-400">SAR {q.grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                  <td className="font-bold text-green-400">{formatCurrency(q.grandTotal)}</td>
                   <td>
                     <select
-                      className={clsx('glass-input', styles.statusSelect)}
+                      className={clsx(
+                        'glass-input', 
+                        styles.statusSelect,
+                        q.salesStatus === 'PO recieved' ? 'status-done' : 'status-pending'
+                      )}
                       value={q.salesStatus || 'PO pending'}
                       onChange={(e) => updateQuotation(q.id, { salesStatus: e.target.value as any })}
                     >

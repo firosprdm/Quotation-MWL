@@ -20,6 +20,7 @@ import Link from 'next/link';
 import { InvoicePDF } from '@/components/InvoicePDF';
 import { ViewQuotationModal } from '@/components/ViewQuotationModal';
 import QRCode from 'qrcode';
+import { formatCurrency, formatNumber } from '@/lib/format';
 
 const ZATCADownloadButton = ({ q, client, settings, className }: any) => {
   const [loading, setLoading] = useState(false);
@@ -42,14 +43,19 @@ const ZATCADownloadButton = ({ q, client, settings, className }: any) => {
         />
       ).toBlob();
 
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const url = window.URL.createObjectURL(blob);
+      const link = window.document.createElement('a');
+      link.style.display = 'none';
       link.href = url;
-      link.download = `Invoice_${q.invoiceNumber || q.number}.pdf`;
-      document.body.appendChild(link);
+      link.setAttribute('download', `Invoice_${q.invoiceNumber || q.number}.pdf`);
+      
+      window.document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      
+      setTimeout(() => {
+        window.document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }, 100);
     } catch (e) {
       console.error('PDF Generation Error:', e);
       alert('Failed to generate PDF. Please try again.');
@@ -71,7 +77,7 @@ const ZATCADownloadButton = ({ q, client, settings, className }: any) => {
 };
 
 export default function InvoicesPage() {
-  const { quotations, clients, settings, updateQuotation, finalizeInvoice } = useApp();
+  const { quotations = [], clients = [], settings, updateQuotation, finalizeInvoice, isLoaded } = useApp();
   const [viewInvoice, setViewInvoice] = useState<any>(null);
   const [search, setSearch] = useState('');
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
@@ -107,8 +113,8 @@ export default function InvoicesPage() {
 
         switch (sortConfig.key) {
           case 'number':
-            aValue = a.invoiceNumber || `INV-${a.number}`;
-            bValue = b.invoiceNumber || `INV-${b.number}`;
+            aValue = a.invoiceNumber || 'PENDING';
+            bValue = b.invoiceNumber || 'PENDING';
             break;
           case 'client':
             aValue = clients.find(c => c.id === a.clientId)?.name || '';
@@ -201,7 +207,7 @@ export default function InvoicesPage() {
             </div>
             <div>
               <label className="text-[10px] text-muted uppercase font-bold tracking-wider">Total Invoiced</label>
-              <p className="text-lg font-bold text-white leading-tight">SAR {totalInvoiced.toLocaleString()}</p>
+              <p className="text-lg font-bold text-white leading-tight">{formatCurrency(totalInvoiced)}</p>
             </div>
           </div>
           <Link href="/quotations/new?type=invoice" className={clsx('glass-button', styles.addButton, 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/30')}>
@@ -248,9 +254,18 @@ export default function InvoicesPage() {
             </tr>
           </thead>
           <tbody>
-            {filteredInvoices.length === 0 ? (
+            {!isLoaded ? (
               <tr>
-                <td colSpan={6} className={styles.emptyState}>
+                <td colSpan={7} className={styles.emptyState}>
+                  <div className="flex items-center justify-center gap-3">
+                    <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                    <span>Loading invoices...</span>
+                  </div>
+                </td>
+              </tr>
+            ) : filteredInvoices.length === 0 ? (
+              <tr>
+                <td colSpan={7} className={styles.emptyState}>
                   {search ? 'No invoices match your search.' : 'No invoices ready. Projects must be "PO Recieved" and "Work Done".'}
                 </td>
               </tr>
@@ -262,11 +277,11 @@ export default function InvoicesPage() {
                 return (
                   <tr key={q.id}>
                     <td className="font-bold text-white">
-                      {q.invoiceNumber || `INV-${q.number}`}
+                      {q.invoiceNumber || (q.uuid ? 'GENERATING...' : 'PENDING')}
                     </td>
                     <td>{clients.find(c => c.id === q.clientId)?.name || 'Unknown'}</td>
                     <td>{new Date(invDate).toLocaleDateString()}</td>
-                    <td className="font-bold text-emerald-400">SAR {q.grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                    <td className="font-bold text-emerald-400">{formatCurrency(q.grandTotal)}</td>
                     <td>
                       <div className="flex items-center gap-3">
                         <div className={clsx(
@@ -277,7 +292,7 @@ export default function InvoicesPage() {
                           className={clsx(
                             'glass-input flex-1', 
                             styles.statusSelect,
-                            q.paymentStatus === 'Done' ? styles.paymentDone : (isOverdue ? styles.paymentOverdue : styles.paymentPending)
+                            q.paymentStatus === 'Done' ? 'status-done' : (isOverdue ? 'status-overdue' : 'status-pending')
                           )}
                           value={q.paymentStatus === 'Done' ? 'Done' : (isOverdue ? 'OVERDUE' : 'Pending')}
                           onChange={(e) => {
@@ -285,9 +300,9 @@ export default function InvoicesPage() {
                             updateQuotation(q.id, { paymentStatus: val === 'Done' ? 'Done' : 'Payment Pending' });
                           }}
                         >
-                          <option value="Pending" disabled={q.paymentStatus === 'Done'}>Pending</option>
-                          <option value="OVERDUE" disabled={q.paymentStatus === 'Done'}>OVERDUE</option>
-                          <option value="Done">Done</option>
+                          <option value="Pending" disabled={q.paymentStatus === 'Done'} className="text-gray-900">Pending</option>
+                          <option value="OVERDUE" disabled={q.paymentStatus === 'Done'} className="text-gray-900">OVERDUE</option>
+                          <option value="Done" className="text-gray-900">Done</option>
                         </select>
                       </div>
                     </td>

@@ -115,25 +115,42 @@
 
 .table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0 10px;
+}
+
+.compactTable {
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+}
+
+.compactTable th {
+  padding: 8px 20px !important;
+  font-size: 10px !important;
+}
+
+.compactTable td {
+  padding: 4px 20px !important;
+  font-size: 11px !important;
 }
 
 .table th {
   text-align: left;
-  padding: 8px 16px;
-  font-size: 10px;
-  font-weight: 500;
+  padding: 18px 20px;
+  font-size: 11px;
+  font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 0.15em;
   border-bottom: 1px solid var(--border-glass);
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.4);
 }
 
 .table td {
-  padding: 6px 16px;
+  padding: 14px 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);
   color: var(--text-secondary);
+  font-size: 13px;
 }
 
 .table tr {
@@ -148,7 +165,7 @@
   padding: 6px 12px;
   border-radius: 8px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .badgeAsset { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
@@ -278,7 +295,7 @@
 }
 
 .journalEntryMain {
-  font-weight: 700;
+  font-weight: 500;
   color: white;
 }
 
@@ -293,14 +310,14 @@
 .amountDebit {
   color: #34d399; /* emerald-400 */
   font-family: var(--font-mono);
-  font-weight: 700;
+  font-weight: 500;
   text-align: right;
 }
 
 .amountCredit {
   color: #fb923c; /* orange-400 */
   font-family: var(--font-mono);
-  font-weight: 700;
+  font-weight: 500;
   text-align: right;
 }
 

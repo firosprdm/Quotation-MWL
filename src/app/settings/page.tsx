@@ -20,7 +20,7 @@ import {
   Database,
   Download
 } from 'lucide-react';
-import { onboardZatcaAction } from '../actions/zatca';
+import { completeZatcaOnboardingAction } from '../actions/zatca-onboarding-action';
 import styles from './settings.module.css';
 import { clsx } from 'clsx';
 
@@ -32,7 +32,8 @@ export default function SettingsPage() {
   const [onboardingStep, setOnboardingStep] = useState<'idle' | 'csr_generated' | 'completed'>('idle');
   const [egsDetails, setEgsDetails] = useState({
     serialNumber: settings.zatca?.egsSerialNumber || '',
-    commonName: settings.zatca?.commonName || ''
+    commonName: settings.zatca?.commonName || '',
+    otp: ''
   });
   const [csrData, setCsrData] = useState<{ privateKey: string, csr: string } | null>(null);
 
@@ -125,6 +126,7 @@ export default function SettingsPage() {
     }
 
     setIsOnboarding(true);
+    const { onboardZatcaAction } = await import('../actions/zatca');
     const result = await onboardZatcaAction({
       vatNumber: formData.vatNumber,
       organizationName: formData.name,
@@ -138,36 +140,65 @@ export default function SettingsPage() {
     if (result.success && result.data) {
       setCsrData(result.data);
       setOnboardingStep('csr_generated');
-      // Save locally as well
-      const updatedZatca = {
-        ...formData.zatca,
-        egsSerialNumber: egsDetails.serialNumber,
-        commonName: egsDetails.commonName,
-        csr: result.data.csr,
-        privateKey: result.data.privateKey,
-        onboarded: false
-      };
-      setFormData({ ...formData, zatca: updatedZatca as any });
-      alert('CSR and Private Key generated successfully! Now use the OTP to onboard.');
+      // Update form data but don't save to DB yet
+      setFormData({ 
+        ...formData, 
+        zatca: { 
+          ...formData.zatca,
+          onboarded: false,
+          csr: result.data.csr,
+          privateKey: result.data.privateKey,
+          egsSerialNumber: egsDetails.serialNumber,
+          commonName: egsDetails.commonName
+        } as any 
+      });
+      alert('CSR and Private Key generated successfully! Now enter your ZATCA OTP to complete onboarding.');
     } else {
       alert('Error: ' + result.error);
     }
     setIsOnboarding(false);
   };
 
-  const handleCompleteOnboarding = () => {
-    // In a real app, this would call ZATCA API with OTP
-    // For now, we simulate success
-    const updatedZatca = {
-      ...formData.zatca,
-      onboarded: true,
-      certificate: 'MII... (Binary Security Token)',
-      secret: 'SECRET_123'
-    };
-    setFormData({ ...formData, zatca: updatedZatca as any });
-    updateSettings({ ...formData, zatca: updatedZatca as any });
-    setOnboardingStep('completed');
-    alert('ZATCA Onboarding completed successfully! You can now issue compliant Phase 2 invoices.');
+  const handleCompleteOnboarding = async () => {
+    if (!egsDetails.otp || egsDetails.otp.length !== 6) {
+      alert('Please enter a valid 6-digit OTP.');
+      return;
+    }
+
+    setIsOnboarding(true);
+    const result = await completeZatcaOnboardingAction({
+      otp: egsDetails.otp,
+      details: {
+        vatNumber: formData.vatNumber,
+        organizationName: formData.name,
+        egsSerialNumber: egsDetails.serialNumber,
+        commonName: egsDetails.commonName,
+        organizationUnit: formData.vatNumber,
+        city: formData.splitAddress?.city || 'Riyadh',
+        country: 'SA'
+      }
+    });
+
+    if (result.success && result.data) {
+      const updatedZatca = {
+        ...formData.zatca,
+        onboarded: true,
+        certificate: result.data.certificate,
+        secret: result.data.secret,
+        privateKey: result.data.privateKey,
+        csr: result.data.csr,
+        egsSerialNumber: egsDetails.serialNumber,
+        commonName: egsDetails.commonName
+      };
+      
+      setFormData({ ...formData, zatca: updatedZatca as any });
+      updateSettings({ ...formData, zatca: updatedZatca as any });
+      setOnboardingStep('completed');
+      alert('ZATCA Sandbox Onboarding completed successfully! You are now connected to the ZATCA API.');
+    } else {
+      alert('ZATCA Onboarding Failed: ' + result.error);
+    }
+    setIsOnboarding(false);
   };
 
   const handleSplitAddressChange = (field: string, value: string) => {
@@ -490,6 +521,9 @@ export default function SettingsPage() {
                             type="text" 
                             className="glass-input" 
                             placeholder="6-digit OTP from Fatoora portal"
+                            value={egsDetails.otp}
+                            onChange={e => setEgsDetails({ ...egsDetails, otp: e.target.value })}
+                            maxLength={6}
                           />
                         </div>
                         <button 

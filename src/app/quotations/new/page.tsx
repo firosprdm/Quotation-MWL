@@ -35,6 +35,10 @@ function BuilderForm() {
   const [dueDate, setDueDate] = useState('');
   const [items, setItems] = useState<QuotationItem[]>([]);
   const [notes, setNotes] = useState(defaultNotes || '');
+  const [termsAndConditions, setTermsAndConditions] = useState(`• Validity: 30 days from the date of issue.
+• Delivery: As per mutual agreement.
+• Payment: 100% Payment as per the agreed terms.
+• Quality: Highest quality standards as per requirements.`);
   const [isSaving, setIsSaving] = useState(false);
 
   const [searchItem, setSearchItem] = useState('');
@@ -134,6 +138,7 @@ function BuilderForm() {
     discount,
     grandTotal,
     notes,
+    termsAndConditions,
     revision: 0,
     status: isInvoiceMode ? 'approved' : 'sent',
     salesStatus: isInvoiceMode ? 'PO recieved' : undefined,
@@ -150,21 +155,20 @@ function BuilderForm() {
       updateDefaultNotes(notes);
 
       // Sync items to inventory
-      items.forEach(item => {
+      for (const item of items) {
         if (item.description.trim()) {
           const exists = inventory.find(i => i.description.toLowerCase() === item.description.toLowerCase());
           if (!exists) {
-            addItem({
+            await addItem({
               description: item.description,
               unit: item.unit,
               price: item.price
             });
           }
         }
-      });
+      }
 
-      addQuotation(currentQuotation);
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await addQuotation(currentQuotation);
       router.push(isInvoiceMode ? '/invoices' : '/quotations');
     } catch (error) {
       console.error('Failed to save:', error);
@@ -353,16 +357,33 @@ function BuilderForm() {
             )}
           </section>
 
+          {/* Terms & Conditions */}
+          {!isInvoiceMode && (
+            <section className={clsx('glass-panel', styles.section)}>
+              <div className={styles.sectionHeader}>
+                <FileText size={20} className="text-blue-400" />
+                <h3>Terms & Conditions (Editable)</h3>
+              </div>
+              <textarea 
+                className={clsx('glass-input', styles.notes)} 
+                placeholder="Add formal terms and conditions..."
+                rows={6}
+                value={termsAndConditions}
+                onChange={e => setTermsAndConditions(e.target.value)}
+              />
+            </section>
+          )}
+
           {/* Notes */}
           <section className={clsx('glass-panel', styles.section)}>
             <div className={styles.sectionHeader}>
               <FileText size={20} className="text-rose-400" />
-              <h3>Notes & Terms (Auto-saved)</h3>
+              <h3>Internal Notes</h3>
             </div>
             <textarea 
               className={clsx('glass-input', styles.notes)} 
               placeholder="Add payment terms, validity, and delivery details..."
-              rows={6}
+              rows={4}
               value={notes}
               onChange={e => setNotes(e.target.value)}
             />

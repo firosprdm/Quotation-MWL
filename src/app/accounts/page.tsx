@@ -13,7 +13,9 @@ import {
   Zap,
   Check,
   Sparkles,
-  Download
+  Download,
+  Upload,
+  FileUp
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -21,12 +23,15 @@ import * as XLSX from 'xlsx';
 import { clsx } from 'clsx';
 import { JournalEntryForm } from '@/components/JournalEntryForm';
 import { QuickAddModal } from '@/components/QuickAddModal';
-import { AccountingReports } from '@/components/AccountingReports';
+import { BankReconciliation } from '@/components/BankReconciliation';
+import { FixedAssetRegister } from '@/components/FixedAssetRegister';
+import { ShieldCheck, Building2 } from 'lucide-react';
 import styles from './accounts.module.css';
+import { formatCurrency, formatNumber } from '@/lib/format';
 
 export default function AccountsPage() {
   const { accounts, journalEntries } = useApp();
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'journal' | 'reports'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'journal' | 'recon' | 'assets'>('dashboard');
   const [showEntryForm, setShowEntryForm] = useState(false);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [accountFilter, setAccountFilter] = useState<string | null>(null);
@@ -120,6 +125,45 @@ export default function AccountsPage() {
     XLSX.writeFile(workbook, `Journal_Entries_${new Date().toISOString().slice(0,10)}.xlsx`);
   };
 
+  const handleImportJournals = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const bstr = event.target?.result;
+      const workbook = XLSX.read(bstr, { type: 'binary' });
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const data = XLSX.utils.sheet_to_json(firstSheet);
+      console.log('Imported Journal Data:', data);
+      alert('Journal import feature logic being initialized with Supabase sync...');
+    };
+    reader.readAsBinaryString(file);
+  };
+
+  const handleExportCOA = () => {
+    const worksheet = XLSX.utils.json_to_sheet(accounts);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Chart of Accounts");
+    XLSX.writeFile(workbook, `Chart_of_Accounts_${new Date().toISOString().slice(0,10)}.xlsx`);
+  };
+
+  const handleImportCOA = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const bstr = event.target?.result;
+      const workbook = XLSX.read(bstr, { type: 'binary' });
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const data = XLSX.utils.sheet_to_json(firstSheet);
+      console.log('Imported COA Data:', data);
+      alert('Chart of Accounts import logic being initialized with Supabase sync...');
+    };
+    reader.readAsBinaryString(file);
+  };
+
   return (
     <div className="fade-in pb-20">
       {/* SVG Gradients Definition */}
@@ -147,7 +191,7 @@ export default function AccountsPage() {
       <header className={styles.header}>
         <div>
           <h2 className={styles.title}>Accounts</h2>
-          <p className={styles.subtitle}>Manage your chart of accounts and financial reports.</p>
+          <p className={styles.subtitle}>Manage your chart of accounts and double-entry bookkeeping.</p>
         </div>
         <div className="flex gap-4">
           <button 
@@ -232,10 +276,16 @@ export default function AccountsPage() {
           <BookOpen size={18} /> Journal Entries
         </button>
         <button 
-          className={clsx(styles.tab, activeTab === 'reports' && styles.tabActive)}
-          onClick={() => setActiveTab('reports')}
+          className={clsx(styles.tab, activeTab === 'recon' && styles.tabActive)}
+          onClick={() => setActiveTab('recon')}
         >
-          <FileText size={18} /> Reports
+          <ShieldCheck size={18} /> Bank Recon
+        </button>
+        <button 
+          className={clsx(styles.tab, activeTab === 'assets' && styles.tabActive)}
+          onClick={() => setActiveTab('assets')}
+        >
+          <Building2 size={18} /> Fixed Assets
         </button>
       </div>
 
@@ -256,8 +306,8 @@ export default function AccountsPage() {
                 <Wallet size={28} />
               </div>
               <div>
-                <p className="text-[10px] text-muted font-black uppercase tracking-[0.2em]">Total Assets</p>
-                <p className="text-2xl font-black text-white">SAR {totalAssets.toLocaleString()}</p>
+                <p className="text-[10px] text-muted font-bold uppercase tracking-[0.2em]">Total Assets</p>
+                <p className="text-2xl font-bold text-white">{formatCurrency(totalAssets)}</p>
               </div>
               {accountFilter === 'Asset' && <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-blue-500 animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.8)]" />}
             </div>
@@ -275,8 +325,8 @@ export default function AccountsPage() {
                 <TrendingDown size={28} />
               </div>
               <div>
-                <p className="text-[10px] text-muted font-black uppercase tracking-[0.2em]">Total Liabilities</p>
-                <p className="text-2xl font-black text-white">SAR {totalLiabilities.toLocaleString()}</p>
+                <p className="text-[10px] text-muted font-bold uppercase tracking-[0.2em]">Total Liabilities</p>
+                <p className="text-2xl font-bold text-white">{formatCurrency(totalLiabilities)}</p>
               </div>
               {accountFilter === 'Liability' && <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.8)]" />}
             </div>
@@ -294,8 +344,8 @@ export default function AccountsPage() {
                 <Scale size={28} />
               </div>
               <div>
-                <p className="text-[10px] text-muted font-black uppercase tracking-[0.2em]">Equity</p>
-                <p className="text-2xl font-black text-white">SAR {totalEquity.toLocaleString()}</p>
+                <p className="text-[10px] text-muted font-bold uppercase tracking-[0.2em]">Equity</p>
+                <p className="text-2xl font-bold text-white">{formatCurrency(totalEquity)}</p>
               </div>
               {accountFilter === 'Equity' && <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-purple-500 animate-pulse shadow-[0_0_10px_rgba(168,85,247,0.8)]" />}
             </div>
@@ -313,8 +363,8 @@ export default function AccountsPage() {
                 <TrendingUp size={28} />
               </div>
               <div>
-                <p className="text-[10px] text-muted font-black uppercase tracking-[0.2em]">Net Profit</p>
-                <p className="text-2xl font-black text-emerald-400">SAR {netProfit.toLocaleString()}</p>
+                <p className="text-[10px] text-muted font-bold uppercase tracking-[0.2em]">Net Profit</p>
+                <p className="text-2xl font-bold text-emerald-400">{formatCurrency(netProfit)}</p>
               </div>
               {accountFilter === 'Profit' && <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]" />}
             </div>
@@ -328,22 +378,45 @@ export default function AccountsPage() {
                 <div className="flex flex-col">
                   <span>Chart of Accounts</span>
                   {accountFilter && (
-                    <span className="text-[9px] font-black uppercase tracking-widest text-blue-400/60 mt-0.5">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-blue-400/60 mt-0.5">
                       Filtered by {accountFilter === 'Profit' ? 'Revenue & Expenses' : accountFilter}
                     </span>
                   )}
                 </div>
               </h3>
-              {accountFilter && (
+              <div className="flex gap-2">
                 <button 
-                  onClick={() => setAccountFilter(null)}
-                  className="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-muted hover:text-white"
+                  onClick={() => document.getElementById('import-coa-input')?.click()}
+                  className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-blue-500/10 hover:border-blue-500/30 hover:text-blue-400 transition-all text-white/70 shadow-sm"
+                  title="Import Chart of Accounts"
                 >
-                  View All
+                  <Upload size={14} /> Import
                 </button>
-              )}
+                <input 
+                  id="import-coa-input" 
+                  type="file" 
+                  hidden 
+                  accept=".xlsx,.xls,.csv" 
+                  onChange={handleImportCOA} 
+                />
+                <button 
+                  onClick={handleExportCOA}
+                  className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-emerald-500/10 hover:border-emerald-500/30 hover:text-emerald-400 transition-all text-white/70 shadow-sm"
+                  title="Export Chart of Accounts"
+                >
+                  <Download size={14} /> Export
+                </button>
+                {accountFilter && (
+                  <button 
+                    onClick={() => setAccountFilter(null)}
+                    className="text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-muted hover:text-white"
+                  >
+                    View All
+                  </button>
+                )}
+              </div>
             </div>
-            <table className={styles.table}>
+            <table className={clsx(styles.table, styles.compactTable)}>
               <thead>
                 <tr>
                   <th className="pl-5" style={{ width: '10%' }}>Code</th>
@@ -360,40 +433,40 @@ export default function AccountsPage() {
                     return acc.type === accountFilter;
                   })
                   .map(acc => (
-                  <tr key={acc.id} className="group hover:bg-white/[0.03] transition-colors border-b border-white/5">
-                    <td className="pl-5 py-2">
-                      <span className="font-mono text-[9px] font-black text-blue-400/80 bg-blue-500/5 px-1.5 py-0.5 rounded border border-blue-500/10">
-                        {acc.code}
-                      </span>
-                    </td>
-                    <td className="py-2">
-                      <span className="font-bold text-white text-[13px] tracking-tight">{acc.name}</span>
-                    </td>
-                    <td className="py-2">
-                      <span className={clsx(
-                        styles.badge,
-                        acc.type === 'Asset' && styles.badgeAsset,
-                        acc.type === 'Liability' && styles.badgeLiability,
-                        acc.type === 'Equity' && styles.badgeEquity,
-                        acc.type === 'Revenue' && styles.badgeRevenue,
-                        acc.type === 'Expense' && styles.badgeExpense,
-                        "text-[9px] px-1.5 py-0.5 font-black uppercase tracking-tighter"
-                      )}>
-                        {acc.type}
-                      </span>
-                    </td>
-                    <td className="pr-5 py-2 text-right">
-                      <span className={clsx(
-                        "font-mono text-[11px] font-black tracking-tight px-2 py-0.5 rounded border",
-                        acc.balance > 0 ? "text-emerald-400 bg-emerald-500/5 border-emerald-500/10" : 
-                        acc.balance < 0 ? "text-red-400 bg-red-500/5 border-red-500/10" : 
-                        "text-muted/20 bg-white/5 border-transparent"
-                      )}>
-                        {acc.balance !== 0 ? acc.balance.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '0.00'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                    <tr key={acc.id} className="group hover:bg-white/[0.03] transition-colors border-b border-white/5">
+                      <td className="pl-5">
+                        <span className="font-mono text-[9px] text-blue-400/60 bg-blue-500/5 px-1.5 py-0.5 rounded border border-blue-500/10">
+                          {acc.code}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="text-white text-[13px] tracking-tight">{acc.name}</span>
+                      </td>
+                      <td>
+                        <span className={clsx(
+                          styles.badge,
+                          acc.type === 'Asset' && styles.badgeAsset,
+                          acc.type === 'Liability' && styles.badgeLiability,
+                          acc.type === 'Equity' && styles.badgeEquity,
+                          acc.type === 'Revenue' && styles.badgeRevenue,
+                          acc.type === 'Expense' && styles.badgeExpense,
+                          "text-[9px] px-1.5 py-0.5 uppercase tracking-tighter"
+                        )}>
+                          {acc.type}
+                        </span>
+                      </td>
+                      <td className="pr-5 text-right">
+                        <span className={clsx(
+                          "font-mono text-[11px] tracking-tight px-2 py-0.5 rounded border",
+                          acc.balance > 0 ? "text-emerald-400 bg-emerald-500/5 border-emerald-500/10" : 
+                          acc.balance < 0 ? "text-red-400 bg-red-500/5 border-red-500/10" : 
+                          "text-muted/20 bg-white/5 border-transparent"
+                        )}>
+                          {acc.balance !== 0 ? acc.balance.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '0.00'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
@@ -409,6 +482,19 @@ export default function AccountsPage() {
             </h3>
             <div className="flex gap-3">
               <button 
+                onClick={() => document.getElementById('import-journal-input')?.click()}
+                className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-purple-500/10 hover:border-purple-500/30 hover:text-purple-400 transition-all text-white/70 shadow-sm"
+              >
+                <Upload size={14} /> Import XLS
+              </button>
+              <input 
+                id="import-journal-input" 
+                type="file" 
+                hidden 
+                accept=".xlsx,.xls,.csv" 
+                onChange={handleImportJournals} 
+              />
+              <button 
                 onClick={handleExportXLSX}
                 className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-emerald-500/10 hover:border-emerald-500/30 hover:text-emerald-400 transition-all text-white/70 shadow-sm"
               >
@@ -422,7 +508,7 @@ export default function AccountsPage() {
               </button>
             </div>
           </div>
-          <table className={styles.table}>
+          <table className={clsx(styles.table, styles.compactTable)}>
             <thead>
               <tr>
                 <th style={{ width: '15%' }}>Date</th>
@@ -440,33 +526,33 @@ export default function AccountsPage() {
                       <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
                         <BookOpen size={32} className="text-muted/30" />
                       </div>
-                      <p className="font-medium tracking-wide">No journal entries recorded yet.</p>
+                      <p className="font-normal tracking-wide">No journal entries recorded yet.</p>
                     </div>
                   </td>
                 </tr>
               ) : (
                 journalEntries.map((entry, idx) => (
                   <React.Fragment key={entry.id}>
-                    {/* Compact Entry Header - Less Distance */}
+                    {/* Compact Entry Header */}
                     <tr className={clsx(styles.entryHeader, "border-l-4 border-blue-500/60 bg-white/[0.03]")}>
-                      <td className="py-3 px-4 pl-6 text-xs font-medium uppercase tracking-widest text-blue-400">
+                      <td className="pl-5 text-[10px] text-blue-400">
                         {new Date(entry.date).toLocaleDateString()}
                       </td>
-                      <td colSpan={2} className="py-3 px-4">
+                      <td colSpan={2}>
                         <div className="flex items-center gap-4">
-                          <span className="font-medium text-white text-base tracking-tight">
+                          <span className="text-white text-[13px] tracking-tight">
                             {entry.description}
                           </span>
                           {entry.reference && (
-                            <span className="px-2 py-0.5 rounded-md bg-blue-500/10 border border-blue-500/20 text-[10px] font-medium text-blue-400 uppercase tracking-widest">
+                            <span className="px-1.5 py-0.5 rounded-md bg-blue-500/10 border border-blue-500/20 text-[9px] text-blue-400 uppercase tracking-widest">
                               REF: {entry.reference}
                             </span>
                           )}
                         </div>
                       </td>
-                      <td className="py-3 px-4"></td>
-                      <td className="py-3 px-4 pr-6 text-right">
-                        <span className="text-[10px] font-medium text-white/30 uppercase tracking-widest">ID: {entry.id.slice(0, 8)}</span>
+                      <td></td>
+                      <td className="pr-5 text-right">
+                        <span className="text-[10px] text-white/30 uppercase tracking-widest">ID: {entry.id.slice(0, 8)}</span>
                       </td>
                     </tr>
                     
@@ -475,63 +561,53 @@ export default function AccountsPage() {
                       const acc = accounts.find(a => a.id === line.accountId);
                       return (
                         <tr key={`${entry.id}-${lIdx}`} className={clsx(styles.journalLine, "hover:bg-white/[0.05]")}>
-                          <td className="py-1 px-4 pl-6"></td>
-                          <td className="py-1 px-4"></td>
-                          <td className="py-1 px-4">
+                          <td className="pl-5"></td>
+                          <td></td>
+                          <td>
                             <div className="flex items-center gap-3 py-1 border-l-2 border-white/5 px-4">
                               <div className={clsx(
                                 "w-1.5 h-1.5 rounded-full shadow-[0_0_8px_currentColor]",
                                 line.debit > 0 ? "text-emerald-500 bg-emerald-500" : "text-orange-500 bg-orange-500"
                               )} />
                               <div className="flex flex-col">
-                                <span className="text-sm font-medium text-white/90 tracking-wide">
+                                <span className="text-[12px] text-white/90 tracking-wide">
                                   {acc ? `${acc.code} — ${acc.name}` : 'Unknown Account'}
                                 </span>
-                                <span className="text-[10px] font-medium text-muted/60 uppercase tracking-wider mt-0.5">
-                                  {acc?.type} ACCOUNT
+                                <span className="text-[9px] text-muted/60 uppercase tracking-wider mt-0.5">
+                                  {acc?.type}
                                 </span>
                               </div>
                             </div>
                           </td>
-                          <td className="py-1 px-4 text-right">
+                          <td className="text-right">
                             {line.debit > 0 && (
-                              <div className="inline-flex flex-col items-end">
-                                <span className="font-mono text-sm font-medium text-emerald-400 px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                                  {line.debit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                </span>
-                              </div>
+                              <span className="font-mono text-[11px] text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/10 bg-emerald-500/5">
+                                {line.debit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                              </span>
                             )}
                           </td>
-                          <td className="py-1 px-4 pr-6 text-right">
+                          <td className="pr-5 text-right">
                             {line.credit > 0 && (
-                              <div className="inline-flex flex-col items-end">
-                                <span className="font-mono text-sm font-medium text-orange-400 px-3 py-1 rounded-lg bg-orange-500/10 border border-orange-500/20">
-                                  {line.credit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                </span>
-                              </div>
+                              <span className="font-mono text-[11px] text-orange-400 px-2 py-0.5 rounded border border-orange-500/10 bg-orange-500/5">
+                                {line.credit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                              </span>
                             )}
                           </td>
                         </tr>
                       );
                     })}
-                    {/* Visual Separator - Small Gap */}
-                    <tr className="h-4">
-                      <td colSpan={5} className="relative">
-                        <div className="absolute inset-0 flex items-center justify-center px-6">
-                          <div className="w-full h-[1px] bg-white/5" />
-                        </div>
-                      </td>
-                    </tr>
                   </React.Fragment>
                 ))
               )}
             </tbody>
           </table>
         </div>
+      )}      {activeTab === 'recon' && (
+        <BankReconciliation />
       )}
 
-      {activeTab === 'reports' && (
-        <AccountingReports />
+      {activeTab === 'assets' && (
+        <FixedAssetRegister />
       )}
 
     </div>

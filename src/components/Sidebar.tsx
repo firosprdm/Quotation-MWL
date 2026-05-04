@@ -13,7 +13,12 @@ import {
   PlusCircle,
   Award,
   Receipt,
-  Wallet
+  Wallet,
+  Users2,
+  Banknote,
+  ShieldAlert,
+  GitBranch,
+  FilePieChart
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import styles from './Sidebar.module.css';
@@ -22,9 +27,13 @@ const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/' },
   { icon: FileText, label: 'Quotations', href: '/quotations' },
   { icon: ShoppingCart, label: 'Sales', href: '/sales' },
-  { icon: Award, label: 'Certificates', href: '/certificates' },
+  { icon: GitBranch, label: 'Work Flow', href: '/certificates' },
   { icon: Receipt, label: 'Invoices', href: '/invoices' },
   { icon: Wallet, label: 'Accounts', href: '/accounts' },
+  { icon: FilePieChart, label: 'Reports', href: '/reports' },
+  { icon: Users2, label: 'Employees', href: '/employees' },
+  { icon: Banknote, label: 'Payroll', href: '/payroll' },
+  { icon: ShieldAlert, label: 'MISA Portal', href: '/misa' },
   { icon: Users, label: 'Clients', href: '/clients' },
   { icon: Package, label: 'Inventory', href: '/inventory' },
   { icon: Settings, label: 'Settings', href: '/settings' },

@@ -28,6 +28,7 @@ export interface CompanySettings {
   contact: string;
   salesPerson: string;
   logo?: string;
+  defaultNotes?: string;
   zatca?: {
     onboarded: boolean;
     egsSerialNumber?: string;
@@ -94,6 +95,8 @@ export interface Quotation {
   invoiceHash?: string; // Current Invoice Hash (Base64)
   zatcaStatus?: 'cleared' | 'reported' | 'failed' | 'pending';
   qrCode?: string; // Base64 TLV string
+  paymentMethod?: string; // e.g. "Bank Transfer" or "Cash"
+  termsAndConditions?: string;
 }
 
 export type AccountType = 'Asset' | 'Liability' | 'Equity' | 'Revenue' | 'Expense';
@@ -118,6 +121,56 @@ export interface JournalEntry {
   description: string;
   lines: JournalLine[];
   reference?: string;
+  reconciled?: boolean; // New for Bank Reconciliation
+  bankRef?: string;    // New for Bank Reconciliation
+}
+
+export interface Employee {
+  id: string;
+  name: string;
+  nameAr?: string;
+  iqamaNo: string;
+  gosiNo?: string;
+  iban: string;
+  jobTitle: string;
+  jobTitleAr?: string;
+  basicSalary: number;
+  housingAllowance: number;
+  transportAllowance: number;
+  otherAllowances: number;
+  joinDate: number;
+  status: 'Active' | 'On Leave' | 'Terminated';
+}
+
+export interface PayrollRecord {
+  id: string;
+  employeeId: string;
+  month: number;
+  year: number;
+  basicSalary: number;
+  housingAllowance: number;
+  transportAllowance: number;
+  otherAllowances: number;
+  gosiDeduction: number;
+  netSalary: number;
+  status: 'Draft' | 'Processed' | 'Paid';
+  paymentDate?: number;
+  reference?: string; // SIF reference
+}
+
+export interface FixedAsset {
+  id: string;
+  name: string;
+  purchaseDate: number;
+  cost: number;
+  salvageValue: number;
+  usefulLife: number; // in years
+  depreciationMethod: 'Straight Line';
+  category: 'Equipment' | 'Vehicles' | 'Furniture' | 'Building' | 'IT';
+  status: 'Active' | 'Disposed';
+  accountId: string; // The asset account in Chart of Accounts
+  accumulatedDepreciationAccountId: string; // The contra-asset account
+  depreciationExpenseAccountId: string; // The expense account
 }
 
 export interface AppState {
@@ -126,6 +179,9 @@ export interface AppState {
   quotations: Quotation[];
   accounts: Account[];
   journalEntries: JournalEntry[];
+  employees: Employee[];
+  payroll: PayrollRecord[];
+  fixedAssets: FixedAsset[]; // New for Fixed Asset Module
   defaultNotes?: string;
   settings: CompanySettings;
 }

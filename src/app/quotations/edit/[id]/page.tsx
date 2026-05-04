@@ -32,6 +32,7 @@ export default function EditQuotation() {
   const [dueDate, setDueDate] = useState('');
   const [items, setItems] = useState<QuotationItem[]>([]);
   const [notes, setNotes] = useState('');
+  const [termsAndConditions, setTermsAndConditions] = useState('');
   const [discount, setDiscount] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [quotationNumber, setQuotationNumber] = useState('');
@@ -47,6 +48,7 @@ export default function EditQuotation() {
       setDate(new Date(q.date).toISOString().split('T')[0]);
       setItems(q.items);
       setNotes(q.notes || '');
+      setTermsAndConditions(q.termsAndConditions || '');
       setDiscount(q.discount || 0);
       setQuotationNumber(q.number);
       setRevision(q.revision || 0);
@@ -146,6 +148,7 @@ export default function EditQuotation() {
         discount,
         grandTotal,
         notes,
+        termsAndConditions,
         revision: revision + 1,
         status: 'revised'
       };
@@ -336,14 +339,28 @@ export default function EditQuotation() {
             </div>
           </section>
 
+          {/* Terms & Conditions */}
           <section className={clsx('glass-panel', styles.section)}>
             <div className={styles.sectionHeader}>
-              <FileText size={20} className="text-rose-400" />
-              <h3>Notes & Terms</h3>
+              <FileText size={20} className="text-blue-400" />
+              <h3>Terms & Conditions (Editable)</h3>
             </div>
             <textarea 
               className={clsx('glass-input', styles.notes)} 
               rows={6}
+              value={termsAndConditions}
+              onChange={e => setTermsAndConditions(e.target.value)}
+            />
+          </section>
+
+          <section className={clsx('glass-panel', styles.section)}>
+            <div className={styles.sectionHeader}>
+              <FileText size={20} className="text-rose-400" />
+              <h3>Internal Notes</h3>
+            </div>
+            <textarea 
+              className={clsx('glass-input', styles.notes)} 
+              rows={4}
               value={notes}
               onChange={e => setNotes(e.target.value)}
             />
@@ -408,6 +425,7 @@ export default function EditQuotation() {
                     discount,
                     grandTotal,
                     notes,
+                    termsAndConditions,
                     revision: revision + 1,
                     status: 'revised'
                   } as any} client={selectedClient} settings={settings} />} 

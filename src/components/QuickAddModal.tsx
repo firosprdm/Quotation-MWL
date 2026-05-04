@@ -38,21 +38,25 @@ export function QuickAddModal({ onClose }: Props) {
 
   const canSave = parseFloat(amount) > 0 && categoryAccountId !== '' && sourceAccountId !== '';
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!canSave) {
       setError('Please fill all fields');
       return;
     }
     
-    addQuickTransaction({
-      type,
-      amount: parseFloat(amount),
-      categoryAccountId,
-      sourceAccountId,
-      description: description || (type === 'income' ? 'Quick Income' : 'Quick Expense')
-    });
-    
-    onClose();
+    try {
+      await addQuickTransaction({
+        type,
+        amount: parseFloat(amount),
+        categoryAccountId,
+        sourceAccountId,
+        description: description || (type === 'income' ? 'Quick Income' : 'Quick Expense')
+      });
+      onClose();
+    } catch (error) {
+      console.error('Failed to save quick transaction:', error);
+      setError('Error saving transaction.');
+    }
   };
 
   return (

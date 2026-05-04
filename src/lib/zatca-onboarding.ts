@@ -19,9 +19,17 @@ export async function generateZatcaCSR(details: OnboardingDetails) {
   const cnfPath = path.join(tempDir, 'csr_config.cnf');
   const csrPath = path.join(tempDir, 'request.csr');
 
+  // Clear library paths to avoid symbol lookup errors on some systems
+  const env = { 
+    ...process.env, 
+    LD_LIBRARY_PATH: '', 
+    DYLD_LIBRARY_PATH: '',
+    OPENSSL_CONF: '' // Sometimes this helps too
+  };
+
   try {
     // 1. Generate secp256k1 private key
-    execSync(`openssl ecparam -name secp256k1 -genkey -noout -out ${keyPath}`);
+    execSync(`openssl ecparam -name secp256k1 -genkey -noout -out ${keyPath}`, { env });
 
     // 2. Create CSR configuration file with ZATCA OIDs
     const cnfContent = `
@@ -34,7 +42,7 @@ default_md = sha256
 distinguished_name = dn
 
 [dn]
-C = ${details.country || 'SA'}
+C = SA
 OU = ${details.vatNumber}
 O = ${details.organizationName}
 CN = ${details.commonName}
@@ -42,17 +50,20 @@ CN = ${details.commonName}
 [v3_req]
 basicConstraints = CA:FALSE
 keyUsage = digitalSignature, nonRepudiation, keyEncipherment
-subjectAltName = DNS:${details.egsSerialNumber}
-# ZATCA Certificate Template Name
-1.3.6.1.4.1.311.20.2 = ASN1:PRINTABLESTRING:ZATCA-Code-Signing
-# ZATCA Organization Identifier (VAT Number)
-2.5.4.97 = ASN1:PRINTABLESTRING:${details.vatNumber}
+subjectAltName = dirName:alt_names
+
+[alt_names]
+SN = ${details.egsSerialNumber}
+UID = ${details.vatNumber}
+title = 1100
+registeredAddress = ${details.city}
+businessCategory = ${details.organizationUnit}
 `;
 
     fs.writeFileSync(cnfPath, cnfContent);
 
     // 3. Generate CSR
-    execSync(`openssl req -new -sha256 -key ${keyPath} -config ${cnfPath} -out ${csrPath}`);
+    execSync(`openssl req -new -sha256 -key ${keyPath} -config ${cnfPath} -out ${csrPath}`, { env });
 
     const privateKey = fs.readFileSync(keyPath, 'utf8');
     const csr = fs.readFileSync(csrPath, 'utf8');
@@ -60,6 +71,10 @@ subjectAltName = DNS:${details.egsSerialNumber}
     return { privateKey, csr };
   } finally {
     // Cleanup
-    // fs.rmSync(tempDir, { recursive: true, force: true });
+    try {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    } catch (e) {
+      // Ignore cleanup errors
+    }
   }
 }

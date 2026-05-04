@@ -11,6 +11,7 @@ import { InvoicePDF } from './InvoicePDF';
 import { useApp } from '@/context/AppContext';
 import dynamic from 'next/dynamic';
 import QRCode from 'qrcode';
+import { formatCurrency, formatNumber } from '@/lib/format';
 
 const PDFViewer = dynamic(
   () => import('@react-pdf/renderer').then((mod) => mod.PDFViewer),
@@ -101,8 +102,8 @@ export function ViewQuotationModal({ quotation, client, onClose }: Props) {
                   <tr key={item.id}>
                     <td>{item.description}</td>
                     <td className="text-center">{item.quantity} {item.unit}</td>
-                    <td className="text-right">SAR {(item.price || 0).toLocaleString()}</td>
-                    <td className="text-right">SAR {(item.total || 0).toLocaleString()}</td>
+                    <td className="text-right">{formatCurrency(item.price || 0)}</td>
+                    <td className="text-right">{formatCurrency(item.total || 0)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -125,25 +126,25 @@ export function ViewQuotationModal({ quotation, client, onClose }: Props) {
             <div className={clsx(styles.summary, "flex-1 mt-0")}>
               <div className={styles.summaryRow}>
                 <span>Subtotal</span>
-                <span>SAR {(quotation.subtotal || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                <span>{formatCurrency(quotation.subtotal || 0)}</span>
               </div>
               {(quotation.discount || 0) > 0 && (
                 <div className={clsx(styles.summaryRow, "text-rose-400")}>
                   <span>Discount</span>
-                  <span>- SAR {(quotation.discount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                  <span>- {formatCurrency(quotation.discount || 0)}</span>
                 </div>
               )}
               <div className={styles.summaryRow}>
                 <span>Net Amount</span>
-                <span>SAR {((quotation.subtotal || 0) - (quotation.discount || 0)).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                <span>{formatCurrency((quotation.subtotal || 0) - (quotation.discount || 0))}</span>
               </div>
               <div className={styles.summaryRow}>
                 <span>VAT ({quotation.vatRate || 15}%)</span>
-                <span>SAR {(quotation.vatAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                <span>{formatCurrency(quotation.vatAmount || 0)}</span>
               </div>
               <div className={clsx(styles.summaryRow, styles.grandTotal)}>
                 <span>Grand Total</span>
-                <span>SAR {(quotation.grandTotal || quotation.total || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                <span>{formatCurrency(quotation.grandTotal || quotation.total || 0)}</span>
               </div>
             </div>
           </div>

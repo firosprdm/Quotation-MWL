@@ -2,18 +2,12 @@ import React from 'react';
 import { Page, Text, View, Document, StyleSheet, Font } from '@react-pdf/renderer';
 import { Account, CompanySettings } from '@/types';
 
-Font.register({
-  family: 'Open Sans',
-  fonts: [
-    { src: 'https://cdn.jsdelivr.net/npm/open-sans-all@0.1.3/fonts/open-sans-regular.ttf' },
-    { src: 'https://cdn.jsdelivr.net/npm/open-sans-all@0.1.3/fonts/open-sans-600.ttf', fontWeight: 500 }
-  ]
-});
+// Standard PDF fonts (Helvetica, Courier, Times-Roman) are built-in and don't need registration.
 
 const styles = StyleSheet.create({
   page: {
     padding: 40,
-    fontFamily: 'Open Sans',
+    fontFamily: 'Helvetica',
     backgroundColor: '#ffffff',
   },
   header: {
@@ -106,7 +100,7 @@ const styles = StyleSheet.create({
 });
 
 interface Props {
-  type: 'balance-sheet' | 'pnl' | 'trial-balance' | 'ksa-profitability' | 'ksa-wip' | 'ksa-ar-ageing' | 'ksa-vat' | 'ksa-zakat';
+  type: 'balance-sheet' | 'pnl' | 'trial-balance' | 'ksa-profitability' | 'ksa-wip' | 'ksa-ar-ageing' | 'ksa-vat' | 'ksa-income-tax';
   accounts: Account[];
   settings: CompanySettings;
   extraData: any;
@@ -258,8 +252,8 @@ export function FinancialReportPDF({ type, accounts, settings, extraData }: Prop
         <View key={d.quote.id} style={styles.row}>
           <Text style={[styles.rowText, { width: '20%' }]}>{d.quote.number}</Text>
           <Text style={[styles.rowText, { width: '30%' }]}>{d.quote.projectName || 'Untitled'}</Text>
-          <Text style={[styles.rowAmount, { width: '15%', textAlign: 'right' }]}>{d.budget.toLocaleString()}</Text>
-          <Text style={[styles.rowAmount, { width: '15%', textAlign: 'right' }]}>{d.actualCost.toLocaleString()}</Text>
+          <Text style={[styles.rowAmount, { width: '15%', textAlign: 'right' }]}>{d.budget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+          <Text style={[styles.rowAmount, { width: '15%', textAlign: 'right' }]}>{d.actualCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
           <Text style={[styles.rowAmount, { width: '20%', textAlign: 'right' }]}>{d.marginPercent.toFixed(1)}%</Text>
         </View>
       ))}
@@ -269,12 +263,12 @@ export function FinancialReportPDF({ type, accounts, settings, extraData }: Prop
   const renderWIP = () => (
     <View>
       <View style={styles.summaryCard}>
-        <Text style={styles.rowText}>Costs Incurred (WIP): {extraData.wipBalance.toLocaleString()}</Text>
-        <Text style={styles.rowText}>Progress Billings: {extraData.progressBillingsBalance.toLocaleString()}</Text>
+        <Text style={styles.rowText}>Costs Incurred (WIP): {extraData.wipBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+        <Text style={styles.rowText}>Progress Billings: {extraData.progressBillingsBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
         <View style={{ marginTop: 10, borderTopWidth: 1, borderTopColor: '#e2e8f0', paddingTop: 5 }}>
           <Text style={styles.totalText}>
             {extraData.netWip > 0 ? "Under-Billing (Asset): " : "Over-Billing (Liability): "}
-            {Math.abs(extraData.netWip).toLocaleString()}
+            {Math.abs(extraData.netWip).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </Text>
         </View>
       </View>
@@ -284,10 +278,10 @@ export function FinancialReportPDF({ type, accounts, settings, extraData }: Prop
   const renderARAgeing = () => (
     <View>
       <View style={styles.summaryCard}>
-        <Text style={styles.rowText}>Standard Receivables: {extraData.currentAR.toLocaleString()}</Text>
-        <Text style={styles.rowText}>Retention Receivables: {extraData.retentionBalance.toLocaleString()}</Text>
+        <Text style={styles.rowText}>Standard Receivables: {extraData.currentAR.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+        <Text style={styles.rowText}>Retention Receivables: {extraData.retentionBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
         <View style={{ marginTop: 10, borderTopWidth: 1, borderTopColor: '#e2e8f0', paddingTop: 5 }}>
-          <Text style={styles.totalText}>Total Expected Cash Flow: {(extraData.currentAR + extraData.retentionBalance).toLocaleString()}</Text>
+          <Text style={styles.totalText}>Total Expected Cash Flow: {(extraData.currentAR + extraData.retentionBalance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
         </View>
       </View>
     </View>
@@ -296,30 +290,26 @@ export function FinancialReportPDF({ type, accounts, settings, extraData }: Prop
   const renderVAT = () => (
     <View>
       <View style={styles.summaryCard}>
-        <Text style={styles.rowText}>Output VAT (Collected): {extraData.vatOutput.toLocaleString()}</Text>
-        <Text style={styles.rowText}>Input VAT (Paid): {extraData.vatInput.toLocaleString()}</Text>
+        <Text style={styles.rowText}>Output VAT (Collected): {extraData.vatOutput.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+        <Text style={styles.rowText}>Input VAT (Paid): {extraData.vatInput.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
         <View style={{ marginTop: 10, borderTopWidth: 1, borderTopColor: '#e2e8f0', paddingTop: 5 }}>
           <Text style={styles.totalText}>
             {extraData.netVatPayable > 0 ? "Net Tax Payable: " : "Net Tax Recoverable: "}
-            {Math.abs(extraData.netVatPayable).toLocaleString()}
+            {Math.abs(extraData.netVatPayable).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </Text>
         </View>
       </View>
     </View>
   );
 
-  const renderZakat = () => (
+  const renderIncomeTax = () => (
     <View>
       <View style={styles.section}>
-        <View style={styles.row}><Text style={styles.rowText}>Net Income</Text><Text style={styles.rowAmount}>{netIncome.toLocaleString()}</Text></View>
-        <View style={styles.row}><Text style={styles.rowText}>Equity & Liabilities Base</Text><Text style={styles.rowAmount}>{(extraData.totalLiabilities + extraData.totalEquityBase).toLocaleString()}</Text></View>
+        <View style={styles.row}><Text style={styles.rowText}>Net Accounting Profit (Pre-Tax)</Text><Text style={styles.rowAmount}>{netIncome.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text></View>
+        <View style={styles.row}><Text style={styles.rowText}>Statutory Tax Rate</Text><Text style={styles.rowAmount}>20.00%</Text></View>
         <View style={styles.totalRow}>
-          <Text style={styles.totalText}>Estimated Zakat Base</Text>
-          <Text style={styles.totalAmount}>{extraData.zakatBaseEstimate.toLocaleString()}</Text>
-        </View>
-        <View style={[styles.totalRow, { borderTopWidth: 0 }]}>
-          <Text style={styles.totalText}>Estimated Zakat Provision (2.5%)</Text>
-          <Text style={styles.totalAmount}>{extraData.zakatProvision.toLocaleString()}</Text>
+          <Text style={styles.totalText}>Estimated Corporate Income Tax (20%)</Text>
+          <Text style={styles.totalAmount}>{extraData.incomeTaxProvision.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
         </View>
       </View>
     </View>
@@ -334,7 +324,7 @@ export function FinancialReportPDF({ type, accounts, settings, extraData }: Prop
       case 'ksa-wip': return 'WIP Schedule';
       case 'ksa-ar-ageing': return 'AR Ageing & Retention';
       case 'ksa-vat': return 'ZATCA VAT Return';
-      case 'ksa-zakat': return 'Zakat Lead Schedule';
+      case 'ksa-income-tax': return 'Corporate Income Tax Lead Schedule';
       default: return 'Financial Report';
     }
   };
@@ -355,7 +345,7 @@ export function FinancialReportPDF({ type, accounts, settings, extraData }: Prop
         {type === 'ksa-wip' && renderWIP()}
         {type === 'ksa-ar-ageing' && renderARAgeing()}
         {type === 'ksa-vat' && renderVAT()}
-        {type === 'ksa-zakat' && renderZakat()}
+        {type === 'ksa-income-tax' && renderIncomeTax()}
       </Page>
     </Document>
   );

@@ -23,7 +23,7 @@ import { FinancialReportPDF } from '@/components/FinancialReportPDF';
 import * as XLSX from 'xlsx';
 import styles from '@/app/accounts/accounts.module.css';
 
-type ReportType = 'balance-sheet' | 'pnl' | 'trial-balance' | 'ksa-profitability' | 'ksa-wip' | 'ksa-ar-ageing' | 'ksa-vat' | 'ksa-zakat';
+type ReportType = 'balance-sheet' | 'pnl' | 'trial-balance' | 'ksa-profitability' | 'ksa-wip' | 'ksa-ar-ageing' | 'ksa-vat' | 'ksa-income-tax';
 type DateRangeType = 'all' | 'month' | 'quarter' | 'year' | 'custom';
 
 export function AccountingReports() {
@@ -32,6 +32,11 @@ export function AccountingReports() {
   const [dateRangeType, setDateRangeType] = useState<DateRangeType>('year');
   const [customStartDate, setCustomStartDate] = useState(() => new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0, 10));
   const [customEndDate, setCustomEndDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [isClient, setIsClient] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Determine active start/end timestamps based on selection
   const { startTimestamp, endTimestamp } = useMemo(() => {
@@ -141,8 +146,27 @@ export function AccountingReports() {
   const netVatPayable = vatOutputAccount.balance - vatInputAccount.balance;
 
   const nonDeductibleEstimate = 0; 
-  const zakatBaseEstimate = totalEquityBase + totalLiabilities + netIncome + nonDeductibleEstimate; 
-  const zakatProvision = zakatBaseEstimate * 0.025;
+  const incomeTaxProvision = netIncome > 0 ? netIncome * 0.20 : 0; // 20% Corporate Income Tax for foreign entities
+
+  // Improved AR Ageing with buckets
+  const ageingBuckets = useMemo(() => {
+    const now = Date.now();
+    const day = 24 * 60 * 60 * 1000;
+    const unpaid = quotations.filter(q => q.paymentStatus !== 'Done' && !!q.invoiceNumber);
+    
+    return {
+      current: unpaid.filter(q => (now - (q.invoiceDate || q.date)) <= 30 * day).reduce((s, q) => s + q.grandTotal, 0),
+      over30: unpaid.filter(q => {
+        const diff = (now - (q.invoiceDate || q.date));
+        return diff > 30 * day && diff <= 60 * day;
+      }).reduce((s, q) => s + q.grandTotal, 0),
+      over60: unpaid.filter(q => {
+        const diff = (now - (q.invoiceDate || q.date));
+        return diff > 60 * day && diff <= 90 * day;
+      }).reduce((s, q) => s + q.grandTotal, 0),
+      over90: unpaid.filter(q => (now - (q.invoiceDate || q.date)) > 90 * day).reduce((s, q) => s + q.grandTotal, 0),
+    };
+  }, [quotations]);
 
   const extraData = {
     profitabilityData,
@@ -150,14 +174,14 @@ export function AccountingReports() {
     progressBillingsBalance: progressBillingsAccount.balance,
     netWip,
     currentAR,
+    ageingBuckets,
     retentionBalance: retentionAccount.balance,
     vatInput: vatInputAccount.balance,
     vatOutput: vatOutputAccount.balance,
     netVatPayable,
     totalLiabilities,
     totalEquityBase,
-    zakatBaseEstimate,
-    zakatProvision,
+    incomeTaxProvision,
     dateRangeText
   };
 
@@ -236,13 +260,12 @@ export function AccountingReports() {
           ['Net VAT Payable/Recoverable', netVatPayable]
         ];
         break;
-      case 'ksa-zakat':
+      case 'ksa-income-tax':
         data = [
           ['Description', 'Amount'],
-          ['Net Income', netIncome],
-          ['Equity & Liabilities Base', totalLiabilities + totalEquityBase],
-          ['Estimated Zakat Base', zakatBaseEstimate],
-          ['Estimated Zakat Provision (2.5%)', zakatProvision]
+          ['Net Accounting Profit', netIncome],
+          ['Tax Rate', '20%'],
+          ['Estimated Corporate Income Tax', incomeTaxProvision]
         ];
         break;
     }
@@ -252,6 +275,10 @@ export function AccountingReports() {
     XLSX.utils.book_append_sheet(wb, ws, "Report");
     XLSX.writeFile(wb, fileName);
   };
+
+  if (!isClient) {
+    return <div className="p-20 text-center animate-pulse text-muted">Loading financial engine...</div>;
+  }
 
   return (
     <div className="animate-in fade-in pb-10">
@@ -309,8 +336,8 @@ export function AccountingReports() {
             <button className={clsx(styles.reportTab, reportType === 'ksa-vat' && styles.reportTabActive)} onClick={() => setReportType('ksa-vat')}>
               <FileSpreadsheet size={18} className={clsx(reportType === 'ksa-vat' ? "text-purple-400" : "text-purple-400/60")} /> ZATCA VAT Return
             </button>
-            <button className={clsx(styles.reportTab, reportType === 'ksa-zakat' && styles.reportTabActive)} onClick={() => setReportType('ksa-zakat')}>
-              <Calculator size={18} className={clsx(reportType === 'ksa-zakat' ? "text-pink-400" : "text-pink-400/60")} /> Zakat Lead
+            <button className={clsx(styles.reportTab, reportType === 'ksa-income-tax' && styles.reportTabActive)} onClick={() => setReportType('ksa-income-tax')}>
+              <Calculator size={18} className={clsx(reportType === 'ksa-income-tax' ? "text-pink-400" : "text-pink-400/60")} /> Income Tax Estimate
             </button>
           </div>
 
@@ -318,20 +345,22 @@ export function AccountingReports() {
             <button onClick={exportToExcel} className={clsx(styles.downloadBtn, 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400')}>
               <TableIcon size={18} /> Export XLS
             </button>
-            <PDFDownloadLink
-              // @ts-ignore
-              document={<FinancialReportPDF type={reportType} accounts={accounts} settings={settings} extraData={extraData} />}
-              fileName={`${reportType}-report.pdf`}
-              className={styles.downloadBtn}
-            >
-              {/* @ts-ignore */}
-              {({ loading }) => (
-                <>
-                  <Download size={18} className={clsx(loading && styles.downloadPulse)} />
-                  {loading ? 'Generating...' : 'Export PDF'}
-                </>
-              )}
-            </PDFDownloadLink>
+            {isClient && (
+              <PDFDownloadLink
+                // @ts-ignore
+                document={<FinancialReportPDF type={reportType} accounts={accounts} settings={settings} extraData={extraData} />}
+                fileName={`${reportType}-report.pdf`}
+                className={styles.downloadBtn}
+              >
+                {/* @ts-ignore */}
+                {({ loading }) => (
+                  <>
+                    <Download size={18} className={clsx(loading && styles.downloadPulse)} />
+                    {loading ? 'Generating...' : 'Export PDF'}
+                  </>
+                )}
+              </PDFDownloadLink>
+            )}
           </div>
         </div>
       </div>
@@ -348,7 +377,7 @@ export function AccountingReports() {
             {reportType === 'ksa-wip' && 'Work In Progress (WIP) Schedule'}
             {reportType === 'ksa-ar-ageing' && 'Accounts Receivable Ageing'}
             {reportType === 'ksa-vat' && 'ZATCA VAT Return'}
-            {reportType === 'ksa-zakat' && 'Zakat & Tax Lead Schedule'}
+            {reportType === 'ksa-income-tax' && 'Corporate Income Tax Lead Schedule'}
           </h2>
           <p className="text-muted font-medium tracking-[0.2em] text-[10px]">
             {dateRangeText}
@@ -363,8 +392,8 @@ export function AccountingReports() {
               <div className={styles.reportSection}>
                 {assets.map(acc => (
                   <div key={acc.id} className={styles.reportRow}>
-                    <span className="text-gray-400 font-medium">{acc.name}</span>
-                    <span className="font-mono font-medium text-white">{acc.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                    <span className="text-gray-400">{acc.name}</span>
+                    <span className="font-mono text-white">{acc.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                   </div>
                 ))}
               </div>
@@ -379,8 +408,8 @@ export function AccountingReports() {
               <div className={styles.reportSection}>
                 {liabilities.map(acc => (
                   <div key={acc.id} className={styles.reportRow}>
-                    <span className="text-gray-400 font-medium">{acc.name}</span>
-                    <span className="font-mono font-medium text-white">{acc.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                    <span className="text-gray-400">{acc.name}</span>
+                    <span className="font-mono text-white">{acc.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                   </div>
                 ))}
               </div>
@@ -393,12 +422,12 @@ export function AccountingReports() {
               <div className={styles.reportSection}>
                 {equity.map(acc => (
                   <div key={acc.id} className={styles.reportRow}>
-                    <span className="text-gray-400 font-medium">{acc.name}</span>
-                    <span className="font-mono font-medium text-white">{acc.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                    <span className="text-gray-400">{acc.name}</span>
+                    <span className="font-mono text-white">{acc.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                   </div>
                 ))}
                 <div className={clsx(styles.reportRow, 'text-emerald-400/80')}>
-                  <span className="font-medium">Current Year Earnings</span>
+                  <span>Current Year Earnings</span>
                   <span className="font-mono font-medium">{netIncome.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                 </div>
               </div>
@@ -421,8 +450,8 @@ export function AccountingReports() {
             <div className={styles.reportSection}>
               {revenue.map(acc => (
                 <div key={acc.id} className={styles.reportRow}>
-                  <span className="text-gray-400 font-medium">{acc.name}</span>
-                  <span className="font-mono font-medium text-white">{acc.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                  <span className="text-gray-400">{acc.name}</span>
+                  <span className="font-mono text-white">{acc.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                 </div>
               ))}
             </div>
@@ -435,8 +464,8 @@ export function AccountingReports() {
             <div className={styles.reportSection}>
               {expenses.map(acc => (
                 <div key={acc.id} className={styles.reportRow}>
-                  <span className="text-gray-400 font-medium">{acc.name}</span>
-                  <span className="font-mono font-medium text-white">{acc.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                  <span className="text-gray-400">{acc.name}</span>
+                  <span className="font-mono text-white">{acc.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                 </div>
               ))}
             </div>
@@ -456,89 +485,79 @@ export function AccountingReports() {
         )}
 
         {reportType === 'trial-balance' && (
-          <div className={clsx(styles.tableWrapper, "animate-in fade-in slide-in-from-bottom-4 duration-500")}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th className="pl-5" style={{ width: '10%' }}>Code</th>
-                  <th style={{ width: '50%' }}>Account Name</th>
-                  <th style={{ width: '20%', textAlign: 'right' }}>Debit (SAR)</th>
-                  <th style={{ width: '20%', textAlign: 'right' }}>Credit (SAR)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {accounts.map(acc => {
-                  const isDebit = acc.type === 'Asset' || acc.type === 'Expense';
-                  const debitVal = isDebit && acc.balance !== 0 ? acc.balance : null;
-                  const creditVal = !isDebit && acc.balance !== 0 ? acc.balance : null;
-                  
-                  if (acc.balance === 0) return null;
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex justify-between items-center px-4 py-2 text-[10px] text-muted font-bold uppercase tracking-widest border-b border-white/10 mb-4">
+              <span className="w-16">Code</span>
+              <span className="flex-1 ml-4">Account Name</span>
+              <span className="w-32 text-right">Debit (SAR)</span>
+              <span className="w-32 text-right">Credit (SAR)</span>
+            </div>
+            <div className={styles.reportSection}>
+              {accounts.map(acc => {
+                const isDebit = acc.type === 'Asset' || acc.type === 'Expense';
+                const debitVal = isDebit && acc.balance !== 0 ? acc.balance : null;
+                const creditVal = !isDebit && acc.balance !== 0 ? acc.balance : null;
+                
+                if (acc.balance === 0) return null;
 
-                  return (
-                    <tr key={acc.id} className="border-b border-white/5">
-                      <td className="pl-5 py-2 font-mono text-[9px] text-blue-400/70 font-medium tracking-widest">{acc.code}</td>
-                      <td className="py-2 text-[12px] font-medium text-white/90">{acc.name}</td>
-                      <td className="py-2 text-right font-mono text-[11px] font-medium text-emerald-400">
-                        {debitVal !== null ? debitVal.toLocaleString(undefined, { minimumFractionDigits: 2 }) : ''}
-                      </td>
-                      <td className="py-2 pr-5 text-right font-mono text-[11px] font-medium text-orange-400">
-                        {creditVal !== null ? creditVal.toLocaleString(undefined, { minimumFractionDigits: 2 }) : ''}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-              <tfoot>
-                <tr className="bg-black/30 border-t-2 border-white/10">
-                  <td colSpan={2} className="p-3 text-right font-medium uppercase tracking-[0.2em] text-[10px] text-muted">TOTAL</td>
-                  <td className="p-3 text-right font-mono font-medium text-emerald-400 text-sm">
-                    {accounts.filter(a => a.type === 'Asset' || a.type === 'Expense').reduce((sum, a) => sum + a.balance, 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                  </td>
-                  <td className="p-3 pr-5 text-right font-mono font-medium text-orange-400 text-sm">
-                    {accounts.filter(a => a.type === 'Liability' || a.type === 'Equity' || a.type === 'Revenue').reduce((sum, a) => sum + a.balance, 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
+                return (
+                  <div key={acc.id} className={styles.reportRow}>
+                    <span className="w-16 font-mono text-[9px] text-blue-400/70 tracking-widest">{acc.code}</span>
+                    <span className="flex-1 ml-4 text-white/90">{acc.name}</span>
+                    <span className="w-32 text-right font-mono text-emerald-400">
+                      {debitVal !== null ? debitVal.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '-'}
+                    </span>
+                    <span className="w-32 text-right font-mono text-orange-400">
+                      {creditVal !== null ? creditVal.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '-'}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+            <div className={clsx(styles.reportTotalRow, "mt-6")}>
+              <span className="flex-1 text-right text-muted uppercase tracking-widest text-[10px] mr-8">Total</span>
+              <span className="w-32 text-right font-mono text-emerald-400">
+                {accounts.filter(a => a.type === 'Asset' || a.type === 'Expense').reduce((sum, a) => sum + a.balance, 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              </span>
+              <span className="w-32 text-right font-mono text-orange-400">
+                {accounts.filter(a => a.type === 'Liability' || a.type === 'Equity' || a.type === 'Revenue').reduce((sum, a) => sum + a.balance, 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              </span>
+            </div>
           </div>
         )}
 
         {/* KSA New Reports */}
         {reportType === 'ksa-profitability' && (
-          <div className={clsx(styles.tableWrapper, "animate-in fade-in slide-in-from-bottom-4 duration-500")}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th className="pl-5" style={{ width: '15%' }}>Project Ref</th>
-                  <th style={{ width: '30%' }}>Client / Title</th>
-                  <th style={{ width: '20%', textAlign: 'right' }}>Est. Revenue (SAR)</th>
-                  <th style={{ width: '20%', textAlign: 'right' }}>Actual Cost (SAR)</th>
-                  <th className="pr-5" style={{ width: '15%', textAlign: 'right' }}>Gross Margin</th>
-                </tr>
-              </thead>
-              <tbody>
-                {profitabilityData.length === 0 ? (
-                  <tr><td colSpan={5} className="text-center py-10 text-muted font-medium">No active projects/quotations found.</td></tr>
-                ) : profitabilityData.map(d => (
-                  <tr key={d.quote.id} className="border-b border-white/5 hover:bg-white/[0.02]">
-                    <td className="pl-5 py-3 font-mono text-xs text-blue-400 font-medium">{d.quote.number}</td>
-                    <td className="py-3">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium text-white">{d.quote.projectName || 'Untitled Project'}</span>
-                        <span className="text-[10px] text-muted uppercase tracking-wider">{d.quote.status}</span>
-                      </div>
-                    </td>
-                    <td className="py-3 text-right font-mono text-sm font-medium text-emerald-400">{d.budget.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                    <td className="py-3 text-right font-mono text-sm font-medium text-orange-400">{d.actualCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                    <td className="py-3 pr-5 text-right font-mono text-sm font-medium">
-                      <span className={clsx("px-2 py-1 rounded-lg", d.margin >= 0 ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400")}>
-                        {d.marginPercent.toFixed(1)}%
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex justify-between items-center px-4 py-2 text-[10px] text-muted font-bold uppercase tracking-widest border-b border-white/10 mb-4">
+              <span className="w-24">Project Ref</span>
+              <span className="flex-1 ml-4">Client / Project Name</span>
+              <span className="w-32 text-right">Revenue</span>
+              <span className="w-32 text-right">Costs</span>
+              <span className="w-32 text-right">Margin %</span>
+            </div>
+            <div className={styles.reportSection}>
+              {profitabilityData.length === 0 ? (
+                <div className="text-center py-10 text-muted font-medium">No active projects/quotations found.</div>
+              ) : profitabilityData.map(d => (
+                <div key={d.quote.id} className={styles.reportRow}>
+                  <span className="w-24 font-mono text-[9px] text-blue-400/70 tracking-widest">{d.quote.number}</span>
+                  <span className="flex-1 ml-4">
+                    <div className="flex flex-col">
+                      <span className="text-[13px] text-white/90">{d.quote.projectName || 'Untitled Project'}</span>
+                      <span className="text-[9px] text-muted uppercase tracking-wider">{d.quote.status}</span>
+                    </div>
+                  </span>
+                  <span className="w-32 text-right font-mono text-emerald-400">{d.budget.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                  <span className="w-32 text-right font-mono text-orange-400">{d.actualCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                  <span className="w-32 text-right font-mono">
+                    <span className={clsx("px-2 py-0.5 rounded border text-[11px]", d.margin >= 0 ? "border-emerald-500/20 text-emerald-400" : "border-red-500/20 text-red-400")}>
+                      {d.marginPercent.toFixed(1)}%
+                    </span>
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -596,7 +615,26 @@ export function AccountingReports() {
         )}
 
         {reportType === 'ksa-ar-ageing' && (
-          <div className="max-w-3xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="grid grid-cols-4 gap-4">
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 relative overflow-hidden group">
+                <p className="text-[10px] text-muted font-black uppercase tracking-wider mb-2 text-emerald-400">Current (0-30)</p>
+                <p className="text-xl font-mono font-medium text-white">{ageingBuckets.current.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+              </div>
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 relative overflow-hidden group">
+                <p className="text-[10px] text-muted font-black uppercase tracking-wider mb-2 text-amber-400">31-60 Days</p>
+                <p className="text-xl font-mono font-medium text-white">{ageingBuckets.over30.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+              </div>
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 relative overflow-hidden group">
+                <p className="text-[10px] text-muted font-black uppercase tracking-wider mb-2 text-orange-400">61-90 Days</p>
+                <p className="text-xl font-mono font-medium text-white">{ageingBuckets.over60.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+              </div>
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 relative overflow-hidden group">
+                <p className="text-[10px] text-muted font-black uppercase tracking-wider mb-2 text-rose-400">90+ Days</p>
+                <p className="text-xl font-mono font-medium text-white">{ageingBuckets.over90.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+              </div>
+            </div>
+
             <div className="flex gap-4">
               <div className="flex-1 bg-white/5 border border-white/10 rounded-2xl p-6 relative overflow-hidden group">
                 <div className="absolute inset-0 bg-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -665,40 +703,40 @@ export function AccountingReports() {
           </div>
         )}
 
-        {reportType === 'ksa-zakat' && (
+        {reportType === 'ksa-income-tax' && (
           <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="grid grid-cols-2 gap-6">
               <div className="p-8 bg-white/5 rounded-2xl border border-white/10 flex flex-col items-center text-center">
                 <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center mb-4 text-blue-400 border border-blue-500/20">
                   <TrendingUp size={24} />
                 </div>
-                <p className="text-xs font-medium text-white/50 uppercase tracking-widest mb-2">Net Income</p>
+                <p className="text-xs font-medium text-white/50 uppercase tracking-widest mb-2">Net Profit (Pre-Tax)</p>
                 <span className="text-2xl font-mono font-medium text-white">{netIncome.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
               </div>
               <div className="p-8 bg-white/5 rounded-2xl border border-white/10 flex flex-col items-center text-center">
                 <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center mb-4 text-purple-400 border border-purple-500/20">
-                  <Scale size={24} />
+                  <Calculator size={24} />
                 </div>
-                <p className="text-xs font-medium text-white/50 uppercase tracking-widest mb-2">Capital Base</p>
-                <span className="text-2xl font-mono font-medium text-white">{(totalLiabilities + totalEquityBase).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                <p className="text-xs font-medium text-white/50 uppercase tracking-widest mb-2">Statutory Tax Rate</p>
+                <span className="text-2xl font-mono font-medium text-white">20.00%</span>
               </div>
             </div>
 
-            <div className="p-10 bg-gradient-to-br from-pink-500/10 to-purple-500/10 rounded-2xl border border-pink-500/20 flex flex-col items-center text-center shadow-[0_0_40px_rgba(236,72,153,0.05)]">
-              <div className="w-16 h-16 rounded-2xl bg-pink-500/20 border border-pink-500/30 flex items-center justify-center mb-6 text-pink-400">
+            <div className="p-10 bg-gradient-to-br from-rose-500/10 to-orange-500/10 rounded-2xl border border-rose-500/20 flex flex-col items-center text-center shadow-[0_0_40px_rgba(244,63,94,0.05)]">
+              <div className="w-16 h-16 rounded-2xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center mb-6 text-rose-400">
                 <Calculator size={32} />
               </div>
-              <p className="text-xs font-medium text-pink-400 uppercase tracking-[0.3em] mb-4">Estimated Zakat Provision (2.5%)</p>
-              <span className="text-4xl font-mono font-medium text-white drop-shadow-md">{zakatProvision.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+              <p className="text-xs font-medium text-rose-400 uppercase tracking-[0.3em] mb-4">Estimated Corporate Income Tax (20%)</p>
+              <span className="text-4xl font-mono font-medium text-white drop-shadow-md">{incomeTaxProvision.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
               <div className="mt-8 pt-6 border-t border-white/5 w-full">
                 <div className="flex justify-between items-center text-[11px] text-white/40 uppercase tracking-widest px-4">
-                  <span>Zakat Base Estimate</span>
-                  <span className="font-mono text-white/60">{zakatBaseEstimate.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                  <span>Taxable Base (Accounting Net Income)</span>
+                  <span className="font-mono text-white/60">{netIncome.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                 </div>
               </div>
             </div>
             <p className="text-xs text-center text-muted font-medium mt-6 max-w-lg mx-auto">
-              This is a lead schedule simulation based on standard balances. Official Zakat declarations require statutory auditing and adjustments for exact days in the Hijri or Gregorian year.
+              As a 100% foreign-owned entity, your company is subject to Corporate Income Tax at a flat rate of 20% on net adjusted profit. This estimate is based on your current accounting net income and does not account for specific tax add-backs or deductions (e.g. non-deductible expenses).
             </p>
           </div>
         )}

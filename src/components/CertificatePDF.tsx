@@ -2,13 +2,8 @@ import React from 'react';
 import { Page, Text, View, Document, StyleSheet, Font, Image } from '@react-pdf/renderer';
 import { Quotation, Client, CompanySettings } from '@/types';
 
-Font.register({
-  family: 'Helvetica',
-  fonts: [
-    { src: 'https://cdn.jsdelivr.net/npm/@canvas-fonts/helvetica@1.0.4/Helvetica.ttf' },
-    { src: 'https://cdn.jsdelivr.net/npm/@canvas-fonts/helvetica@1.0.4/Helvetica-Bold.ttf', fontWeight: 'bold' }
-  ]
-});
+// Standard PDF fonts (Helvetica, Courier, Times-Roman) are built-in and don't need registration.
+
 
 const styles = StyleSheet.create({
   page: {

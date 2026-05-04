@@ -1,0 +1,86 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: white;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+
+.tableWrapper {
+  margin-top: 2rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 10px;
+}
+
+.compactTable {
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+}
+
+.compactTable th {
+  padding: 8px 20px !important;
+  font-size: 10px !important;
+}
+
+.compactTable td {
+  padding: 4px 20px !important;
+  font-size: 11px !important;
+}
+
+.table th {
+  text-align: left;
+  padding: 18px 20px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.table td {
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  font-size: 13px;
+}
+
+.iconContainer {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconBlue {
+  background: rgba(59, 130, 246, 0.1);
+  color: #60a5fa;
+}
+
+.iconGreen {
+  background: rgba(16, 185, 129, 0.1);
+  color: #34d399;
+}
+
+.iconRed {
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+}

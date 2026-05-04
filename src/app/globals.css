@@ -141,3 +141,10 @@ body::after {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Status Dropdown Colors */
+.status-pending { border-color: #f59e0b !important; color: #f59e0b !important; }
+.status-ongoing { border-color: #3b82f6 !important; color: #3b82f6 !important; }
+.status-done { border-color: #10b981 !important; color: #10b981 !important; }
+.status-overdue { border-color: #f43f5e !important; color: #f43f5e !important; }
+.status-none { border-color: #64748b !important; color: #64748b !important; }

@@ -7,6 +7,7 @@ import styles from './clients.module.css';
 import { clsx } from 'clsx';
 import { ClientDetailsModal } from '@/components/ClientDetailsModal';
 import { Client } from '@/types';
+import { formatCurrency, formatNumber } from '@/lib/format';
 
 export default function ClientsPage() {
   const { clients, quotations, addClient, updateClient, deleteClient } = useApp();
@@ -180,10 +181,14 @@ export default function ClientsPage() {
                 </button>
                 <button 
                   className={clsx(styles.actionBtn, styles.delete)}
-                  onClick={(e) => {
+                  onClick={async (e) => {
                     e.stopPropagation();
                     if(confirm('Are you sure you want to delete this client?')) {
-                      deleteClient(client.id);
+                      try {
+                        await deleteClient(client.id);
+                      } catch (err) {
+                        alert('Error deleting client: ' + err);
+                      }
                     }
                   }}
                 >
@@ -240,13 +245,13 @@ export default function ClientsPage() {
 
                 return (
                   <div className={styles.badgesContainer}>
-                    <div className={clsx(styles.statBadge, styles.salesBadge)} title={`Sales: SAR ${sales.toLocaleString()}`}>
+                    <div className={clsx(styles.statBadge, styles.salesBadge)} title={`Sales: ${formatCurrency(sales)}`}>
                       <TrendingUp size={18} /> <span>{formatNum(sales)}</span>
                     </div>
-                    <div className={clsx(styles.statBadge, styles.receivedBadge)} title={`Received: SAR ${received.toLocaleString()}`}>
+                    <div className={clsx(styles.statBadge, styles.receivedBadge)} title={`Received: ${formatCurrency(received)}`}>
                       <CheckCircle size={18} /> <span>{formatNum(received)}</span>
                     </div>
-                    <div className={clsx(styles.statBadge, styles.pendingBadge)} title={`Pending: SAR ${pending.toLocaleString()}`}>
+                    <div className={clsx(styles.statBadge, styles.pendingBadge)} title={`Pending: ${formatCurrency(pending)}`}>
                       <Clock size={18} /> <span>{formatNum(pending)}</span>
                     </div>
                   </div>

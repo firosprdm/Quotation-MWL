@@ -159,16 +159,16 @@ export default function CertificatesPage() {
                         className={clsx(
                           'glass-input', 
                           styles.statusSelect,
-                          q.workStatus === 'Work Done' ? styles.workDone : 
-                          q.workStatus === 'Work On going' ? styles.workOngoing : 
-                          styles.workPending
+                          q.workStatus === 'Work Done' ? 'status-done' : 
+                          q.workStatus === 'Work On going' ? 'status-ongoing' : 
+                          'status-pending'
                         )}
                         value={q.workStatus || 'Work pending'}
                         onChange={(e) => updateQuotation(q.id, { workStatus: e.target.value as any })}
                       >
-                        <option value="Work pending">Work pending</option>
-                        <option value="Work On going">Work On going</option>
-                        <option value="Work Done">Work Done</option>
+                        <option value="Work pending" className="text-gray-900">Work pending</option>
+                        <option value="Work On going" className="text-gray-900">Work On going</option>
+                        <option value="Work Done" className="text-gray-900">Work Done</option>
                       </select>
                     </td>
                     <td>
