@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { 
   FileText, 
@@ -36,6 +36,11 @@ import { PipelineTracker } from '@/components/PipelineTracker';
 
 export default function Dashboard() {
   const { quotations, clients, inventory, accounts, journalEntries, isLoaded } = useApp();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const stats = useMemo(() => {
     const cashBalance = accounts.find(a => a.code === '1000')?.balance || 0;
@@ -49,29 +54,35 @@ export default function Dashboard() {
     
     const netProfit = revenue - totalExpenses;
 
+    const vatOutput = accounts.find(a => a.code === '2200')?.balance || 0;
+    const vatInput = accounts.find(a => a.code === '1500')?.balance || 0;
+    const vatLiability = vatOutput - vatInput;
+    
+    const incomeTaxProvision = netProfit > 0 ? netProfit * 0.20 : 0;
+
     return [
-      { name: 'Yearly Revenue (Net)', value: 'SAR 175,000.00', icon: TrendingUp, color: 'emerald', detail: 'FY2024 Performance' },
-      { name: 'Operating Profit', value: 'SAR 94,000.00', icon: ArrowUpRight, color: 'blue', detail: 'Net Operating Income' },
-      { name: 'ZATCA VAT Liability', value: 'SAR 26,250.00', icon: ShieldCheck, color: 'purple', detail: 'VAT Filing (15%)' },
-      { name: 'Income Tax (20%)', value: 'SAR 18,800.00', icon: FileText, color: 'rose', detail: 'Estimated Provision' },
+      { name: 'Yearly Revenue (Net)', value: formatCurrency(revenue), icon: TrendingUp, color: 'emerald', detail: 'FY2024 Performance' },
+      { name: 'Operating Profit', value: formatCurrency(netProfit), icon: ArrowUpRight, color: 'blue', detail: 'Net Operating Income' },
+      { name: 'ZATCA VAT Liability', value: formatCurrency(vatLiability), icon: ShieldCheck, color: 'purple', detail: 'VAT Filing (15%)' },
+      { name: 'Income Tax (20%)', value: formatCurrency(incomeTaxProvision), icon: FileText, color: 'rose', detail: 'Estimated Provision' },
     ];
   }, [accounts]);
 
   const chartData = useMemo(() => {
-    const last7Days = [...Array(7)].map((_, i) => {
+    const last6Months = [...Array(6)].map((_, i) => {
       const d = new Date();
-      d.setDate(d.getDate() - i);
-      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      d.setMonth(d.getMonth() - i);
+      return d.toLocaleDateString('en-US', { month: 'short' });
     }).reverse();
 
-    return last7Days.map(dateStr => {
-      const dailyRevenue = journalEntries
-        .filter(je => new Date(je.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) === dateStr)
+    return last6Months.map(monthStr => {
+      const monthlyRevenue = journalEntries
+        .filter(je => new Date(je.date).toLocaleDateString('en-US', { month: 'short' }) === monthStr)
         .reduce((sum, je) => {
           const revLine = je.lines.find(l => l.accountId === 'acc-9');
           return sum + (revLine?.credit || 0);
         }, 0);
-      return { name: dateStr, revenue: dailyRevenue };
+      return { name: monthStr, revenue: monthlyRevenue };
     });
   }, [journalEntries]);
 
@@ -165,82 +176,96 @@ export default function Dashboard() {
             </div>
           </div>
           <div className={styles.chartContainer}>
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData}>
-                <defs>
-                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                <XAxis 
-                  dataKey="name" 
-                  stroke="#64748b" 
-                  fontSize={12} 
-                  tickLine={false} 
-                  axisLine={false} 
-                />
-                <YAxis 
-                  stroke="#64748b" 
-                  fontSize={12} 
-                  tickLine={false} 
-                  axisLine={false}
-                  tickFormatter={(value) => `${value / 1000}k`}
-                />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'rgba(15, 23, 42, 0.9)', 
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    borderRadius: '12px',
-                    backdropFilter: 'blur(10px)'
-                  }}
-                  itemStyle={{ color: '#3b82f6' }}
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="revenue" 
-                  stroke="#3b82f6" 
-                  strokeWidth={3}
-                  fillOpacity={1} 
-                  fill="url(#colorRevenue)" 
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+            {!isMounted ? (
+              <div className="flex items-center justify-center h-full text-muted">Loading chart...</div>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={chartData}>
+                  <defs>
+                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                  <XAxis 
+                    dataKey="name" 
+                    stroke="#64748b" 
+                    fontSize={12} 
+                    tickLine={false} 
+                    axisLine={false} 
+                  />
+                  <YAxis 
+                    stroke="#64748b" 
+                    fontSize={12} 
+                    tickLine={false} 
+                    axisLine={false}
+                    tickFormatter={(value) => `${value / 1000}k`}
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'rgba(15, 23, 42, 0.9)', 
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '12px',
+                      backdropFilter: 'blur(10px)'
+                    }}
+                    itemStyle={{ color: '#3b82f6' }}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="revenue" 
+                    stroke="#3b82f6" 
+                    strokeWidth={3}
+                    fillOpacity={1} 
+                    fill="url(#colorRevenue)" 
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </motion.section>
 
         <motion.section className={clsx('glass-panel', styles.distributionSection)} variants={itemVariants}>
           <h3 className={styles.sectionTitle}>Status Distribution</h3>
           <div className={styles.pieContainer}>
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={statusData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {statusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                   contentStyle={{ 
-                    backgroundColor: 'rgba(15, 23, 42, 0.9)', 
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    borderRadius: '12px'
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className={styles.pieCenter}>
-              <span className={styles.pieTotal}>{quotations.length}</span>
-              <span className={styles.pieLabel}>Total</span>
-            </div>
+            {!isMounted ? (
+              <div className="flex items-center justify-center h-full text-muted">Loading chart...</div>
+            ) : statusData.length === 0 ? (
+              <div className="flex items-center justify-center h-full text-muted text-xs text-center px-4">
+                No active quotations found for distribution.
+              </div>
+            ) : (
+              <>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={statusData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {statusData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                       contentStyle={{ 
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)', 
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '12px'
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className={styles.pieCenter}>
+                  <span className={styles.pieTotal}>{quotations.length}</span>
+                  <span className={styles.pieLabel}>Total</span>
+                </div>
+              </>
+            )}
           </div>
           <div className={styles.legend}>
             {statusData.map((item) => (

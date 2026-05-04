@@ -68,51 +68,45 @@ export default function InventoryPage() {
         />
       </div>
 
-      <div className={clsx('glass-panel', styles.tableWrapper)}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Description</th>
-              <th>Unit</th>
-              <th>Price</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredItems.length === 0 ? (
-              <tr>
-                <td colSpan={4} className={styles.emptyState}>No items found.</td>
-              </tr>
-            ) : (
-              filteredItems.map((item) => (
-                <tr key={item.id}>
-                  <td className={styles.itemDescription}>
-                    <div className={styles.iconBox}><Tag size={16} /></div>
-                    {item.description}
-                  </td>
-                  <td className={styles.itemUnit}>{item.unit}</td>
-                  <td className={styles.itemPrice}>SAR {item.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                  <td>
-                    <div className={styles.actions}>
-                      <button 
-                        className={styles.actionBtn}
-                        onClick={() => openEditModal(item)}
-                      >
-                        <Edit2 size={16} />
-                      </button>
-                      <button 
-                        className={clsx(styles.actionBtn, styles.delete)}
-                        onClick={() => deleteItem(item.id)}
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+      <div className={styles.reportSection}>
+        {filteredItems.length === 0 ? (
+          <div className={styles.emptyState}>No items found.</div>
+        ) : (
+          filteredItems.map((item) => (
+            <div key={item.id} className={styles.reportRow}>
+              <div className="flex items-center gap-4 flex-1">
+                <div className={styles.iconBox}><Tag size={16} className="text-blue-400" /></div>
+                <div className="flex flex-col">
+                  <span className="text-[14px] text-white tracking-tight">{item.description}</span>
+                  <span className="text-[10px] text-muted uppercase tracking-widest">{item.unit}</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-8">
+                <div className="flex flex-col text-right w-[120px]">
+                  <span className="text-[9px] text-muted uppercase tracking-widest mb-1">Unit Price</span>
+                  <span className="font-mono text-[13px] text-emerald-400">
+                    SAR {item.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button 
+                    className="p-2 rounded-lg hover:bg-white/5 text-muted hover:text-white transition-colors"
+                    onClick={() => openEditModal(item)}
+                  >
+                    <Edit2 size={16} />
+                  </button>
+                  <button 
+                    className="p-2 rounded-lg hover:bg-red-500/10 text-muted hover:text-red-400 transition-colors"
+                    onClick={() => deleteItem(item.id)}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
       {isModalOpen && (

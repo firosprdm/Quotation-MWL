@@ -82,7 +82,7 @@ export const PipelineTracker = () => {
       <div className="glass-panel overflow-hidden border border-white/10 shadow-2xl">
         <div className="flex flex-col">
           {/* Header Row - Aligned with Dashboard Tables */}
-          <div className="hidden lg:grid grid-cols-12 gap-12 px-16 min-h-[1.2cm] h-[1.2cm] text-[0.75rem] uppercase font-bold tracking-widest text-slate-500 border-b border-white/5 items-center bg-white/[0.02]">
+          <div className="hidden lg:grid grid-cols-12 gap-12 px-16 min-h-[1.2cm] h-[1.2cm] text-[0.75rem] uppercase font-medium tracking-widest text-slate-500 border-b border-white/5 items-center bg-white/[0.02]">
             <div className="col-span-1 cursor-pointer hover:text-white transition-colors pl-[10mm]" onClick={() => toggleSort('number')}>
               Number {sortConfig.key === 'number' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
             </div>
@@ -91,10 +91,10 @@ export const PipelineTracker = () => {
             </div>
             
             <div className="col-span-7 grid grid-cols-4 gap-12 text-center">
-              <div className="text-blue-400 font-black">Quotation</div>
-              <div className="text-amber-400 font-black">PO Status</div>
-              <div className="text-fuchsia-400 font-black">Execution</div>
-              <div className="text-emerald-400 font-black">Financial</div>
+              <div className="text-blue-400 font-medium opacity-60">Quotation</div>
+              <div className="text-amber-400 font-medium opacity-60">PO Status</div>
+              <div className="text-fuchsia-400 font-medium opacity-60">Execution</div>
+              <div className="text-emerald-400 font-medium opacity-60">Financial</div>
             </div>
 
             <div className="col-span-2 text-right cursor-pointer hover:text-white transition-colors pr-[10mm]" onClick={() => toggleSort('total')}>
@@ -117,11 +117,11 @@ export const PipelineTracker = () => {
                   onClick={() => setSelectedProjectId(q.id)}
                 >
                   
-                  <div className="col-span-1 font-semibold text-white text-[0.875rem] lg:block hidden tracking-tight pl-[10mm]">
+                  <div className="col-span-1 font-medium text-white/90 text-[0.875rem] lg:block hidden tracking-tight pl-[10mm]">
                     {q.invoiceNumber || q.number}
                   </div>
                   <div className="col-span-2 text-slate-300 text-[0.875rem] font-medium truncate pr-6">
-                    <span className="lg:hidden text-slate-500 font-black mr-2">
+                    <span className="lg:hidden text-slate-500 font-medium mr-2">
                       {q.invoiceNumber || q.number}
                     </span>
                     {client?.name || 'Generic Client'}

@@ -179,111 +179,108 @@ export default function QuotationsPage() {
         </button>
       </div>
 
-      <div className={clsx('glass-panel', styles.tableWrapper)}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th className="cursor-pointer hover:text-white transition-colors" onClick={() => requestSort('number')}>
-                Ref No. <SortIcon column="number" />
-              </th>
-              <th className="cursor-pointer hover:text-white transition-colors" onClick={() => requestSort('client')}>
-                Client <SortIcon column="client" />
-              </th>
-              <th className="cursor-pointer hover:text-white transition-colors" onClick={() => requestSort('date')}>
-                Date <SortIcon column="date" />
-              </th>
-              <th className="cursor-pointer hover:text-white transition-colors" onClick={() => requestSort('total')}>
-                Value <SortIcon column="total" />
-              </th>
-              <th className="cursor-pointer hover:text-white transition-colors" onClick={() => requestSort('status')}>
-                Pipeline Status <SortIcon column="status" />
-              </th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {!isLoaded ? (
-              <tr>
-                <td colSpan={6} className={styles.emptyState}>
-                  <div className="flex items-center justify-center gap-3">
-                    <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                    <span>Fetching quotations...</span>
-                  </div>
-                </td>
-              </tr>
-            ) : filteredQuotations.length === 0 ? (
-              <tr>
-                <td colSpan={6} className={styles.emptyState}>
-                  {search ? 'No matches found for your search.' : 'No quotations issued yet.'}
-                </td>
-              </tr>
-            ) : (
-              filteredQuotations.map((q) => (
-                <tr key={q.id}>
-                  <td className="font-bold text-white">
+      <div className={styles.reportSection}>
+        <div className={clsx(styles.reportRow, styles.reportHeader, "!bg-slate-900/50 !border-white/10")}>
+          <div className="flex items-center gap-6 flex-1">
+            <div className="w-[100px] text-[10px] font-black uppercase tracking-widest text-muted">Ref No.</div>
+            <div className="text-[10px] font-black uppercase tracking-widest text-muted">Client & Date</div>
+          </div>
+          <div className="flex items-center gap-8">
+            <div className="w-[120px] text-right text-[10px] font-black uppercase tracking-widest text-muted">Value</div>
+            <div className="min-w-[150px] text-[10px] font-black uppercase tracking-widest text-muted">Pipeline Status</div>
+            <div className="w-[100px] text-right text-[10px] font-black uppercase tracking-widest text-muted">Actions</div>
+          </div>
+        </div>
+        {!isLoaded ? (
+          <div className="text-center py-20 text-muted">
+             <div className="flex items-center justify-center gap-3">
+               <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+               <span>Fetching quotations...</span>
+             </div>
+          </div>
+        ) : filteredQuotations.length === 0 ? (
+          <div className="text-center py-20 text-muted">
+            {search ? 'No matches found for your search.' : 'No quotations issued yet.'}
+          </div>
+        ) : (
+          filteredQuotations.map((q) => (
+            <div key={q.id} className={styles.reportRow}>
+              <div className="flex items-center gap-6 flex-1">
+                <div className="flex flex-col w-[100px]">
+                  <span className="text-[10px] text-blue-400 font-black uppercase tracking-widest leading-none mb-1">
                     {q.number}
-                    {q.revision > 0 && <span className="text-xs text-muted ml-1">v{q.revision + 1}</span>}
-                  </td>
-                  <td className="max-w-[200px] truncate">{clients.find(c => c.id === q.clientId)?.name || 'Unknown'}</td>
-                  <td className="text-muted">{new Date(q.date).toLocaleDateString()}</td>
-                  <td className="font-bold text-emerald-400">{formatCurrency(q.grandTotal || q.total)}</td>
-                  <td>
-                    <div className="flex flex-col gap-2">
-                      <StatusBar status={q.status} isInvoiced={!!q.invoiceNumber} />
-                      <select 
-                        className={clsx(styles.statusSelect, styles[q.status])}
-                        value={q.status}
-                        onChange={(e) => updateQuotation(q.id, { status: e.target.value as any })}
-                      >
-                        {statusOptions.map(opt => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </td>
-                  <td>
-                    <div className={styles.actions}>
-                      <button 
-                        className={styles.actionBtn} 
-                        title="Preview"
-                        onClick={() => setViewQuotation(q)}
-                      >
-                        <Eye size={16} />
-                      </button>
-                      <Link 
-                        href={`/quotations/edit/${q.id}`}
-                        className={styles.actionBtn} 
-                        title="Edit"
-                      >
-                        <Pencil size={16} />
-                      </Link>
-                      {clients.find(c => c.id === q.clientId) && (
-                        <OnDemandPDFDownload 
-                          document={<QuotationPDF quotation={q} client={clients.find(c => c.id === q.clientId)!} settings={settings} />} 
-                          fileName={`Quotation_${q.number}.pdf`}
-                          className={styles.actionBtn}
-                          title="Download PDF"
-                          icon={<Download size={16} />}
-                        />
-                      )}
-                      <button 
-                        className={clsx(styles.actionBtn, styles.deleteBtn)} 
-                        title="Archive"
-                        onClick={() => {
-                          if (confirm('Permanently delete this quotation record?')) {
-                            deleteQuotation(q.id);
-                          }
-                        }}
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+                  </span>
+                  {q.revision > 0 && <span className="text-[8px] text-muted">Revision {q.revision + 1}</span>}
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[14px] text-white tracking-tight">
+                    {clients.find(c => c.id === q.clientId)?.name || 'Unknown'}
+                  </span>
+                  <span className="text-[10px] text-muted">{new Date(q.date).toLocaleDateString()}</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-8">
+                <div className="flex flex-col w-[120px] text-right">
+                  <span className="text-[9px] text-muted uppercase tracking-widest mb-1">Grand Total</span>
+                  <span className="font-mono text-[14px] text-emerald-400">
+                    {formatCurrency(q.grandTotal || q.total)}
+                  </span>
+                </div>
+                
+                <div className="flex flex-col gap-2 min-w-[150px]">
+                  <StatusBar status={q.status} isInvoiced={!!q.invoiceNumber} />
+                  <select 
+                    className={clsx(styles.statusSelect, styles[q.status], "text-[9px] uppercase tracking-tighter")}
+                    value={q.status}
+                    onChange={(e) => updateQuotation(q.id, { status: e.target.value as any })}
+                  >
+                    {statusOptions.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className={styles.actions}>
+                  <button 
+                    className={styles.actionBtn} 
+                    title="Preview"
+                    onClick={() => setViewQuotation(q)}
+                  >
+                    <Eye size={16} />
+                  </button>
+                  <Link 
+                    href={`/quotations/edit/${q.id}`}
+                    className={styles.actionBtn}
+                    title="Edit"
+                  >
+                    <Pencil size={16} />
+                  </Link>
+                  {clients.find(c => c.id === q.clientId) && (
+                    <OnDemandPDFDownload 
+                      document={<QuotationPDF quotation={q} client={clients.find(c => c.id === q.clientId)!} settings={settings} />} 
+                      fileName={`Quotation_${q.number}.pdf`}
+                      className={styles.actionBtn}
+                      title="Download PDF"
+                      icon={<Download size={16} />}
+                    />
+                  )}
+                  <button 
+                    className={clsx(styles.actionBtn, styles.deleteBtn)}
+                    title="Delete"
+                    onClick={() => {
+                      if (confirm('Are you sure you want to delete this quotation?')) {
+                        deleteQuotation(q.id);
+                      }
+                    }}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

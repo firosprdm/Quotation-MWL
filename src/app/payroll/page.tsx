@@ -153,58 +153,52 @@ export default function PayrollPage() {
           </button>
         </div>
       )}
-
       <div className={clsx('glass-panel', styles.tableWrapper)}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Employee</th>
-              <th>Basic</th>
-              <th>Allowances</th>
-              <th>GOSI (10%)</th>
-              <th>Net Salary</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {!isLoaded ? (
-              <tr><td colSpan={6} className={styles.emptyState}>Loading...</td></tr>
-            ) : currentPayroll.length === 0 ? (
-              <tr>
-                <td colSpan={6} className={styles.emptyState}>
-                  <div className="flex flex-col items-center gap-4">
-                    <AlertCircle size={48} className="text-white/10" />
-                    <p>No payroll data for {new Date(0, selectedMonth - 1).toLocaleString('default', { month: 'long' })} {selectedYear}</p>
-                    <button onClick={generatePayroll} className="glass-button px-6 py-2">Initialize Now</button>
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              currentPayroll.map((p) => {
-                const emp = employees.find(e => e.id === p.employeeId);
-                return (
-                  <tr key={p.id}>
-                    <td>
-                      <div className="flex flex-col">
-                        <span className="font-bold text-white">{emp?.name || 'Unknown'}</span>
-                        <span className="text-xs text-muted">{emp?.jobTitle}</span>
-                      </div>
-                    </td>
-                    <td>{formatCurrency(p.basicSalary)}</td>
-                    <td>{formatCurrency(p.housingAllowance + p.transportAllowance + p.otherAllowances)}</td>
-                    <td className="text-rose-400">-{formatCurrency(p.gosiDeduction)}</td>
-                    <td className="font-bold text-emerald-400">{formatCurrency(p.netSalary)}</td>
-                    <td>
-                      <span className={clsx(styles.status, styles[p.status])}>
-                        {p.status}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+        <div className={styles.reportRowHeader}>
+          <span className="flex-1">Employee</span>
+          <span className="w-32 text-right">Basic</span>
+          <span className="w-32 text-right">Allowances</span>
+          <span className="w-32 text-right">GOSI (10%)</span>
+          <span className="w-32 text-right">Net Salary</span>
+          <span className="w-24 text-right">Status</span>
+        </div>
+        
+        <div className={styles.reportSection}>
+          {!isLoaded ? (
+            <div className={styles.emptyState}>Loading...</div>
+          ) : currentPayroll.length === 0 ? (
+            <div className={styles.emptyState}>
+              <div className="flex flex-col items-center gap-4">
+                <AlertCircle size={48} className="text-white/10" />
+                <p>No payroll data for {new Date(0, selectedMonth - 1).toLocaleString('default', { month: 'long' })} {selectedYear}</p>
+                <button onClick={generatePayroll} className="glass-button px-6 py-2">Initialize Now</button>
+              </div>
+            </div>
+          ) : (
+            currentPayroll.map((p) => {
+              const emp = employees.find(e => e.id === p.employeeId);
+              return (
+                <div key={p.id} className={styles.reportRow}>
+                  <span className="flex-1">
+                    <div className="flex flex-col">
+                      <span className="font-medium text-white">{emp?.name || 'Unknown'}</span>
+                      <span className="text-[10px] text-muted">{emp?.jobTitle}</span>
+                    </div>
+                  </span>
+                  <span className="w-32 text-right font-mono">{formatCurrency(p.basicSalary)}</span>
+                  <span className="w-32 text-right font-mono">{formatCurrency(p.housingAllowance + p.transportAllowance + p.otherAllowances)}</span>
+                  <span className="w-32 text-right font-mono text-rose-400/80">-{formatCurrency(p.gosiDeduction)}</span>
+                  <span className="w-32 text-right font-mono font-medium text-emerald-400">{formatCurrency(p.netSalary)}</span>
+                  <span className="w-24 text-right flex justify-end">
+                    <span className={clsx(styles.status, styles[p.status])}>
+                      {p.status}
+                    </span>
+                  </span>
+                </div>
+              );
+            })
+          )}
+        </div>
       </div>
     </div>
   );

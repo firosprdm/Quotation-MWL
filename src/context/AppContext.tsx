@@ -697,21 +697,60 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const exportData = () => {
-    return data;
+    return {
+      ...data,
+      settings: data.settings,
+      defaultNotes: data.defaultNotes
+    };
   };
 
   const importData = async (json: any) => {
     if (!json || typeof json !== 'object') return;
     
     // Overwrite local state
-    setData(prev => ({ ...prev, ...json }));
+    setData(prev => ({
+      ...prev,
+      ...json,
+      ...(json.settings && { settings: json.settings }),
+      ...(json.defaultNotes && { defaultNotes: json.defaultNotes }),
+    }));
 
-    // Supabase update logic (destructive)
-    const tables = ['accounts', 'journal_entries', 'clients', 'inventory', 'quotations', 'fixed_assets', 'payroll_records'];
-    for (const table of tables) {
-      if (json[table]) {
-        await supabase.from(table).delete().neq('id', '0');
-        await supabase.from(table).insert(json[table]);
+    // Mapping between JSON keys and Supabase tables
+    const mapping: Record<string, string> = {
+      'accounts': 'accounts',
+      'journalEntries': 'journal_entries',
+      'clients': 'clients',
+      'inventory': 'inventory',
+      'quotations': 'quotations',
+      'employees': 'employees',
+      'payroll': 'payroll_records',
+      'fixedAssets': 'fixed_assets',
+      'settings': 'company_settings'
+    };
+
+    // Ordered to handle foreign key constraints (delete child before parent)
+    const tablesToDelete = ['payroll_records', 'employees', 'accounts', 'journal_entries', 'clients', 'inventory', 'quotations', 'fixed_assets', 'company_settings'];
+    for (const table of tablesToDelete) {
+      await supabase.from(table).delete().neq('id', '0');
+    }
+
+    // Ordered to handle foreign key constraints (insert parent before child)
+    const orderToInsert = ['settings', 'employees', 'payroll', 'accounts', 'journalEntries', 'clients', 'inventory', 'quotations', 'fixedAssets'];
+    for (const key of orderToInsert) {
+      const table = mapping[key];
+      const items = json[key];
+      
+      if (items) {
+        if (key === 'settings') {
+          // company_settings is a single object in state, but a table row in DB
+          await supabase.from(table).upsert({ id: 1, ...items });
+        } else {
+          // Ensure it's an array for insert
+          const array = Array.isArray(items) ? items : [items];
+          if (array.length > 0) {
+            await supabase.from(table).insert(array);
+          }
+        }
       }
     }
   };

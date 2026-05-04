@@ -159,62 +159,49 @@ export default function EmployeesPage() {
       </div>
 
       <div className={clsx('glass-panel', styles.tableWrapper)}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Employee Name</th>
-              <th>Iqama No.</th>
-              <th>Job Title</th>
-              <th>Basic Salary</th>
-              <th>Allowances</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {!isLoaded ? (
-              <tr>
-                <td colSpan={7} className={styles.emptyState}>Loading records...</td>
-              </tr>
-            ) : filteredEmployees.length === 0 ? (
-              <tr>
-                <td colSpan={7} className={styles.emptyState}>No employees found.</td>
-              </tr>
-            ) : (
-              filteredEmployees.map((emp) => (
-                <tr key={emp.id}>
-                  <td>
-                    <div className={styles.employeeName}>
-                      <span>{emp.name}</span>
-                      <span>{emp.nameAr}</span>
-                    </div>
-                  </td>
-                  <td className="font-mono text-xs">{emp.iqamaNo}</td>
-                  <td>{emp.jobTitle}</td>
-                  <td className="font-bold text-white">{formatCurrency(emp.basicSalary)}</td>
-                  <td className="text-muted">
-                    {formatCurrency(emp.housingAllowance + emp.transportAllowance + emp.otherAllowances)}
-                  </td>
-                  <td>
-                    <span className={clsx(styles.status, styles[emp.status])}>
-                      {emp.status}
-                    </span>
-                  </td>
-                  <td>
-                    <div className={styles.actions}>
-                      <button className={styles.actionBtn} onClick={() => handleOpenEdit(emp)}>
-                        <Pencil size={14} />
-                      </button>
-                      <button className={clsx(styles.actionBtn, styles.deleteBtn)} onClick={() => deleteEmployee(emp.id)}>
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+      <div className={styles.reportSection}>
+        {!isLoaded ? (
+          <div className="text-center py-20 text-muted">Loading records...</div>
+        ) : filteredEmployees.length === 0 ? (
+          <div className="text-center py-20 text-muted">No employees found.</div>
+        ) : (
+          filteredEmployees.map((emp) => (
+            <div key={emp.id} className={styles.reportRow}>
+              <div className="flex items-center gap-4 flex-1">
+                <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/20 text-blue-400 font-black">
+                  {emp.name[0]}
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[14px] text-white font-medium">{emp.name}</span>
+                  <span className="text-[10px] text-muted tracking-wide">{emp.nameAr}</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-8 text-right">
+                <div className="flex flex-col">
+                  <span className="text-[9px] text-muted uppercase tracking-widest mb-1">Iqama No.</span>
+                  <span className="font-mono text-xs text-white/70">{emp.iqamaNo}</span>
+                </div>
+                <div className="flex flex-col w-[120px]">
+                  <span className="text-[9px] text-muted uppercase tracking-widest mb-1">Salary</span>
+                  <span className="font-mono text-[13px] text-emerald-400">{formatCurrency(emp.basicSalary)}</span>
+                </div>
+                <div className={clsx(styles.status, styles[emp.status], "text-[9px] px-2 py-0.5 uppercase tracking-tighter")}>
+                  {emp.status}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button className="p-2 rounded-lg hover:bg-white/5 text-muted hover:text-white transition-colors" onClick={() => handleOpenEdit(emp)}>
+                    <Pencil size={14} />
+                  </button>
+                  <button className="p-2 rounded-lg hover:bg-red-500/10 text-muted hover:text-red-400 transition-colors" onClick={() => deleteEmployee(emp.id)}>
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
       </div>
 
       {isModalOpen && (

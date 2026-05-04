@@ -163,16 +163,28 @@ export default function AccountsPage() {
 
   const handleExportJSON = () => {
     const dataToExport = {
-      accounts,
-      journalEntries,
+      ...exportData(),
       timestamp: new Date().toISOString()
     };
     const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Accounting_Backup_${new Date().toISOString().slice(0,10)}.json`;
+    a.download = `Full_System_Backup_${new Date().toISOString().slice(0,10)}.json`;
     a.click();
+  };
+
+  const handleExportAccounts = () => {
+    const rows = accounts.map(acc => ({
+      "Code": acc.code,
+      "Name": acc.name,
+      "Type": acc.type,
+      "Balance (SAR)": acc.balance
+    }));
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Chart of Accounts");
+    XLSX.writeFile(workbook, `Chart_of_Accounts_${new Date().toISOString().slice(0,10)}.xlsx`);
   };
 
   return (
@@ -207,7 +219,7 @@ export default function AccountsPage() {
         onChange={handleFileChange} 
       />
 
-      <div className="fixed bottom-8 right-8 z-50 flex gap-3">
+      <div className="fixed bottom-8 right-8 z-50 flex flex-col gap-3">
         <button 
           onClick={handleExportJSON}
           className="w-12 h-12 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-slate-800 transition-all shadow-xl group"
@@ -221,6 +233,13 @@ export default function AccountsPage() {
           title="Import JSON Backup"
         >
           <Upload size={20} className="group-hover:scale-110 transition-transform" />
+        </button>
+        <button 
+          onClick={handleExportAccounts}
+          className="w-12 h-12 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-emerald-500/20 transition-all shadow-xl group"
+          title="Export Chart of Accounts"
+        >
+          <FileSpreadsheet size={20} className="group-hover:scale-110 transition-transform text-emerald-400" />
         </button>
       </div>
 
@@ -429,59 +448,45 @@ export default function AccountsPage() {
                 </button>
               )}
             </div>
-            <table className={clsx(styles.table, styles.compactTable)}>
-              <thead>
-                <tr>
-                  <th className="pl-5" style={{ width: '10%' }}>Code</th>
-                  <th style={{ width: '50%' }}>Account Name</th>
-                  <th style={{ width: '20%' }}>Type</th>
-                  <th className="pr-5" style={{ width: '20%', textAlign: 'right' }}>Balance</th>
-                </tr>
-              </thead>
-              <tbody>
-                {accounts
-                  .filter(acc => {
-                    if (!accountFilter) return true;
-                    if (accountFilter === 'Profit') return acc.type === 'Revenue' || acc.type === 'Expense';
-                    return acc.type === accountFilter;
-                  })
-                  .map(acc => (
-                    <tr key={acc.id} className="group hover:bg-white/[0.03] transition-colors border-b border-white/5">
-                      <td className="pl-5">
-                        <span className="font-mono text-[9px] text-blue-400/60 bg-blue-500/5 px-1.5 py-0.5 rounded border border-blue-500/10">
-                          {acc.code}
-                        </span>
-                      </td>
-                      <td>
-                        <span className="text-white text-[13px] tracking-tight">{acc.name}</span>
-                      </td>
-                      <td>
-                        <span className={clsx(
-                          styles.badge,
-                          acc.type === 'Asset' && styles.badgeAsset,
-                          acc.type === 'Liability' && styles.badgeLiability,
-                          acc.type === 'Equity' && styles.badgeEquity,
-                          acc.type === 'Revenue' && styles.badgeRevenue,
-                          acc.type === 'Expense' && styles.badgeExpense,
-                          "text-[9px] px-1.5 py-0.5 uppercase tracking-tighter"
-                        )}>
-                          {acc.type}
-                        </span>
-                      </td>
-                      <td className="pr-5 text-right">
-                        <span className={clsx(
-                          "font-mono text-[11px] tracking-tight px-2 py-0.5 rounded border",
-                          acc.balance > 0 ? "text-emerald-400 bg-emerald-500/5 border-emerald-500/10" : 
-                          acc.balance < 0 ? "text-red-400 bg-red-500/5 border-red-500/10" : 
-                          "text-muted/20 bg-white/5 border-transparent"
-                        )}>
-                          {acc.balance !== 0 ? acc.balance.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '0.00'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
+            <div className={styles.reportSection}>
+              {accounts
+                .filter(acc => {
+                  if (!accountFilter) return true;
+                  if (accountFilter === 'Profit') return acc.type === 'Revenue' || acc.type === 'Expense';
+                  return acc.type === accountFilter;
+                })
+                .map(acc => (
+                  <div key={acc.id} className={styles.reportRow}>
+                    <div className="flex items-center gap-3">
+                      <span className="font-mono text-[10px] text-blue-400/80 bg-blue-500/5 px-2 py-0.5 rounded border border-blue-500/10">
+                        {acc.code}
+                      </span>
+                      <span className="text-white text-[13px] tracking-tight">{acc.name}</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className={clsx(
+                        styles.badge,
+                        acc.type === 'Asset' && styles.badgeAsset,
+                        acc.type === 'Liability' && styles.badgeLiability,
+                        acc.type === 'Equity' && styles.badgeEquity,
+                        acc.type === 'Revenue' && styles.badgeRevenue,
+                        acc.type === 'Expense' && styles.badgeExpense,
+                        "text-[9px] px-1.5 py-0.5 uppercase tracking-tighter"
+                      )}>
+                        {acc.type}
+                      </span>
+                      <span className={clsx(
+                        "font-mono text-[11px] tracking-tight px-2 py-0.5 rounded border min-w-[100px] text-right",
+                        acc.balance > 0 ? "text-emerald-400 bg-emerald-500/5 border-emerald-500/10" : 
+                        acc.balance < 0 ? "text-red-400 bg-red-500/5 border-red-500/10" : 
+                        "text-muted/20 bg-white/5 border-transparent"
+                      )}>
+                        {acc.balance !== 0 ? acc.balance.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '0.00'}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+            </div>
           </div>
         </div>
       )}
@@ -508,99 +513,73 @@ export default function AccountsPage() {
               </button>
             </div>
           </div>
-          <table className={clsx(styles.table, styles.compactTable)}>
-            <thead>
-              <tr>
-                <th style={{ width: '15%' }}>Date</th>
-                <th style={{ width: '30%' }}>Description</th>
-                <th style={{ width: '25%' }}>Account</th>
-                <th style={{ width: '15%', textAlign: 'right' }}>Debit</th>
-                <th style={{ width: '15%', textAlign: 'right' }}>Credit</th>
-              </tr>
-            </thead>
-            <tbody>
-              {journalEntries.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="text-center py-20 text-muted">
-                    <div className="flex flex-col items-center gap-4">
-                      <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
-                        <BookOpen size={32} className="text-muted/30" />
+          <div className={styles.reportSection}>
+            {journalEntries.length === 0 ? (
+              <div className="text-center py-20 text-muted">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                    <BookOpen size={32} className="text-muted/30" />
+                  </div>
+                  <p className="font-normal tracking-wide">No journal entries recorded yet.</p>
+                </div>
+              </div>
+            ) : (
+              journalEntries.map(entry => (
+                <div key={entry.id} className={clsx(styles.reportRow, "flex-col !items-stretch !p-0 overflow-hidden mb-6 border border-white/10 bg-white/[0.02] rounded-3xl")}>
+                  <div className="flex justify-between items-center p-5 bg-white/[0.04] border-b border-white/5">
+                    <div className="flex items-center gap-5">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest leading-none mb-1">{new Date(entry.date).toLocaleDateString()}</span>
+                        <span className="text-[14px] text-white/90 font-medium tracking-tight">{entry.description}</span>
                       </div>
-                      <p className="font-normal tracking-wide">No journal entries recorded yet.</p>
                     </div>
-                  </td>
-                </tr>
-              ) : (
-                journalEntries.map((entry, idx) => (
-                  <React.Fragment key={entry.id}>
-                    {/* Compact Entry Header */}
-                    <tr className={clsx(styles.entryHeader, "border-l-4 border-blue-500/60 bg-white/[0.03]")}>
-                      <td className="pl-5 text-[10px] text-blue-400">
-                        {new Date(entry.date).toLocaleDateString()}
-                      </td>
-                      <td colSpan={2}>
-                        <div className="flex items-center gap-4">
-                          <span className="text-white text-[13px] tracking-tight">
-                            {entry.description}
-                          </span>
-                          {entry.reference && (
-                            <span className="px-1.5 py-0.5 rounded-md bg-blue-500/10 border border-blue-500/20 text-[9px] text-blue-400 uppercase tracking-widest">
-                              REF: {entry.reference}
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td></td>
-                      <td className="pr-5 text-right">
-                        <span className="text-[10px] text-white/30 uppercase tracking-widest">ID: {entry.id.slice(0, 8)}</span>
-                      </td>
-                    </tr>
-                    
-                    {/* Individual Lines - Ultra Compact */}
-                    {entry.lines.map((line, lIdx) => {
+                    {entry.reference && (
+                      <span className="px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-[10px] text-blue-400 font-black uppercase tracking-[0.2em]">
+                        REF: {entry.reference}
+                      </span>
+                    )}
+                  </div>
+                  <div className="p-3 space-y-1 bg-slate-950/20">
+                    {entry.lines.map((line, idx) => {
                       const acc = accounts.find(a => a.id === line.accountId);
                       return (
-                        <tr key={`${entry.id}-${lIdx}`} className={clsx(styles.journalLine, "hover:bg-white/[0.05]")}>
-                          <td className="pl-5"></td>
-                          <td></td>
-                          <td>
-                            <div className="flex items-center gap-3 py-1 border-l-2 border-white/5 px-4">
-                              <div className={clsx(
-                                "w-1.5 h-1.5 rounded-full shadow-[0_0_8px_currentColor]",
-                                line.debit > 0 ? "text-emerald-500 bg-emerald-500" : "text-orange-500 bg-orange-500"
-                              )} />
-                              <div className="flex flex-col">
-                                <span className="text-[12px] text-white/90 tracking-wide">
-                                  {acc ? `${acc.code} — ${acc.name}` : 'Unknown Account'}
-                                </span>
-                                <span className="text-[9px] text-muted/60 uppercase tracking-wider mt-0.5">
-                                  {acc?.type}
-                                </span>
-                              </div>
+                        <div key={idx} className="flex justify-between items-center px-5 py-3 hover:bg-white/[0.04] rounded-xl transition-all duration-300 group">
+                          <div className="flex items-center gap-4">
+                            <div className={clsx(
+                              "w-2 h-2 rounded-full",
+                              line.debit > 0 ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" : "bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.5)]"
+                            )} />
+                            <div className="flex flex-col">
+                              <span className="text-[13px] text-white/80 group-hover:text-white transition-colors">
+                                {acc?.code} — {acc?.name}
+                              </span>
+                              <span className="text-[9px] text-muted/50 uppercase tracking-widest">{acc?.type}</span>
                             </div>
-                          </td>
-                          <td className="text-right">
-                            {line.debit > 0 && (
-                              <span className="font-mono text-[11px] text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/10 bg-emerald-500/5">
-                                {line.debit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                              </span>
-                            )}
-                          </td>
-                          <td className="pr-5 text-right">
-                            {line.credit > 0 && (
-                              <span className="font-mono text-[11px] text-orange-400 px-2 py-0.5 rounded border border-orange-500/10 bg-orange-500/5">
-                                {line.credit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                              </span>
-                            )}
-                          </td>
-                        </tr>
+                          </div>
+                          <div className="flex gap-6">
+                            <div className="w-[100px] text-right">
+                              {line.debit > 0 && (
+                                <span className="font-mono text-[12px] text-emerald-400 tracking-tight">
+                                  {line.debit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                </span>
+                              )}
+                            </div>
+                            <div className="w-[100px] text-right">
+                              {line.credit > 0 && (
+                                <span className="font-mono text-[12px] text-orange-400 tracking-tight">
+                                  {line.credit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
                       );
                     })}
-                  </React.Fragment>
-                ))
-              )}
-            </tbody>
-          </table>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       )}      {activeTab === 'recon' && (
         <BankReconciliation />

@@ -25,7 +25,7 @@ import styles from './settings.module.css';
 import { clsx } from 'clsx';
 
 export default function SettingsPage() {
-  const { settings, updateSettings } = useApp();
+  const { settings, updateSettings, exportData, importData } = useApp();
   const [formData, setFormData] = useState(settings);
   const [isSaving, setIsSaving] = useState(false);
   const [isOnboarding, setIsOnboarding] = useState(false);
@@ -49,16 +49,15 @@ export default function SettingsPage() {
   };
 
   const handleExportData = () => {
-    const dataStr = localStorage.getItem('quotation_app_data');
-    if (!dataStr) {
-      alert("No data found to export.");
-      return;
-    }
-    const blob = new Blob([dataStr], { type: "application/json" });
+    const dataToExport = {
+      ...exportData(),
+      timestamp: new Date().toISOString()
+    };
+    const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `backup_marina_${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `Full_System_Backup_${new Date().toISOString().slice(0, 10)}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -69,17 +68,17 @@ export default function SettingsPage() {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = async (e) => {
         try {
           const content = e.target?.result as string;
-          JSON.parse(content); // Validate JSON
-          if (confirm("This will overwrite all current data. Are you sure?")) {
-            localStorage.setItem('quotation_app_data', content);
-            alert("Data imported successfully! The application will now reload.");
+          const json = JSON.parse(content);
+          if (confirm("This will overwrite all current data in the cloud. Are you sure?")) {
+            await importData(json);
+            alert("Data restored successfully! The application will now reload.");
             window.location.reload();
           }
         } catch (err) {
-          alert("Invalid backup file.");
+          alert("Invalid backup file: " + err);
         }
       };
       reader.readAsText(file);
