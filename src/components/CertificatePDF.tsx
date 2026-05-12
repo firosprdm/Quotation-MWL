@@ -5,8 +5,8 @@ import { Quotation, Client, CompanySettings } from '../types';
 Font.register({
   family: 'ArabicFont',
   fonts: [
-    { src: 'https://raw.githubusercontent.com/rastikerdar/vazirmatn/master/fonts/ttf/Vazirmatn-Regular.ttf' },
-    { src: 'https://raw.githubusercontent.com/rastikerdar/vazirmatn/master/fonts/ttf/Vazirmatn-Bold.ttf', fontWeight: 'bold' },
+    { src: 'https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/ttf/Vazirmatn-Regular.ttf' },
+    { src: 'https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/ttf/Vazirmatn-Bold.ttf', fontWeight: 'bold' },
   ]
 });
 
@@ -17,13 +17,13 @@ const styles = StyleSheet.create({
     fontSize: 10.5,
     color: '#1e293b',
     backgroundColor: '#fff',
-    fontFamily: 'ArabicFont',
+    fontFamily: 'Helvetica',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 8,
-    paddingBottom: 8,
+    marginBottom: 4,
+    paddingBottom: 4,
     borderBottom: 2,
     borderBottomColor: '#60a5fa', // Blue like Quotation
   },
@@ -54,11 +54,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#1e293b',
+    fontFamily: 'ArabicFont',
   },
   companyAddress: {
     fontSize: 8.5,
     color: '#64748b',
     lineHeight: 1.3,
+    fontFamily: 'ArabicFont',
   },
   titleContainer: {
     alignItems: 'flex-end',
@@ -75,28 +77,31 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1e293b',
     marginTop: -4,
+    fontFamily: 'ArabicFont',
   },
   mainGrid: {
     flexDirection: 'row',
-    marginBottom: 10,
-    gap: 12,
+    marginBottom: 6,
+    gap: 8,
   },
   infoBox: {
     flex: 1,
-    padding: 10,
+    padding: '6 10',
     backgroundColor: '#f8fafc',
     borderRadius: 4,
     border: 1,
     borderColor: '#e2e8f0',
   },
   infoLabel: {
-    fontSize: 9,
+    fontSize: 10,
     color: '#94a3b8',
     textTransform: 'uppercase',
     fontWeight: 'bold',
-    marginBottom: 4,
+    marginBottom: 2,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
+    gap: 6,
+    fontFamily: 'ArabicFont',
   },
   infoValue: {
     fontSize: 11,
@@ -104,7 +109,7 @@ const styles = StyleSheet.create({
     lineHeight: 1.2,
   },
   invoiceMeta: {
-    width: 200,
+    width: 210,
     gap: 4,
   },
   metaRow: {
@@ -115,19 +120,21 @@ const styles = StyleSheet.create({
     paddingBottom: 3,
   },
   metaLabel: {
-    fontSize: 9,
+    fontSize: 9.5,
     color: '#94a3b8',
     fontWeight: 'bold',
+    fontFamily: 'ArabicFont',
   },
   metaValue: {
     fontSize: 9.5,
     color: '#1e293b',
     fontWeight: 'bold',
+    fontFamily: 'ArabicFont',
   },
   subjectSection: {
     marginBottom: 8,
     padding: '8 10',
-    backgroundColor: '#f0f9ff', // Blue-ish
+    backgroundColor: '#dbeafe',
     borderRadius: 4,
     borderLeft: 3,
     borderLeftColor: '#60a5fa',
@@ -139,6 +146,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: 'bold',
     color: '#1e293b',
+    fontFamily: 'ArabicFont',
   },
   introText: {
     fontSize: 10,
@@ -152,30 +160,29 @@ const styles = StyleSheet.create({
   },
   tableHeader: {
     flexDirection: 'row',
-    backgroundColor: '#60a5fa', // Blue
-    padding: '8 4',
+    backgroundColor: '#60a5fa',
+    padding: '2 4',
     borderRadius: 3,
-    marginBottom: 2,
+    marginBottom: 1,
   },
   headerText: {
     color: '#fff',
-    fontSize: 8.5,
-    fontWeight: 'bold',
+    fontSize: 9.5,
     textAlign: 'center',
   },
   tableRow: {
     flexDirection: 'row',
-    padding: '8 4',
+    padding: '2 4',
     borderBottom: 1,
     borderBottomColor: '#f1f5f9',
     alignItems: 'center',
   },
-  colNo: { width: '8%', textAlign: 'center' },
+  colNo: { width: '8%', textAlign: 'center', fontSize: 9.5, color: '#1e293b' },
   colDesc: { width: '77%' },
-  colQty: { width: '15%', textAlign: 'center' },
+  colQty: { width: '15%', textAlign: 'center', fontSize: 9.5, color: '#1e293b' },
   
-  descEn: { fontSize: 10, fontWeight: 'bold', color: '#1e293b' },
-  descAr: { fontSize: 9, color: '#64748b', marginTop: 2 },
+  descEn: { fontSize: 9.5, fontWeight: 'bold', color: '#1e293b' },
+  descAr: { fontSize: 9.5, color: '#64748b', marginTop: 2, fontFamily: 'ArabicFont' },
 
   stampSection: {
     flexDirection: 'row',
@@ -196,7 +203,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fcfdfd',
   },
   stampLabel: {
-    fontSize: 8.5,
+    fontSize: 9.5,
     fontWeight: 'bold',
     color: '#64748b',
     textAlign: 'center',
@@ -216,9 +223,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     marginBottom: 6,
-    fontSize: 9,
+    fontSize: 9.5,
     color: '#1e293b',
     fontWeight: 'bold',
+    fontFamily: 'ArabicFont',
     backgroundColor: '#f0f9ff',
     padding: '6 12',
     borderRadius: 4,
@@ -240,10 +248,11 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   contactText: {
-    fontSize: 9,
+    fontSize: 9.5,
     color: '#334155',
     fontWeight: 'bold',
     letterSpacing: 0.2,
+    fontFamily: 'ArabicFont',
   },
   iconSvg: {
     width: 12,
@@ -283,8 +292,18 @@ interface Props {
 }
 
 export const CertificatePDF = ({ quotation, client, settings }: Props) => {
-  const qDate = new Date(quotation.date).toLocaleDateString('en-GB');
-  const refNo = `${quotation.number}${quotation.revision > 0 ? `-R${quotation.revision}` : ''}`;
+  if (!quotation || !client || !settings) {
+    return (
+      <Document title="Loading...">
+        <Page size="A4" style={styles.page}>
+          <View><Text>Loading document data...</Text></View>
+        </Page>
+      </Document>
+    );
+  }
+  const qDate = new Date(quotation.date || Date.now()).toLocaleDateString('en-GB');
+  const refNo = `${quotation.number || '0000'}${quotation.revision > 0 ? `-R${quotation.revision}` : ''}`;
+  const certNo = `CERT-${refNo}`;
 
   return (
     <Document title={`Completion Certificate - ${refNo}`}>
@@ -292,76 +311,133 @@ export const CertificatePDF = ({ quotation, client, settings }: Props) => {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <View style={styles.logoRow}>
-              {settings.logo && (
-                <View style={styles.logoContainer}>
-                  <Image src={settings.logo} style={styles.logo} />
+            <View style={{ 
+              backgroundColor: '#fff',
+              padding: '6 10',
+              borderRadius: 4,
+              border: 1,
+              borderColor: '#e2e8f0',
+            }}>
+              <View style={[styles.logoRow, { marginBottom: 4 }]}>
+                {!!settings.logo && (
+                  <View style={styles.logoContainer}>
+                    <Image src={settings.logo} style={styles.logo} />
+                  </View>
+                )}
+                <View>
+                  <Text style={styles.companyName}>{String('Marina WorldLink Co.')}</Text>
+                  <Text style={styles.companyAr}>{String('شركة مارينا وورلدلينك')}</Text>
                 </View>
-              )}
-              <View>
-                <Text style={styles.companyName}>Marina WorldLink Co.</Text>
-                <Text style={styles.companyAr}>شركة مارينا وورلدلينك</Text>
               </View>
-            </View>
-            <View style={styles.companyAddress}>
-              <Text>1234 King Fahd Road, Al Olaya, Riyadh, SA</Text>
-              <Text style={{ fontWeight: 'bold', color: '#1e293b' }}>
-                VAT: 300000000000003 | CR: 1010000000
-              </Text>
-              <Text>Mob: +966 507465418</Text>
+              <View style={styles.companyAddress}>
+                {settings.splitAddress ? (
+                  <View style={{ gap: 1 }}>
+                    <Text>{`${settings.splitAddress.buildingNumber || ' '} ${settings.splitAddress.streetName || ' '}`}</Text>
+                    <Text>{`${settings.splitAddress.district || ' '}, ${settings.splitAddress.city || ' '} ${settings.splitAddress.postalCode || ' '}`}</Text>
+                    <Text>{settings.splitAddress.countryCode === 'SA' ? 'Kingdom of Saudi Arabia' : `${settings.splitAddress.countryCode || ' '}`}</Text>
+                  </View>
+                ) : (
+                  <Text>{`${settings.address || ' '}`}</Text>
+                )}
+                <Text style={{ fontWeight: 'bold', color: '#1e293b', marginTop: 2 }}>
+                  {`VAT: ${settings.vatNumber || ' '} | CR: ${settings.crNumber || ' '}`}
+                </Text>
+                <Text>{`Mob: ${settings.contact || ' '}`}</Text>
+              </View>
             </View>
           </View>
           <View style={styles.titleContainer}>
-            <Text style={styles.titleEn}>Completion Certificate</Text>
-            <Text style={styles.titleAr}>شهادة إنجاز عمل</Text>
+            <Text style={styles.titleEn}>{String('Completion Certificate')}</Text>
+            <Text style={styles.titleAr}>{String('شهادة إنجاز عمل')}</Text>
           </View>
         </View>
 
         {/* Info Grid */}
         <View style={styles.mainGrid}>
           <View style={styles.infoBox}>
-            <View style={styles.infoLabel}>
-              <Text>Customer / العميل</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+              <Text style={[styles.infoValue, { fontWeight: 'bold', fontSize: 11, marginBottom: 0 }]}>{`${client?.name || ' '}`}</Text>
+              <View style={[styles.infoLabel, { marginBottom: 0 }]}>
+                <Text style={{ fontFamily: 'ArabicFont' }}>{`${'Customer / العميل'}`}</Text>
+              </View>
             </View>
-            <Text style={[styles.infoValue, { fontWeight: 'bold', fontSize: 11 }]}>{client.name}</Text>
-            <View style={{ marginTop: 2 }}>
-              {client.splitAddress ? (
-                <Text style={styles.companyAddress}>{`${client.splitAddress.buildingNumber} ${client.splitAddress.streetName}, ${client.splitAddress.district}, ${client.splitAddress.city}`}</Text>
-              ) : (
-                <Text style={styles.companyAddress}>{client.address}</Text>
-              )}
+            <View style={styles.companyAddress}>
+              <View style={{ gap: 1 }}>
+                {client?.splitAddress ? (
+                  <>
+                    <Text>{`${client.splitAddress.buildingNumber || ' '} ${client.splitAddress.streetName || ' '}`}</Text>
+                    <Text>{`${client.splitAddress.district || ' '}, ${client.splitAddress.city || ' '} ${client.splitAddress.postalCode || ' '}`}</Text>
+                    <Text>{client.splitAddress.countryCode === 'SA' ? 'Kingdom of Saudi Arabia' : `${client.splitAddress.countryCode || ' '}`}</Text>
+                  </>
+                ) : (
+                  <Text>{`${client?.address || 'Address Not Provided'}`}</Text>
+                )}
+                <View style={{ flexDirection: 'row', gap: 10 }}>
+                  {!!client.vatNumber && (
+                    <Text style={{ fontWeight: 'bold', color: '#1e293b' }}>
+                      {`VAT: ${client.vatNumber || ' '}`}
+                    </Text>
+                  )}
+                  {!!client.otherId && (
+                    <Text style={{ fontWeight: 'bold', color: '#1e293b' }}>
+                      {`CR: ${client.otherId || ' '}`}
+                    </Text>
+                  )}
+                </View>
+                {!!client.phone && (
+                  <Text>{`Mob: ${client.phone || ' '}`}</Text>
+                )}
+              </View>
             </View>
           </View>
           
           <View style={styles.invoiceMeta}>
             <View style={styles.metaRow}>
-              <Text style={styles.metaLabel}>Quotation Ref / مرجع العرض</Text>
-              <Text style={styles.metaValue}>{refNo}</Text>
+              <View style={{ flexDirection: 'row', gap: 4 }}>
+                <Text style={styles.metaLabel}>{String('WCR No /')}</Text>
+                <Text style={[styles.metaLabel, { fontFamily: 'ArabicFont' }]}>{String('رقم وثيقة الإنجاز')}</Text>
+              </View>
+              <Text style={[styles.metaValue, { fontWeight: 'bold' }]}>{String(refNo || ' ')}</Text>
             </View>
             <View style={styles.metaRow}>
-              <Text style={styles.metaLabel}>Certificate Date / التاريخ</Text>
-              <Text style={styles.metaValue}>{new Date().toLocaleDateString('en-GB')}</Text>
+              <View style={{ flexDirection: 'row', gap: 4 }}>
+                <Text style={styles.metaLabel}>Date /</Text>
+                <Text style={[styles.metaLabel, { fontFamily: 'ArabicFont' }]}>{String('التاريخ')}</Text>
+              </View>
+              <Text style={styles.metaValue}>{String(qDate || ' ')}</Text>
             </View>
             <View style={styles.metaRow}>
-              <Text style={styles.metaLabel}>PO Number / رقم أمر الشراء</Text>
-              <Text style={styles.metaValue}>{quotation.poNumber || '---'}</Text>
+              <View style={{ flexDirection: 'row', gap: 4 }}>
+                <Text style={styles.metaLabel}>{String('PO No /')}</Text>
+                <Text style={[styles.metaLabel, { fontFamily: 'ArabicFont' }]}>{String('رقم التعميد')}</Text>
+              </View>
+              <Text style={styles.metaValue}>{String(quotation.poNumber || ' ')}</Text>
             </View>
-            <View style={styles.metaRow}>
-              <Text style={styles.metaLabel}>Ticket No / رقم التذكرة</Text>
-              <Text style={styles.metaValue}>{quotation.ticketNumber || '---'}</Text>
-            </View>
+
+            {!!quotation.ticketNumber && (
+              <View style={styles.metaRow}>
+                <View style={{ flexDirection: 'row', gap: 4 }}>
+                  <Text style={styles.metaLabel}>{String('Ticket No /')}</Text>
+                  <Text style={[styles.metaLabel, { fontFamily: 'ArabicFont' }]}>{String('رقم التذكرة')}</Text>
+                </View>
+                <Text style={styles.metaValue}>{String(quotation.ticketNumber || ' ')}</Text>
+              </View>
+            )}
           </View>
         </View>
 
         {/* Subject */}
         <View style={styles.subjectSection}>
-          <Text style={styles.subjectText}>Subject: Project Completion Certification</Text>
-          <Text style={[styles.subjectText, { fontSize: 11 }]}>الموضوع: شهادة إتمام وإنجاز المشروع</Text>
+          <Text style={styles.subjectText}>{`Subject: ${quotation.subject || 'Project Completion Certification'}`}</Text>
+          {!!quotation.subjectAr ? (
+            <Text style={[styles.subjectText, { fontFamily: 'ArabicFont' }]}>{`الموضوع: ${String(quotation.subjectAr || ' ')}`}</Text>
+          ) : (
+            <Text style={[styles.subjectText, { fontFamily: 'ArabicFont' }]}>{String('الموضوع: شهادة إتمام وإنجاز المشروع')}</Text>
+          )}
         </View>
 
         <Text style={styles.introText}>
-          This is to certify that the following works and services have been successfully completed, 
-          inspected, and handed over in full compliance with the agreed specifications and project requirements.
+          This is to certify that the following works and services have been successfully completed, inspected, and handed over in full compliance with the agreed specification
         </Text>
 
         {/* Table of Completed Works */}
@@ -371,56 +447,58 @@ export const CertificatePDF = ({ quotation, client, settings }: Props) => {
               <Text style={styles.headerText}>#</Text>
             </View>
             <View style={styles.colDesc}>
-              <Text style={styles.headerText}>Description of Completed Works</Text>
-              <Text style={[styles.headerText, { fontSize: 7 }]}>وصف الأعمال المنجزة</Text>
+              <Text style={styles.headerText}>{String('Description of Completed Works')}</Text>
+              <Text style={[styles.headerText, { fontFamily: 'ArabicFont' }]}>{String('بيان الأعمال')}</Text>
             </View>
             <View style={styles.colQty}>
-              <Text style={styles.headerText}>Quantity</Text>
-              <Text style={[styles.headerText, { fontSize: 7 }]}>الكمية</Text>
+              <Text style={styles.headerText}>{String('Quantity')}</Text>
+              <Text style={[styles.headerText, { fontFamily: 'ArabicFont' }]}>{String('الكمية')}</Text>
             </View>
           </View>
 
-          {(quotation.items || []).filter(item => !!item).map((item, i) => (
+          {(quotation.items || []).filter((item: any) => item && typeof item === 'object' && !item._isWorkflowMetadata).map((item, i) => (
             <View key={item.id || i} style={[styles.tableRow, { backgroundColor: i % 2 === 0 ? '#fff' : '#fcfdfd' }]}>
               <View style={styles.colNo}>
-                <Text style={{ fontSize: 9 }}>{i + 1}</Text>
+                <Text style={{ fontSize: 9 }}>{`${i + 1}`}</Text>
               </View>
               <View style={styles.colDesc}>
-                <Text style={styles.descEn}>{String(item.description || '')}</Text>
+                <Text style={styles.descEn}>{`${item.description || ' '}`}</Text>
+                <Text style={styles.descAr}>{`${item.descriptionAr || 'وصف المنتج بالعربية'}`}</Text>
               </View>
-              <Text style={styles.colQty}>{String(item.quantity || 0)}</Text>
+              <Text style={styles.colQty}>{`${item.quantity || 0}`}</Text>
             </View>
           ))}
         </View>
 
-        <Text style={[styles.introText, { marginTop: 10 }]}>
-          Based on the above, the project is hereby marked as COMPLETED. This certificate acts as 
-          the formal handover document for the client's final acceptance.
-        </Text>
 
         {/* Stamp Section */}
-        <View style={styles.stampSection}>
-          <View style={styles.stampBox}>
-            <Text style={{ fontSize: 9.5, fontWeight: 'bold', color: '#1e293b', position: 'absolute', top: 6 }}>For MARINA WorldLink</Text>
+        <View style={[styles.stampSection, { justifyContent: 'flex-end' }]}>
+          <View style={[styles.stampBox, { width: '50%', height: 80 }]}>
+            <View style={{ position: 'absolute', top: 6, width: '100%', flexDirection: 'row', justifyContent: 'center', gap: 4 }}>
+              <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#1e293b' }}>Customer Acceptance /</Text>
+              <Text style={{ fontSize: 8, fontWeight: 'bold', color: '#1e293b', fontFamily: 'ArabicFont' }}>قبول العميل</Text>
+            </View>
             <View style={{ alignItems: 'center' }}>
-              <Text style={styles.stampLabel}>Authorized Signatory & Stamp</Text>
-              <Text style={[styles.stampLabel, { fontSize: 7, marginTop: 1 }]}>توقيع وختم المورد</Text>
+              <Text style={styles.stampLabel}>{String('Signature & Stamp')}</Text>
+              <Text style={[styles.stampLabel, { fontSize: 7, marginTop: 1, fontFamily: 'ArabicFont' }]}>{String('توقيع وختم العميل')}</Text>
             </View>
           </View>
-          <View style={styles.stampBox}>
-            <Text style={{ fontSize: 9.5, fontWeight: 'bold', color: '#1e293b', position: 'absolute', top: 6 }}>Customer Acceptance</Text>
-            <View style={{ alignItems: 'center' }}>
-              <Text style={styles.stampLabel}>Signature & Stamp</Text>
-              <Text style={[styles.stampLabel, { fontSize: 7, marginTop: 1 }]}>توقيع وختم العميل</Text>
-            </View>
-          </View>
+        </View>
+
+        <View style={{ marginTop: 10, padding: 10, borderTop: 1, borderTopColor: '#f1f5f9' }}>
+           <Text style={{ fontSize: 8, color: '#94a3b8', textAlign: 'center' }}>
+             Electronically Generated Document - No Signature or Stamp Required
+           </Text>
+            <Text style={{ fontSize: 7, color: '#94a3b8', textAlign: 'center', marginTop: 2, fontFamily: 'ArabicFont' }}>
+              مستند صادر إلكترونياً - لا يتطلب توقيعاً أو ختماً
+            </Text>
         </View>
 
         {/* Footer */}
         <View style={styles.footer} fixed>
           <View style={styles.bankLine}>
             <BankIcon />
-            <Text>Al Rajhi Bank (مصرف الراجحي)</Text>
+            <Text>{String('Al Rajhi Bank (مصرف الراجحي)')}</Text>
             <Text>|</Text>
             <Text>Acc: 525000010006080456305</Text>
             <Text>|</Text>

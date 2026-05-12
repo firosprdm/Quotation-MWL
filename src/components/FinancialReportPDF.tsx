@@ -107,11 +107,12 @@ interface Props {
 }
 
 export function FinancialReportPDF({ type, accounts, settings, extraData }: Props) {
-  const assets = accounts.filter(a => a.type === 'Asset');
-  const liabilities = accounts.filter(a => a.type === 'Liability');
-  const equity = accounts.filter(a => a.type === 'Equity');
-  const revenue = accounts.filter(a => a.type === 'Revenue');
-  const expenses = accounts.filter(a => a.type === 'Expense');
+  if (!accounts || !settings || !extraData) return null;
+  const assets = (accounts || []).filter(a => a && a.type === 'Asset');
+  const liabilities = (accounts || []).filter(a => a && a.type === 'Liability');
+  const equity = (accounts || []).filter(a => a && a.type === 'Equity');
+  const revenue = (accounts || []).filter(a => a && a.type === 'Revenue');
+  const expenses = (accounts || []).filter(a => a && a.type === 'Expense');
 
   const totalAssets = assets.reduce((acc, a) => acc + a.balance, 0);
   const totalLiabilities = liabilities.reduce((acc, a) => acc + a.balance, 0);
@@ -125,12 +126,14 @@ export function FinancialReportPDF({ type, accounts, settings, extraData }: Prop
     <View>
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Assets</Text>
-        {assets.map(acc => (
-          <View key={acc.id} style={styles.row}>
-            <Text style={styles.rowText}>{acc.name}</Text>
-            <Text style={styles.rowAmount}>{acc.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
-          </View>
-        ))}
+        {(assets || []).filter(acc => !!acc).map((acc, idx) => {
+          return (
+            <View key={acc.id || idx} style={styles.row}>
+              <Text style={styles.rowText}>{String(acc.name || 'Unknown Asset')}</Text>
+              <Text style={styles.rowAmount}>{(Number(acc.balance) || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
+            </View>
+          );
+        })}
         <View style={styles.totalRow}>
           <Text style={styles.totalText}>Total Assets</Text>
           <Text style={styles.totalAmount}>{totalAssets.toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
@@ -139,12 +142,14 @@ export function FinancialReportPDF({ type, accounts, settings, extraData }: Prop
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Liabilities</Text>
-        {liabilities.map(acc => (
-          <View key={acc.id} style={styles.row}>
-            <Text style={styles.rowText}>{acc.name}</Text>
-            <Text style={styles.rowAmount}>{acc.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
-          </View>
-        ))}
+        {(liabilities || []).filter(acc => !!acc).map((acc, idx) => {
+          return (
+            <View key={acc.id || idx} style={styles.row}>
+              <Text style={styles.rowText}>{String(acc.name || 'Unknown Liability')}</Text>
+              <Text style={styles.rowAmount}>{(Number(acc.balance) || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
+            </View>
+          );
+        })}
         <View style={styles.totalRow}>
           <Text style={styles.totalText}>Total Liabilities</Text>
           <Text style={styles.totalAmount}>{totalLiabilities.toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
@@ -153,12 +158,14 @@ export function FinancialReportPDF({ type, accounts, settings, extraData }: Prop
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Equity</Text>
-        {equity.map(acc => (
-          <View key={acc.id} style={styles.row}>
-            <Text style={styles.rowText}>{acc.name}</Text>
-            <Text style={styles.rowAmount}>{acc.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
-          </View>
-        ))}
+        {(equity || []).filter(acc => !!acc).map((acc, idx) => {
+          return (
+            <View key={acc.id || idx} style={styles.row}>
+              <Text style={styles.rowText}>{String(acc.name || 'Unknown Equity')}</Text>
+              <Text style={styles.rowAmount}>{(Number(acc.balance) || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
+            </View>
+          );
+        })}
         <View style={styles.row}>
           <Text style={styles.rowText}>Current Year Earnings</Text>
           <Text style={styles.rowAmount}>{netIncome.toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
@@ -180,12 +187,14 @@ export function FinancialReportPDF({ type, accounts, settings, extraData }: Prop
     <View>
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Revenue</Text>
-        {revenue.map(acc => (
-          <View key={acc.id} style={styles.row}>
-            <Text style={styles.rowText}>{acc.name}</Text>
-            <Text style={styles.rowAmount}>{acc.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
-          </View>
-        ))}
+        {(revenue || []).filter(acc => !!acc).map((acc, idx) => {
+          return (
+            <View key={acc.id || idx} style={styles.row}>
+              <Text style={styles.rowText}>{String(acc.name || 'Unknown Revenue')}</Text>
+              <Text style={styles.rowAmount}>{(Number(acc.balance) || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
+            </View>
+          );
+        })}
         <View style={styles.totalRow}>
           <Text style={styles.totalText}>Total Revenue</Text>
           <Text style={styles.totalAmount}>{totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
@@ -194,12 +203,14 @@ export function FinancialReportPDF({ type, accounts, settings, extraData }: Prop
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Expenses</Text>
-        {expenses.map(acc => (
-          <View key={acc.id} style={styles.row}>
-            <Text style={styles.rowText}>{acc.name}</Text>
-            <Text style={styles.rowAmount}>{acc.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
-          </View>
-        ))}
+        {(expenses || []).filter(acc => !!acc).map((acc, idx) => {
+          return (
+            <View key={acc.id || idx} style={styles.row}>
+              <Text style={styles.rowText}>{String(acc.name || 'Unknown Expense')}</Text>
+              <Text style={styles.rowAmount}>{(Number(acc.balance) || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
+            </View>
+          );
+        })}
         <View style={styles.totalRow}>
           <Text style={styles.totalText}>Total Expenses</Text>
           <Text style={styles.totalAmount}>{totalExpenses.toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
@@ -221,17 +232,18 @@ export function FinancialReportPDF({ type, accounts, settings, extraData }: Prop
         <Text style={[styles.tableCol, { width: '20%', textAlign: 'right' }]}>Debit (SAR)</Text>
         <Text style={[styles.tableCol, { width: '20%', textAlign: 'right' }]}>Credit (SAR)</Text>
       </View>
-      {accounts.filter(a => a.balance !== 0).map(acc => {
+      {accounts.filter(a => a && a.balance !== 0).map((acc, idx) => {
         const isDebit = acc.type === 'Asset' || acc.type === 'Expense';
+        const balance = Number(acc.balance) || 0;
         return (
-          <View key={acc.id} style={styles.row}>
-            <Text style={[styles.rowText, { width: '15%' }]}>{acc.code}</Text>
-            <Text style={[styles.rowText, { width: '45%' }]}>{acc.name}</Text>
+          <View key={acc.id || idx} style={styles.row}>
+            <Text style={[styles.rowText, { width: '15%' }]}>{String(acc.code || ' ')}</Text>
+            <Text style={[styles.rowText, { width: '45%' }]}>{String(acc.name || ' ')}</Text>
             <Text style={[styles.rowAmount, { width: '20%', textAlign: 'right' }]}>
-              {isDebit ? acc.balance.toLocaleString(undefined, { minimumFractionDigits: 2 }) : ''}
+              {isDebit ? balance.toLocaleString(undefined, { minimumFractionDigits: 2 }) : ''}
             </Text>
             <Text style={[styles.rowAmount, { width: '20%', textAlign: 'right' }]}>
-              {!isDebit ? acc.balance.toLocaleString(undefined, { minimumFractionDigits: 2 }) : ''}
+              {!isDebit ? balance.toLocaleString(undefined, { minimumFractionDigits: 2 }) : ''}
             </Text>
           </View>
         );
@@ -248,15 +260,18 @@ export function FinancialReportPDF({ type, accounts, settings, extraData }: Prop
         <Text style={[styles.tableCol, { width: '15%', textAlign: 'right' }]}>Actual</Text>
         <Text style={[styles.tableCol, { width: '20%', textAlign: 'right' }]}>Margin</Text>
       </View>
-      {extraData.profitabilityData.map((d: any) => (
-        <View key={d.quote.id} style={styles.row}>
-          <Text style={[styles.rowText, { width: '20%' }]}>{d.quote.number}</Text>
-          <Text style={[styles.rowText, { width: '30%' }]}>{d.quote.projectName || 'Untitled'}</Text>
-          <Text style={[styles.rowAmount, { width: '15%', textAlign: 'right' }]}>{d.budget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
-          <Text style={[styles.rowAmount, { width: '15%', textAlign: 'right' }]}>{d.actualCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
-          <Text style={[styles.rowAmount, { width: '20%', textAlign: 'right' }]}>{d.marginPercent.toFixed(1)}%</Text>
-        </View>
-      ))}
+      {(extraData.profitabilityData || []).map((d: any, idx: number) => {
+        if (!d || !d.quote) return null;
+        return (
+          <View key={d.quote.id || idx} style={styles.row}>
+            <Text style={[styles.rowText, { width: '20%' }]}>{String(d.quote.number || ' ')}</Text>
+            <Text style={[styles.rowText, { width: '30%' }]}>{String(d.quote.projectName || 'Untitled')}</Text>
+            <Text style={[styles.rowAmount, { width: '15%', textAlign: 'right' }]}>{(Number(d.budget) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+            <Text style={[styles.rowAmount, { width: '15%', textAlign: 'right' }]}>{(Number(d.actualCost) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+            <Text style={[styles.rowAmount, { width: '20%', textAlign: 'right' }]}>{(Number(d.marginPercent) || 0).toFixed(1)}%</Text>
+          </View>
+        );
+      })}
     </View>
   );
 
@@ -333,9 +348,9 @@ export function FinancialReportPDF({ type, accounts, settings, extraData }: Prop
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Text style={styles.companyName}>{settings.name}</Text>
-          <Text style={styles.reportTitle}>{getTitle()}</Text>
-          <Text style={styles.date}>{extraData.dateRangeText}</Text>
+          <Text style={styles.companyName}>{`${settings.name || ' '}`}</Text>
+          <Text style={styles.reportTitle}>{extraData.reportTitle || 'Financial Report'}</Text>
+          <Text style={styles.date}>{`${extraData.dateRangeText || ' '}`}</Text>
         </View>
 
         {type === 'balance-sheet' && renderBalanceSheet()}

@@ -1,0 +1,142 @@
+{
+ "actions": [],
+ "allow_import": 0,
+ "allow_rename": 0,
+ "creation": "2026-05-11 10:30:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "mode",
+  "section_onboarding",
+  "otp",
+  "generate_csr_btn",
+  "onboard_btn",
+  "section_credentials",
+  "private_key",
+  "csr",
+  "compliance_certificate",
+  "production_certificate",
+  "production_api_secret",
+  "status",
+  "section_counters",
+  "last_icv"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "default": "Developer",
+   "fieldname": "mode",
+   "fieldtype": "Select",
+   "label": "Mode",
+   "options": "Developer\nSimulation\nProduction"
+  },
+  {
+   "fieldname": "section_onboarding",
+   "fieldtype": "Section Break",
+   "label": "Onboarding"
+  },
+  {
+   "description": "Obtained from ZATCA Fatoora Portal",
+   "fieldname": "otp",
+   "fieldtype": "Data",
+   "label": "ZATCA OTP"
+  },
+  {
+   "fieldname": "generate_csr_btn",
+   "fieldtype": "Button",
+   "label": "Generate Keys & CSR"
+  },
+  {
+   "depends_on": "eval:doc.csr && doc.otp",
+   "fieldname": "onboard_btn",
+   "fieldtype": "Button",
+   "label": "Onboard with ZATCA"
+  },
+  {
+   "fieldname": "section_credentials",
+   "fieldtype": "Section Break",
+   "label": "Credentials"
+  },
+  {
+   "fieldname": "private_key",
+   "fieldtype": "Password",
+   "label": "Private Key",
+   "read_only": 1
+  },
+  {
+   "fieldname": "csr",
+   "fieldtype": "Small Text",
+   "label": "Generated CSR",
+   "read_only": 1
+  },
+  {
+   "fieldname": "compliance_certificate",
+   "fieldtype": "Small Text",
+   "label": "Compliance Certificate (CSID)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "production_certificate",
+   "fieldtype": "Small Text",
+   "label": "Production Certificate (PCSID)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "production_api_secret",
+   "fieldtype": "Password",
+   "label": "Production API Secret",
+   "read_only": 1
+  },
+  {
+   "default": "Pending",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Onboarding Status",
+   "options": "Pending\nCompliance Passed\nOnboarded",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_counters",
+   "fieldtype": "Section Break",
+   "label": "Counters"
+  },
+  {
+   "default": "0",
+   "fieldname": "last_icv",
+   "fieldtype": "Int",
+   "label": "Last Invoice Counter Value (ICV)",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-05-11 11:17:00",
+ "modified_by": "Administrator",
+ "module": "zatca",
+ "name": "ZATCA Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

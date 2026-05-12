@@ -24,6 +24,11 @@ export function generateUBL21XML(params: {
   const invoiceType = isStandard ? '388' : '388';
   const invoiceSubtype = isStandard ? '0100000' : '0200000';
 
+  const invoiceYear = new Date(quotation.invoiceDate || quotation.date).getFullYear();
+  const rawNum = String(quotation.number || '0').replace(/[^0-9]/g, '');
+  const formattedNum = rawNum.slice(-4).padStart(4, '0');
+  const invoiceID = `INV-${invoiceYear}-${formattedNum}`;
+
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" 
          xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" 
@@ -70,7 +75,7 @@ export function generateUBL21XML(params: {
         </ext:UBLExtension>
     </ext:UBLExtensions>` : ''}
     <cbc:ProfileID>reporting:1.0</cbc:ProfileID>
-    <cbc:ID>${quotation.invoiceNumber || quotation.number}</cbc:ID>
+    <cbc:ID>${invoiceID}</cbc:ID>
     <cbc:UUID>${uuid}</cbc:UUID>
     <cbc:IssueDate>${issueDate}</cbc:IssueDate>
     <cbc:IssueTime>${issueTime}</cbc:IssueTime>
@@ -163,14 +168,20 @@ export function generateUBL21XML(params: {
         <cbc:PayableAmount currencyID="SAR">${quotation.grandTotal.toFixed(2)}</cbc:PayableAmount>
     </cac:LegalMonetaryTotal>
 
-    ${quotation.items.map((item, index) => `
+    ${quotation.items.map((item: any, index: number) => {
+        const price = item.unitPrice !== undefined ? item.unitPrice : (item.price || 0);
+        const total = item.total !== undefined ? item.total : (item.quantity * price);
+        const vatAmount = item.vatAmount !== undefined ? item.vatAmount : (total * 0.15);
+        const totalWithVat = item.totalWithVat !== undefined ? item.totalWithVat : (total + vatAmount);
+        
+        return `
     <cac:InvoiceLine>
         <cbc:ID>${index + 1}</cbc:ID>
         <cbc:InvoicedQuantity unitCode="EA">${item.quantity}</cbc:InvoicedQuantity>
-        <cbc:LineExtensionAmount currencyID="SAR">${item.total.toFixed(2)}</cbc:LineExtensionAmount>
+        <cbc:LineExtensionAmount currencyID="SAR">${total.toFixed(2)}</cbc:LineExtensionAmount>
         <cac:TaxTotal>
-            <cbc:TaxAmount currencyID="SAR">${item.vatAmount.toFixed(2)}</cbc:TaxAmount>
-            <cbc:RoundingAmount currencyID="SAR">${item.totalWithVat.toFixed(2)}</cbc:RoundingAmount>
+            <cbc:TaxAmount currencyID="SAR">${vatAmount.toFixed(2)}</cbc:TaxAmount>
+            <cbc:RoundingAmount currencyID="SAR">${totalWithVat.toFixed(2)}</cbc:RoundingAmount>
         </cac:TaxTotal>
         <cac:Item>
             <cbc:Name>${item.description}</cbc:Name>
@@ -183,9 +194,10 @@ export function generateUBL21XML(params: {
             </cac:ClassifiedTaxCategory>
         </cac:Item>
         <cac:Price>
-            <cbc:PriceAmount currencyID="SAR">${item.price.toFixed(2)}</cbc:PriceAmount>
+            <cbc:PriceAmount currencyID="SAR">${price.toFixed(2)}</cbc:PriceAmount>
         </cac:Price>
     </cac:InvoiceLine>
-    `).join('')}
+    `;
+    }).join('')}
 </Invoice>`;
 }

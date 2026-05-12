@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Quotation, Client } from '@/types';
-import { X, FileText, Calendar, User, ShoppingCart, Download, QrCode } from 'lucide-react';
+import { X, FileText, Calendar, User, ShoppingCart, Download, QrCode, CheckCircle2 } from 'lucide-react';
 import styles from './ViewQuotationModal.module.css';
 import { clsx } from 'clsx';
 import { OnDemandPDFDownload } from './OnDemandPDFDownload';
@@ -22,11 +22,88 @@ interface Props {
   quotation: Quotation;
   client?: Client;
   onClose: () => void;
+  mode?: 'quotation' | 'invoice';
 }
 
-export function ViewQuotationModal({ quotation, client, onClose }: Props) {
-  const { settings } = useApp();
+export function ViewQuotationModal({ quotation, client, onClose, mode = 'quotation' }: Props) {
+  const { settings, updateQuotation } = useApp();
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const [translatedQuotation, setTranslatedQuotation] = useState<Quotation>(quotation);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const translateItems = async () => {
+      setIsLoading(true);
+      try {
+        let activeQuote = quotation;
+        // Fetch full document with items if missing
+        const hasRealItems = (activeQuote.items || []).some((i: any) => i && typeof i === 'object' && !i._isWorkflowMetadata);
+        if (!hasRealItems) {
+          try {
+            const res = await fetch(`/api/v1/erpnext/quotations?id=${quotation.id}`);
+            if (res.ok) {
+              const fullQ = await res.json();
+              if (fullQ && fullQ.items && fullQ.items.length > 0) {
+                activeQuote = { ...activeQuote, items: fullQ.items };
+                if (isMounted) {
+                  setTranslatedQuotation(activeQuote);
+                }
+              }
+            }
+          } catch (e) {}
+        }
+
+        let hasChanges = false;
+        const newItems = await Promise.all((activeQuote.items || []).map(async (item) => {
+          if (!item.descriptionAr && item.description) {
+             try {
+               const res = await fetch('/api/translate', { method: 'POST', body: JSON.stringify({ text: item.description }) });
+               if (res.ok) {
+                 const data = await res.json();
+                 if (data.translatedText) {
+                   hasChanges = true;
+                   return { ...item, descriptionAr: data.translatedText };
+                 }
+               }
+             } catch (e) {}
+             
+             hasChanges = true;
+             return { ...item, descriptionAr: 'وصف غير متوفر' };
+          }
+          return item;
+        }));
+
+        let translatedSubject = activeQuote.subjectAr;
+        if (!translatedSubject && activeQuote.subject) {
+          try {
+            const res = await fetch('/api/translate', { method: 'POST', body: JSON.stringify({ text: activeQuote.subject }) });
+            if (res.ok) {
+              const data = await res.json();
+              if (data.translatedText) {
+                hasChanges = true;
+                translatedSubject = data.translatedText;
+              }
+            }
+          } catch (e) {}
+        }
+        
+        if (isMounted) {
+          const newQ = { ...activeQuote, items: newItems, subjectAr: translatedSubject };
+          setTranslatedQuotation(newQ);
+          if (hasChanges || activeQuote.items !== quotation.items) {
+            updateQuotation(quotation.id, { items: newItems, subjectAr: translatedSubject } as any).catch(() => {});
+          }
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+    translateItems();
+    return () => { isMounted = false; };
+  }, [quotation.id]);
 
   useEffect(() => {
     if (quotation.qrCode) {
@@ -35,7 +112,17 @@ export function ViewQuotationModal({ quotation, client, onClose }: Props) {
         .catch(console.error);
     }
   }, [quotation.qrCode]);
-
+  useEffect(() => {
+    setTranslatedQuotation(prev => {
+      const realPrevCount = (prev.items || []).filter((i: any) => i && typeof i === 'object' && !i._isWorkflowMetadata).length;
+      const realNewCount = (quotation.items || []).filter((i: any) => i && typeof i === 'object' && !i._isWorkflowMetadata).length;
+      return {
+        ...quotation,
+        items: realPrevCount > realNewCount ? prev.items : quotation.items,
+        subjectAr: prev.subjectAr || quotation.subjectAr
+      };
+    });
+  }, [quotation]);
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={clsx('glass-panel', styles.modal)} onClick={e => e.stopPropagation()}>
@@ -58,10 +145,19 @@ export function ViewQuotationModal({ quotation, client, onClose }: Props) {
           <div className={clsx(styles.status, styles[quotation.status])}>
             {quotation.status}
           </div>
-          {client && (
+          {client && translatedQuotation && (
             <OnDemandPDFDownload 
-              document={<QuotationPDF quotation={quotation} client={client} settings={settings} />} 
-              fileName={`Quotation_${quotation.number}.pdf`}
+              document={mode === 'invoice' ? (
+                <InvoicePDF quotation={translatedQuotation} client={client} settings={settings} qrDataUrl={qrDataUrl} />
+              ) : (
+                <QuotationPDF quotation={translatedQuotation} client={client} settings={settings} />
+              )} 
+              fileName={mode === 'invoice' ? (() => {
+                const invYear = new Date(quotation.invoiceDate || quotation.date).getFullYear();
+                const rawNum = String(quotation.number || '0').replace(/[^0-9]/g, '');
+                const formattedNum = rawNum.slice(-4).padStart(4, '0');
+                return `INV-${invYear}-${formattedNum}.pdf`;
+              })() : `Quotation_${quotation.number}.pdf`}
               className="glass-button px-4 py-2 rounded-xl flex items-center gap-2 text-sm ml-4"
               title="Download PDF"
               icon={<Download size={18} />}
@@ -85,6 +181,26 @@ export function ViewQuotationModal({ quotation, client, onClose }: Props) {
                 <p>{new Date(quotation.date).toLocaleDateString()}</p>
               </div>
             </div>
+            {quotation.ticketNumber && (
+              <div className={styles.infoItem}>
+                <FileText size={18} className="text-muted" />
+                <div>
+                  <label>Ticket Number</label>
+                  <p>{quotation.ticketNumber}</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+             <h3 className="text-sm font-medium text-blue-400 mb-2 uppercase tracking-wider flex items-center gap-2">
+               <CheckCircle2 size={16} />
+               Subject
+             </h3>
+             <p className="text-white font-medium">{translatedQuotation.subject || quotation.subject || 'Standard Project Services'}</p>
+             {(translatedQuotation.subjectAr || quotation.subjectAr) && (
+               <p className="text-muted text-sm mt-1 font-arabic" dir="rtl">{translatedQuotation.subjectAr || quotation.subjectAr}</p>
+             )}
           </div>
 
           <div className={styles.tableWrapper}>
@@ -98,9 +214,12 @@ export function ViewQuotationModal({ quotation, client, onClose }: Props) {
                 </tr>
               </thead>
               <tbody>
-                {quotation.items.map((item) => (
-                  <tr key={item.id}>
-                    <td>{item.description}</td>
+                {(translatedQuotation.items || []).filter((item: any) => item && typeof item === 'object' && !item._isWorkflowMetadata).map((item, i) => (
+                  <tr key={item.id || i}>
+                    <td>
+                      <div>{item.description || ''}</div>
+                      <div className="text-sm text-muted font-arabic mt-1" dir="rtl">{item.descriptionAr || 'جاري الترجمة...'}</div>
+                    </td>
                     <td className="text-center">{item.quantity} {item.unit}</td>
                     <td className="text-right">{formatCurrency(item.price || 0)}</td>
                     <td className="text-right">{formatCurrency(item.total || 0)}</td>
@@ -111,9 +230,9 @@ export function ViewQuotationModal({ quotation, client, onClose }: Props) {
           </div>
 
           <div className="flex flex-col md:flex-row gap-6 mt-6">
-            {qrDataUrl && (
+            {mode === 'invoice' && qrDataUrl && (
               <div className="flex-1 bg-white/5 rounded-xl border border-white/10 p-6 flex flex-col items-center justify-center">
-                <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2 uppercase tracking-widest">
+                <h3 className="text-sm font-medium text-white mb-4 flex items-center gap-2 uppercase tracking-widest">
                   <QrCode size={18} className="text-emerald-400" />
                   ZATCA E-Invoice QR
                 </h3>
@@ -157,18 +276,24 @@ export function ViewQuotationModal({ quotation, client, onClose }: Props) {
           )}
 
           <div className="mt-8">
-            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <h3 className="text-lg font-medium text-white mb-4 flex items-center gap-2">
               <FileText size={20} className="text-blue-400" />
               Document Preview
             </h3>
             <div className="rounded-xl overflow-hidden border border-white/10 h-[500px] w-full bg-slate-900/50">
-              <PDFViewer width="100%" height="100%" showToolbar={true} style={{ border: 'none' }}>
-                {quotation.status === 'approved' && quotation.salesStatus === 'PO recieved' ? (
-                   <InvoicePDF quotation={quotation} client={client!} settings={settings} qrDataUrl={qrDataUrl} />
-                ) : (
-                   <QuotationPDF quotation={quotation} client={client!} settings={settings} />
-                )}
-              </PDFViewer>
+              {client && settings ? (
+                <PDFViewer key={JSON.stringify((translatedQuotation.items || []).map((i: any) => i?.description || i?.id))} width="100%" height="100%" showToolbar={true} style={{ border: 'none' }}>
+                  {mode === 'invoice' ? (
+                    <InvoicePDF quotation={translatedQuotation} client={client} settings={settings} qrDataUrl={qrDataUrl} />
+                  ) : (
+                    <QuotationPDF quotation={translatedQuotation} client={client} settings={settings} />
+                  )}
+                </PDFViewer>
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted">
+                  Loading preview data...
+                </div>
+              )}
             </div>
           </div>
         </div>

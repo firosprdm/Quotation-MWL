@@ -313,9 +313,9 @@ export function AccountingReports() {
             
             {dateRangeType === 'custom' && (
               <div className="flex gap-2 items-center pl-3 border-l border-white/10 ml-1">
-                <input type="date" className="bg-black/20 border border-white/10 rounded-lg text-xs px-2.5 py-1 text-white/80 outline-none" value={customStartDate} onChange={e => setCustomStartDate(e.target.value)} />
-                <span className="text-muted text-[10px] uppercase font-bold tracking-tighter">to</span>
-                <input type="date" className="bg-black/20 border border-white/10 rounded-lg text-xs px-2.5 py-1 text-white/80 outline-none" value={customEndDate} onChange={e => setCustomEndDate(e.target.value)} />
+                <input type="date" className="bg-black/20 border border-white/10 rounded-lg text-sm px-2.5 py-1 text-white/80 outline-none" value={customStartDate} onChange={e => setCustomStartDate(e.target.value)} />
+                <span className="text-muted text-[12px] uppercase font-medium tracking-tighter">to</span>
+                <input type="date" className="bg-black/20 border border-white/10 rounded-lg text-sm px-2.5 py-1 text-white/80 outline-none" value={customEndDate} onChange={e => setCustomEndDate(e.target.value)} />
               </div>
             )}
           </div>
@@ -379,14 +379,14 @@ export function AccountingReports() {
             {reportType === 'ksa-vat' && 'ZATCA VAT Return'}
             {reportType === 'ksa-income-tax' && 'Corporate Income Tax Lead Schedule'}
           </h2>
-          <p className="text-muted font-medium tracking-[0.2em] text-[10px]">
+          <p className="text-muted font-medium tracking-[0.2em] text-[12px]">
             {dateRangeText}
           </p>
         </div>
 
         {/* Standard Reports */}
         {reportType === 'balance-sheet' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div>
               <h3 className={clsx(styles.reportSectionTitle, 'text-blue-400/80')}>Assets</h3>
               <div className={styles.reportSection}>
@@ -485,12 +485,12 @@ export function AccountingReports() {
         )}
 
         {reportType === 'trial-balance' && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex justify-between items-center px-4 py-2 text-[10px] text-muted font-bold uppercase tracking-widest border-b border-white/10 mb-4">
+          <div className="max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex justify-between items-center px-4 py-2 text-[12px] text-muted font-medium uppercase tracking-widest border-b border-white/10 mb-4">
               <span className="w-16">Code</span>
               <span className="flex-1 ml-4">Account Name</span>
-              <span className="w-32 text-right">Debit (SAR)</span>
-              <span className="w-32 text-right">Credit (SAR)</span>
+              <span className="w-32 text-right">Debit</span>
+              <span className="w-32 text-right">Credit</span>
             </div>
             <div className={styles.reportSection}>
               {accounts.map(acc => {
@@ -502,7 +502,7 @@ export function AccountingReports() {
 
                 return (
                   <div key={acc.id} className={styles.reportRow}>
-                    <span className="w-16 font-mono text-[9px] text-blue-400/70 tracking-widest">{acc.code}</span>
+                    <span className="w-16 font-mono text-[12px] text-blue-400/70 tracking-widest">{acc.code}</span>
                     <span className="flex-1 ml-4 text-white/90">{acc.name}</span>
                     <span className="w-32 text-right font-mono text-emerald-400">
                       {debitVal !== null ? debitVal.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '-'}
@@ -515,7 +515,7 @@ export function AccountingReports() {
               })}
             </div>
             <div className={clsx(styles.reportTotalRow, "mt-6")}>
-              <span className="flex-1 text-right text-muted uppercase tracking-widest text-[10px] mr-8">Total</span>
+              <span className="flex-1 text-right text-muted uppercase tracking-widest text-[12px] mr-8">Total</span>
               <span className="w-32 text-right font-mono text-emerald-400">
                 {accounts.filter(a => a.type === 'Asset' || a.type === 'Expense').reduce((sum, a) => sum + a.balance, 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
               </span>
@@ -528,8 +528,8 @@ export function AccountingReports() {
 
         {/* KSA New Reports */}
         {reportType === 'ksa-profitability' && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex justify-between items-center px-4 py-2 text-[10px] text-muted font-bold uppercase tracking-widest border-b border-white/10 mb-4">
+          <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex justify-between items-center px-4 py-2 text-[12px] text-muted font-medium uppercase tracking-widest border-b border-white/10 mb-4">
               <span className="w-24">Project Ref</span>
               <span className="flex-1 ml-4">Client / Project Name</span>
               <span className="w-32 text-right">Revenue</span>
@@ -541,17 +541,17 @@ export function AccountingReports() {
                 <div className="text-center py-10 text-muted font-medium">No active projects/quotations found.</div>
               ) : profitabilityData.map(d => (
                 <div key={d.quote.id} className={styles.reportRow}>
-                  <span className="w-24 font-mono text-[9px] text-blue-400/70 tracking-widest">{d.quote.number}</span>
+                  <span className="w-24 font-mono text-[12px] text-blue-400/70 tracking-widest">{d.quote.number}</span>
                   <span className="flex-1 ml-4">
                     <div className="flex flex-col">
                       <span className="text-[13px] text-white/90">{d.quote.projectName || 'Untitled Project'}</span>
-                      <span className="text-[9px] text-muted uppercase tracking-wider">{d.quote.status}</span>
+                      <span className="text-[12px] text-muted uppercase tracking-wider">{d.quote.status}</span>
                     </div>
                   </span>
                   <span className="w-32 text-right font-mono text-emerald-400">{d.budget.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                   <span className="w-32 text-right font-mono text-orange-400">{d.actualCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                   <span className="w-32 text-right font-mono">
-                    <span className={clsx("px-2 py-0.5 rounded border text-[11px]", d.margin >= 0 ? "border-emerald-500/20 text-emerald-400" : "border-red-500/20 text-red-400")}>
+                    <span className={clsx("px-2 py-0.5 rounded border text-[13px]", d.margin >= 0 ? "border-emerald-500/20 text-emerald-400" : "border-red-500/20 text-red-400")}>
                       {d.marginPercent.toFixed(1)}%
                     </span>
                   </span>
@@ -569,9 +569,9 @@ export function AccountingReports() {
                 <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center mb-4 text-blue-400 border border-blue-500/20">
                   <Building2 size={24} />
                 </div>
-                <p className="text-xs text-muted font-medium uppercase tracking-widest mb-2 text-blue-400/80">Costs Incurred (WIP)</p>
+                <p className="text-sm text-muted font-medium uppercase tracking-widest mb-2 text-blue-400/80">Costs Incurred (WIP)</p>
                 <p className="text-2xl font-mono font-medium text-white">{wipAccount.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
-                <p className="text-[11px] text-muted mt-3 font-medium opacity-50 italic">Account 1400</p>
+                <p className="text-[13px] text-muted mt-3 font-medium opacity-50 italic">Account 1400</p>
               </div>
 
               <div className="bg-white/5 border border-white/10 rounded-2xl p-8 flex flex-col items-center text-center relative group overflow-hidden">
@@ -579,9 +579,9 @@ export function AccountingReports() {
                 <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center mb-4 text-purple-400 border border-purple-500/20">
                   <Receipt size={24} />
                 </div>
-                <p className="text-xs text-muted font-medium uppercase tracking-widest mb-2 text-purple-400/80">Progress Billings</p>
+                <p className="text-sm text-muted font-medium uppercase tracking-widest mb-2 text-purple-400/80">Progress Billings</p>
                 <p className="text-2xl font-mono font-medium text-white">{progressBillingsAccount.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
-                <p className="text-[11px] text-muted mt-3 font-medium opacity-50 italic">Account 2100</p>
+                <p className="text-[13px] text-muted mt-3 font-medium opacity-50 italic">Account 2100</p>
               </div>
             </div>
 
@@ -598,7 +598,7 @@ export function AccountingReports() {
                 {netWip > 0 ? <TrendingUp size={32} /> : netWip < 0 ? <TrendingDown size={32} /> : <Scale size={32} />}
               </div>
               
-              <h3 className="text-xs font-medium uppercase tracking-[0.3em] mb-4 opacity-70">
+              <h3 className="text-sm font-medium uppercase tracking-[0.3em] mb-4 opacity-70">
                 {netWip > 0 ? "Under-Billing (Asset)" : netWip < 0 ? "Over-Billing (Liability)" : "Balanced WIP"}
               </h3>
               <p className={clsx(
@@ -607,7 +607,7 @@ export function AccountingReports() {
               )}>
                 {Math.abs(netWip).toLocaleString(undefined, { minimumFractionDigits: 2 })}
               </p>
-              <p className="text-[11px] font-medium text-white/40 mt-6 max-w-sm mx-auto leading-relaxed italic">
+              <p className="text-[13px] font-medium text-white/40 mt-6 max-w-sm mx-auto leading-relaxed italic">
                 {netWip > 0 ? "Costs incurred but not yet billed to the client." : netWip < 0 ? "Work billed to client but costs not yet incurred." : "All costs and billings are perfectly balanced."}
               </p>
             </div>
@@ -618,19 +618,19 @@ export function AccountingReports() {
           <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="grid grid-cols-4 gap-4">
               <div className="bg-white/5 border border-white/10 rounded-2xl p-6 relative overflow-hidden group">
-                <p className="text-[10px] text-muted font-black uppercase tracking-wider mb-2 text-emerald-400">Current (0-30)</p>
+                <p className="text-[12px] text-muted font-normal uppercase tracking-wider mb-2 text-emerald-400">Current (0-30)</p>
                 <p className="text-xl font-mono font-medium text-white">{ageingBuckets.current.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
               </div>
               <div className="bg-white/5 border border-white/10 rounded-2xl p-6 relative overflow-hidden group">
-                <p className="text-[10px] text-muted font-black uppercase tracking-wider mb-2 text-amber-400">31-60 Days</p>
+                <p className="text-[12px] text-muted font-normal uppercase tracking-wider mb-2 text-amber-400">31-60 Days</p>
                 <p className="text-xl font-mono font-medium text-white">{ageingBuckets.over30.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
               </div>
               <div className="bg-white/5 border border-white/10 rounded-2xl p-6 relative overflow-hidden group">
-                <p className="text-[10px] text-muted font-black uppercase tracking-wider mb-2 text-orange-400">61-90 Days</p>
+                <p className="text-[12px] text-muted font-normal uppercase tracking-wider mb-2 text-orange-400">61-90 Days</p>
                 <p className="text-xl font-mono font-medium text-white">{ageingBuckets.over60.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
               </div>
               <div className="bg-white/5 border border-white/10 rounded-2xl p-6 relative overflow-hidden group">
-                <p className="text-[10px] text-muted font-black uppercase tracking-wider mb-2 text-rose-400">90+ Days</p>
+                <p className="text-[12px] text-muted font-normal uppercase tracking-wider mb-2 text-rose-400">90+ Days</p>
                 <p className="text-xl font-mono font-medium text-white">{ageingBuckets.over90.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
               </div>
             </div>
@@ -638,15 +638,15 @@ export function AccountingReports() {
             <div className="flex gap-4">
               <div className="flex-1 bg-white/5 border border-white/10 rounded-2xl p-6 relative overflow-hidden group">
                 <div className="absolute inset-0 bg-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <p className="text-xs text-muted font-medium uppercase tracking-wider mb-2 text-blue-400">Standard Receivables</p>
+                <p className="text-sm text-muted font-medium uppercase tracking-wider mb-2 text-blue-400">Standard Receivables</p>
                 <p className="text-2xl font-mono font-medium text-white">{currentAR.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
-                <p className="text-[11px] text-muted mt-2 font-medium italic">Account 1200 - Due invoices</p>
+                <p className="text-[13px] text-muted mt-2 font-medium italic">Account 1200 - Due invoices</p>
               </div>
               <div className="flex-1 bg-white/5 border border-white/10 rounded-2xl p-6 relative overflow-hidden group">
                 <div className="absolute inset-0 bg-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <p className="text-xs text-muted font-medium uppercase tracking-wider mb-2 text-orange-400">Retention Receivables</p>
+                <p className="text-sm text-muted font-medium uppercase tracking-wider mb-2 text-orange-400">Retention Receivables</p>
                 <p className="text-2xl font-mono font-medium text-white">{retentionAccount.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
-                <p className="text-[11px] text-muted mt-2 font-medium italic">Account 1210 - Held until warranty</p>
+                <p className="text-[13px] text-muted mt-2 font-medium italic">Account 1210 - Held until warranty</p>
               </div>
             </div>
             <div className="bg-white/5 border border-white/10 rounded-2xl p-6 flex justify-between items-center border-l-4 border-l-emerald-500/50">
@@ -664,9 +664,9 @@ export function AccountingReports() {
                 <div className="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center mb-4 text-red-400 border border-red-500/20">
                   <TrendingDown size={24} />
                 </div>
-                <p className="text-xs font-medium text-white/50 uppercase tracking-widest mb-2">Output VAT</p>
+                <p className="text-sm font-medium text-white/50 uppercase tracking-widest mb-2">Output VAT</p>
                 <span className="text-2xl font-mono font-medium text-white">{vatOutputAccount.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                <p className="text-[10px] text-muted mt-3 italic">Tax Collected</p>
+                <p className="text-[12px] text-muted mt-3 italic">Tax Collected</p>
               </div>
               
               <div className="p-8 bg-white/5 rounded-2xl border border-white/10 flex flex-col items-center text-center relative group overflow-hidden">
@@ -674,9 +674,9 @@ export function AccountingReports() {
                 <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4 text-emerald-400 border border-emerald-500/20">
                   <TrendingUp size={24} />
                 </div>
-                <p className="text-xs font-medium text-white/50 uppercase tracking-widest mb-2">Input VAT</p>
+                <p className="text-sm font-medium text-white/50 uppercase tracking-widest mb-2">Input VAT</p>
                 <span className="text-2xl font-mono font-medium text-white">{vatInputAccount.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                <p className="text-[10px] text-muted mt-3 italic">Tax Paid</p>
+                <p className="text-[12px] text-muted mt-3 italic">Tax Paid</p>
               </div>
             </div>
 
@@ -691,14 +691,14 @@ export function AccountingReports() {
                 <FileSpreadsheet size={32} />
               </div>
               <div>
-                <p className={clsx("text-xs font-medium uppercase tracking-[0.3em] mb-4", netVatPayable > 0 ? "text-red-400" : "text-emerald-400")}>
+                <p className={clsx("text-sm font-medium uppercase tracking-[0.3em] mb-4", netVatPayable > 0 ? "text-red-400" : "text-emerald-400")}>
                   {netVatPayable > 0 ? "Net Tax Payable" : "Net Tax Recoverable"}
                 </p>
               </div>
               <span className={clsx("text-4xl font-mono font-medium drop-shadow-md", netVatPayable > 0 ? "text-red-400" : "text-emerald-400")}>
                 {Math.abs(netVatPayable).toLocaleString(undefined, { minimumFractionDigits: 2 })}
               </span>
-              <p className="text-[11px] text-white/30 mt-6 font-medium italic">Official ZATCA / Fatoora filing amount</p>
+              <p className="text-[13px] text-white/30 mt-6 font-medium italic">Official ZATCA / Fatoora filing amount</p>
             </div>
           </div>
         )}
@@ -710,14 +710,14 @@ export function AccountingReports() {
                 <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center mb-4 text-blue-400 border border-blue-500/20">
                   <TrendingUp size={24} />
                 </div>
-                <p className="text-xs font-medium text-white/50 uppercase tracking-widest mb-2">Net Profit (Pre-Tax)</p>
+                <p className="text-sm font-medium text-white/50 uppercase tracking-widest mb-2">Net Profit (Pre-Tax)</p>
                 <span className="text-2xl font-mono font-medium text-white">{netIncome.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
               </div>
               <div className="p-8 bg-white/5 rounded-2xl border border-white/10 flex flex-col items-center text-center">
                 <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center mb-4 text-purple-400 border border-purple-500/20">
                   <Calculator size={24} />
                 </div>
-                <p className="text-xs font-medium text-white/50 uppercase tracking-widest mb-2">Statutory Tax Rate</p>
+                <p className="text-sm font-medium text-white/50 uppercase tracking-widest mb-2">Statutory Tax Rate</p>
                 <span className="text-2xl font-mono font-medium text-white">20.00%</span>
               </div>
             </div>
@@ -726,16 +726,16 @@ export function AccountingReports() {
               <div className="w-16 h-16 rounded-2xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center mb-6 text-rose-400">
                 <Calculator size={32} />
               </div>
-              <p className="text-xs font-medium text-rose-400 uppercase tracking-[0.3em] mb-4">Estimated Corporate Income Tax (20%)</p>
+              <p className="text-sm font-medium text-rose-400 uppercase tracking-[0.3em] mb-4">Estimated Corporate Income Tax (20%)</p>
               <span className="text-4xl font-mono font-medium text-white drop-shadow-md">{incomeTaxProvision.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
               <div className="mt-8 pt-6 border-t border-white/5 w-full">
-                <div className="flex justify-between items-center text-[11px] text-white/40 uppercase tracking-widest px-4">
+                <div className="flex justify-between items-center text-[13px] text-white/40 uppercase tracking-widest px-4">
                   <span>Taxable Base (Accounting Net Income)</span>
                   <span className="font-mono text-white/60">{netIncome.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                 </div>
               </div>
             </div>
-            <p className="text-xs text-center text-muted font-medium mt-6 max-w-lg mx-auto">
+            <p className="text-sm text-center text-muted font-medium mt-6 max-w-lg mx-auto">
               As a 100% foreign-owned entity, your company is subject to Corporate Income Tax at a flat rate of 20% on net adjusted profit. This estimate is based on your current accounting net income and does not account for specific tax add-backs or deductions (e.g. non-deductible expenses).
             </p>
           </div>

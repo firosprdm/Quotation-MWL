@@ -38,10 +38,36 @@ export default function EditQuotation() {
   const [isMounted, setIsMounted] = useState(false);
   const [quotationNumber, setQuotationNumber] = useState('');
   const [revision, setRevision] = useState(0);
+  const [ticketNumber, setTicketNumber] = useState('');
+  const [subject, setSubject] = useState('');
+  const [subjectAr, setSubjectAr] = useState('');
+  const [hasHydrated, setHasHydrated] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!subject) {
+      setSubjectAr('');
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch('/api/translate', {
+          method: 'POST',
+          body: JSON.stringify({ text: subject })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setSubjectAr(data.translatedText);
+        }
+      } catch (e) {
+        console.error('Subject translation failed');
+      }
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [subject]);
 
   const [searchItem, setSearchItem] = useState('');
   const [showItemResults, setShowItemResults] = useState(false);
@@ -49,17 +75,47 @@ export default function EditQuotation() {
   useEffect(() => {
     const q = quotations.find(item => item.id === id);
     if (q) {
-      setSelectedClientId(q.clientId);
+      setSelectedClientId(q.clientId || '');
       setDate(new Date(q.date).toISOString().split('T')[0]);
-      setItems(q.items);
+      
+      const hydrate = (itemsArr: any[]) => itemsArr
+        .filter((it: any) => !it._isWorkflowMetadata)
+        .map((it: any) => ({
+          ...it,
+          total: it.total ?? (it.quantity || 0) * (it.price || 0),
+          vatAmount: it.vatAmount ?? ((it.total ?? (it.quantity || 0) * (it.price || 0)) * 0.15),
+          totalWithVat: it.totalWithVat ?? ((it.total ?? (it.quantity || 0) * (it.price || 0)) * 1.15),
+        }));
+
+      if (!hasHydrated) {
+        const hydratedItems = hydrate(q.items || []);
+        if (hydratedItems.length > 0) {
+          setItems(hydratedItems);
+          setHasHydrated(true);
+        } else {
+          fetch(`/api/v1/erpnext/quotations?id=${id}`)
+            .then(res => res.json())
+            .then(fullQ => {
+              if (fullQ && fullQ.items && fullQ.items.length > 0) {
+                setItems(hydrate(fullQ.items));
+                setHasHydrated(true);
+              }
+            })
+            .catch(console.error);
+        }
+      }
+
       setNotes(q.notes || '');
       setTermsAndConditions(q.termsAndConditions || '');
       setDiscount(q.discount || 0);
       setQuotationNumber(q.number);
       setRevision(q.revision || 0);
+      setTicketNumber(q.ticketNumber || '');
+      setSubject(q.subject || '');
+      setSubjectAr(q.subjectAr || '');
       
       const diff = Math.ceil((q.dueDate - q.date) / (1000 * 60 * 60 * 24));
-      setValidity(diff.toString());
+      setValidity(diff.toString() === 'NaN' ? '30' : diff.toString());
     } else {
       router.push('/quotations');
     }
@@ -152,6 +208,9 @@ export default function EditQuotation() {
         total: netAmount + totalVat,
         discount,
         grandTotal,
+        ticketNumber,
+        subject,
+        subjectAr,
         notes,
         termsAndConditions,
         revision: revision + 1,
@@ -232,6 +291,27 @@ export default function EditQuotation() {
                   <option value="30">30 Days</option>
                 </select>
               </div>
+              <div className={styles.formGroup}>
+                <label>Ticket Number (Optional)</label>
+                <input type="text" className="glass-input" placeholder="e.g. TK-2023..." value={ticketNumber} onChange={e => setTicketNumber(e.target.value)} />
+              </div>
+              <div className="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className={styles.formGroup}>
+                  <label>Subject / Title</label>
+                  <input type="text" className="glass-input" placeholder="e.g. Server Maintenance..." value={subject} onChange={e => setSubject(e.target.value)} />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className="text-right">الموضوع / العنوان</label>
+                  <input 
+                    type="text" 
+                    className="glass-input text-right font-arabic" 
+                    placeholder="...صيانة الخوادم" 
+                    dir="rtl"
+                    value={subjectAr} 
+                    onChange={e => setSubjectAr(e.target.value)} 
+                  />
+                </div>
+              </div>
             </div>
           </section>
 
@@ -264,7 +344,7 @@ export default function EditQuotation() {
                         onClick={() => addItemToQuote(item)}
                       >
                         <span>{item.description}</span>
-                        <span className="text-blue-400 font-semibold">SAR {item.price}</span>
+                        <span className="text-blue-400 font-normal">{item.price}</span>
                       </div>
                     ))}
                   </div>
@@ -329,9 +409,9 @@ export default function EditQuotation() {
                           onChange={e => updateItemRow(item.id, { price: parseFloat(e.target.value) || 0 })}
                         />
                       </td>
-                      <td className={styles.cellStatic}>SAR {item.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                      <td className={styles.cellStatic}>SAR {item.vatAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                      <td className={clsx(styles.cellStatic, "font-bold text-white")}>SAR {item.totalWithVat.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                      <td className={styles.cellStatic}>{item.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                      <td className={styles.cellStatic}>{item.vatAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                      <td className={clsx(styles.cellStatic, "font-medium text-white")}>{item.totalWithVat.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                       <td>
                         <button className={styles.removeBtn} onClick={() => removeItem(item.id)}>
                           <Trash2 size={16} />
@@ -377,12 +457,12 @@ export default function EditQuotation() {
             <h3 className={styles.summaryTitle}>Summary</h3>
             <div className={styles.summaryRow}>
               <span>Subtotal</span>
-              <span>SAR {subtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+              <span>{subtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
             </div>
             <div className={clsx(styles.summaryRow, "text-rose-400")}>
               <span>Discount</span>
               <div className="flex items-center gap-2">
-                <span>SAR</span>
+                <span></span>
                 <input 
                   type="number" 
                   className={styles.discountInput} 
@@ -393,15 +473,15 @@ export default function EditQuotation() {
             </div>
             <div className={styles.summaryRow}>
               <span>Net Amount</span>
-              <span>SAR {netAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+              <span>{netAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
             </div>
             <div className={styles.summaryRow}>
               <span>Total VAT (15%)</span>
-              <span>SAR {totalVat.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+              <span>{totalVat.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
             </div>
             <div className={clsx(styles.summaryRow, styles.totalRow)}>
               <span>Grand Total</span>
-              <span>SAR {grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+              <span>{grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
             </div>
             
             <div className="flex flex-col gap-3 mt-8">
@@ -429,6 +509,9 @@ export default function EditQuotation() {
                     total: netAmount + totalVat,
                     discount,
                     grandTotal,
+                    ticketNumber,
+                    subject,
+                    subjectAr,
                     notes,
                     termsAndConditions,
                     revision: revision + 1,

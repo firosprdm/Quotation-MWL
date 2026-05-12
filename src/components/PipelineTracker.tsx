@@ -4,24 +4,11 @@ import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { clsx } from 'clsx';
 import { 
-  CheckCircle, 
-  Clock, 
-  FileCheck, 
-  Receipt, 
-  DollarSign, 
-  Send, 
-  Hourglass, 
-  Briefcase,
-  PlayCircle,
-  CheckSquare,
-  FileSearch,
-  CheckCircle2,
   X,
   AlertCircle,
   Calendar,
   Activity,
   History,
-  ArrowRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatCurrency } from '@/lib/format';
@@ -35,32 +22,117 @@ export const PipelineTracker = () => {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
 
   const activeQuotations = React.useMemo(() => {
-    const items = [...quotations].filter(q => q.status !== 'rejected');
+    // Include all, but ensure they are sorted meaningfully
+    const items = [...quotations];
     
     items.sort((a, b) => {
       let aValue: any;
       let bValue: any;
 
+      const direction = sortConfig.direction === 'asc' ? 1 : -1;
+
       if (sortConfig.key === 'total') {
-        aValue = a.grandTotal;
-        bValue = b.grandTotal;
+        aValue = a.grandTotal || 0;
+        bValue = b.grandTotal || 0;
+      } else if (sortConfig.key === 'paymentStatus') {
+        const rank = (q: any) => {
+          const invDate = q.invoiceDate || q.date;
+          const received = q.receivedAmount || 0;
+          const total = q.grandTotal;
+          const ps = (q.paymentStatus || '').toLowerCase();
+          const isPaid = ps === 'done' || ps === 'paid' || received >= total - 0.01;
+          const isPartial = !isPaid && received > 0;
+          
+          const ss = (q.salesStatus || '').toLowerCase();
+          const hasPO = ss === 'po recieved' || ss === 'po received' || !!q.poNumber;
+          const ws = (q.workStatus || '').toLowerCase();
+          const isWorkDone = ws === 'work done' || ws === 'completed';
+
+          if (q.status !== 'approved' || !hasPO || !isWorkDone) return -1; // Not at financial stage
+
+          if (isPaid) return 4;
+          if (isPartial) return 3;
+          
+          const daysDiff = Math.floor((Date.now() - invDate) / 86400000);
+          if (daysDiff > 30) return 2; // Overdue
+          return 1; // Pending
+        };
+        aValue = rank(a);
+        bValue = rank(b);
+      } else if (sortConfig.key === 'salesStatus') {
+        const rank = (q: any) => {
+          if (q.status !== 'approved') return -1;
+          const ss = (q.salesStatus || '').toLowerCase();
+          if (ss === 'po recieved' || ss === 'po received' || !!q.poNumber) return 2;
+          return 1; // Awaiting PO
+        };
+        aValue = rank(a);
+        bValue = rank(b);
+      } else if (sortConfig.key === 'workStatus') {
+        const rank = (q: any) => {
+          const ss = (q.salesStatus || '').toLowerCase();
+          const hasPO = ss === 'po recieved' || ss === 'po received' || !!q.poNumber;
+          if (q.status !== 'approved' || !hasPO) return -1;
+
+          const ws = (q.workStatus || '').toLowerCase();
+          if (ws === 'work done' || ws === 'completed') return 3;
+          if (ws.includes('going') || ws.includes('ongoing') || ws === 'in_progress') return 2;
+          return 1; // Work Pending
+        };
+        aValue = rank(a);
+        bValue = rank(b);
+      } else if (sortConfig.key === 'status') {
+        const rank = (q: any) => {
+          const s = (q.status || '').toLowerCase();
+          if (s === 'approved') return 4;
+          if (s === 'sent') return 3;
+          if (s === 'waiting') return 2;
+          if (s === 'revised') return 1;
+          if (s === 'rejected') return 0;
+          return -1;
+        };
+        aValue = rank(a);
+        bValue = rank(b);
+      } else if (sortConfig.key === 'date') {
+        aValue = a.date || 0;
+        bValue = b.date || 0;
+      } else if (sortConfig.key === 'number') {
+        aValue = String(a.invoiceNumber || a.number || '');
+        bValue = String(b.invoiceNumber || b.number || '');
       } else {
-        aValue = (a as any)[sortConfig.key] || '';
-        bValue = (b as any)[sortConfig.key] || '';
-      }
-      
-      if (typeof aValue === 'string') {
-        return sortConfig.direction === 'asc' 
-          ? aValue.localeCompare(bValue) 
-          : bValue.localeCompare(aValue);
+        aValue = String((a as any)[sortConfig.key] || '');
+        bValue = String((b as any)[sortConfig.key] || '');
       }
 
-      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
-      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+      // Handle the "-" state (represented by -1) to always be at bottom
+      if (aValue === -1 && bValue !== -1) return 1;
+      if (bValue === -1 && aValue !== -1) return -1;
+
+      if (sortConfig.key === 'number') {
+        const aParts = aValue.split(/(\d+)/);
+        const bParts = bValue.split(/(\d+)/);
+        for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
+          const aP = aParts[i] || '';
+          const bP = bParts[i] || '';
+          if (aP === bP) continue;
+          const aN = parseInt(aP, 10);
+          const bN = parseInt(bP, 10);
+          if (!isNaN(aN) && !isNaN(bN)) return (aN - bN) * direction;
+          return aP.localeCompare(bP) * direction;
+        }
+        return 0;
+      }
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return aValue.localeCompare(bValue, undefined, { numeric: true, sensitivity: 'base' }) * direction;
+      }
+
+      if (aValue < bValue) return -1 * direction;
+      if (aValue > bValue) return 1 * direction;
       return 0;
     });
 
-    return items.slice(0, 15);
+    return items; // Show more or handle pagination if needed
   }, [quotations, sortConfig]);
 
   const toggleSort = (key: 'date' | 'number' | 'total' | 'status' | 'salesStatus' | 'workStatus' | 'paymentStatus') => {
@@ -81,113 +153,183 @@ export const PipelineTracker = () => {
 
   return (
     <motion.section 
-      className="w-full mb-12 px-[5cm]" 
+      className="w-full mb-12 px-8 mx-auto" 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
     >
-      {/* Section Header - Synced with Recent Activity */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h3 className="text-[1.25rem] font-semibold text-white">Live Project Pipeline</h3>
+          <h3 className="premium-title">Live Project Pipeline</h3>
         </div>
       </div>
 
-      {/* Main Container - The "Box" */}
       <div className="glass-panel overflow-hidden border border-white/10 shadow-2xl">
         <div className="flex flex-col">
-          {/* Header Row - Aligned with Dashboard Tables */}
-          <div className="hidden lg:grid grid-cols-[1.5fr_2.5fr_6fr_2fr] gap-8 px-8 min-h-[1.2cm] h-[1.2cm] text-[0.75rem] uppercase font-medium tracking-widest text-slate-500 border-b border-white/5 items-center bg-white/[0.02]">
-            <div className="cursor-pointer hover:text-white transition-colors truncate" onClick={() => toggleSort('number')}>
-              Number <SortArrow field="number" />
+          <div className="hidden lg:grid grid-cols-[1.1fr_0.9fr_2fr_1.2fr_1.2fr_5.5fr_1.1fr] gap-4 px-6 min-h-[1.0cm] h-[1.0cm] border-b border-white/5 items-center bg-white/[0.02] text-xs">
+            <div className="premium-label cursor-pointer hover:text-white transition-colors truncate" onClick={() => toggleSort('number')}>
+              ID <SortArrow field="number" />
             </div>
-            <div className="cursor-pointer hover:text-white transition-colors truncate" onClick={() => toggleSort('date')}>
-              Client <SortArrow field="date" />
+            <div className="premium-label cursor-pointer hover:text-white transition-colors truncate" onClick={() => toggleSort('date')}>
+              Date <SortArrow field="date" />
             </div>
+            <div className="premium-label truncate">Client</div>
+            <div className="premium-label truncate">PO Number</div>
+            <div className="premium-label truncate">Ticket No</div>
             
-            <div className="grid grid-cols-4 gap-6 text-center h-full items-center">
-              <div className="text-blue-400 font-medium cursor-pointer hover:brightness-125 transition-all truncate" onClick={() => toggleSort('status')}>
+            <div className="grid grid-cols-4 gap-4 text-center h-full items-center">
+              <div className="premium-label !text-blue-400 cursor-pointer hover:brightness-125 transition-all truncate" onClick={() => toggleSort('status')}>
                 Quotation <SortArrow field="status" />
               </div>
-              <div className="text-amber-400 font-medium cursor-pointer hover:brightness-125 transition-all truncate" onClick={() => toggleSort('salesStatus')}>
+              <div className="premium-label !text-amber-400 cursor-pointer hover:brightness-125 transition-all truncate" onClick={() => toggleSort('salesStatus')}>
                 PO Status <SortArrow field="salesStatus" />
               </div>
-              <div className="text-fuchsia-400 font-medium cursor-pointer hover:brightness-125 transition-all truncate" onClick={() => toggleSort('workStatus')}>
+              <div className="premium-label !text-fuchsia-400 cursor-pointer hover:brightness-125 transition-all truncate" onClick={() => toggleSort('workStatus')}>
                 Execution <SortArrow field="workStatus" />
               </div>
-              <div className="text-emerald-400 font-medium cursor-pointer hover:brightness-125 transition-all truncate" onClick={() => toggleSort('paymentStatus')}>
+              <div className="premium-label !text-emerald-400 cursor-pointer hover:brightness-125 transition-all truncate" onClick={() => toggleSort('paymentStatus')}>
                 Financial <SortArrow field="paymentStatus" />
               </div>
             </div>
 
-            <div className="text-right cursor-pointer hover:text-white transition-colors truncate" onClick={() => toggleSort('total')}>
+            <div className="premium-label text-right cursor-pointer hover:text-white transition-colors truncate" onClick={() => toggleSort('total')}>
               Amount <SortArrow field="total" />
             </div>
           </div>
 
-          <div className="flex flex-col">
+          <div className="flex flex-col max-h-[600px] overflow-y-auto custom-scrollbar">
             {activeQuotations.map((q, idx) => {
               const client = clients.find(c => c.id === q.clientId);
-              const { isSent, isWaiting, isApproved, isPOWaiting, isPORecieved, isWorkPending, isWorkOngoing, isWorkDone, isInvoiced, isWaitingPayment, isPaid } = getProjectFlags(q);
+              
+              const ss = (q.salesStatus || '').toLowerCase();
+              const hasPO = ss === 'po recieved' || ss === 'po received' || !!q.poNumber;
+
+              const ws = (q.workStatus || '').toLowerCase();
+              const isWorkDone = ws === 'work done' || ws === 'completed';
+              const isWorkOngoing = ws.includes('going') || ws.includes('ongoing') || ws === 'in_progress';
+
+              const invDate = q.invoiceDate || q.date;
+              const received = q.receivedAmount || 0;
+              const total = q.grandTotal;
+              const ps = (q.paymentStatus || '').toLowerCase();
+              const isPaid = ps === 'done' || ps === 'paid' || received >= total - 0.01;
+              const isPartial = !isPaid && received > 0;
+              const daysDiffFin = Math.floor((Date.now() - invDate) / 86400000);
+              const isOverdue = !isPaid && !isPartial && daysDiffFin > 30;
+
+              const displayId = (() => {
+                if (!hasPO) {
+                  return q.number + (q.revision > 0 ? `-R${q.revision}` : '');
+                }
+                const invYear = new Date(q.invoiceDate || q.approvalDate || q.date).getFullYear();
+                const rawNum = String(q.number || '0').replace(/[^0-9]/g, '');
+                const formattedNum = rawNum.slice(-4).padStart(4, '0');
+                return `INV-${invYear}-${formattedNum}`;
+              })();
 
               return (
                 <div 
                   key={q.id} 
                   className={clsx(
-                    "grid grid-cols-1 lg:grid-cols-[1.5fr_2.5fr_6fr_2fr] gap-8 items-center px-8 min-h-[1.2cm] h-[1.2cm] border-b border-white/[0.05] hover:bg-white/[0.04] transition-all duration-200 group/row cursor-pointer",
+                    "grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr_2fr_1.2fr_1.2fr_5.5fr_1.1fr] gap-4 items-center px-6 py-3 border-b border-white/[0.05] hover:bg-white/[0.04] transition-all duration-200 group/row cursor-pointer text-sm",
                     idx === activeQuotations.length - 1 && "border-b-0"
                   )}
                   onClick={() => setSelectedProjectId(q.id)}
                 >
-                  
-                  <div className="font-medium text-white/90 text-[0.875rem] hidden lg:block tracking-tight truncate">
-                    {q.invoiceNumber || q.number}
+                  <div className="font-medium text-white/90 tracking-tight truncate">
+                    {displayId}
                   </div>
-                  <div className="text-slate-300 text-[0.875rem] font-medium truncate">
+                  <div className="text-white/70 text-xs hidden lg:block truncate">
+                    {new Date(q.approvalDate || q.date).toLocaleDateString('en-GB')}
+                  </div>
+                  <div className="text-white font-medium truncate">
                     <span className="lg:hidden text-slate-500 font-medium mr-2">
-                      {q.invoiceNumber || q.number}
+                      {displayId}
                     </span>
                     {client?.name || 'Generic Client'}
                   </div>
+                  <div className="hidden lg:block truncate">
+                    {q.poNumber ? (
+                      <span className="px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 text-xs font-mono text-amber-400/90">
+                        {q.poNumber}
+                      </span>
+                    ) : (
+                      <span className="text-slate-600 text-xs">-</span>
+                    )}
+                  </div>
+                  <div className="hidden lg:block truncate">
+                    {q.ticketNumber ? (
+                      <span className="px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20 text-xs font-mono text-blue-400">
+                        {q.ticketNumber}
+                      </span>
+                    ) : (
+                      <span className="text-slate-600 text-xs">-</span>
+                    )}
+                  </div>
 
-                  {/* High-Visibility Modular Phase Tracker - Grid Synchronized for Perfect Alignment */}
-                  <div className="grid grid-cols-4 gap-6 h-full py-1">
-                    
-                    {/* Zone 1: Quotation */}
-                    <div className="flex items-center justify-center gap-2 h-full bg-blue-500/[0.03] border border-blue-500/10 rounded-lg px-2">
-                      <BigStep icon={<Send size={14}/>} active={isSent} color="amber" />
-                      <TightConnector active={isWaiting} color="blue" />
-                      <BigStep icon={<Hourglass size={14}/>} active={isWaiting} color="blue" />
-                      <TightConnector active={isApproved} color="emerald" />
-                      <BigStep icon={<CheckCircle size={14}/>} active={isApproved} color="emerald" />
+                  <div className="grid grid-cols-4 gap-4 h-[1.0cm] items-center">
+                    <div className={clsx(
+                      "flex items-center justify-center text-[10px] font-bold uppercase tracking-wider h-full border rounded-lg px-1 text-center truncate",
+                      q.status === 'approved' ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : 
+                      q.status === 'rejected' ? "bg-rose-500/10 text-rose-400 border-rose-500/20" :
+                      q.status === 'revised'  ? "bg-purple-500/10 text-purple-400 border-rose-500/20" :
+                      "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                    )}>
+                      {(() => {
+                        const days = Math.floor((Date.now() - q.date) / 86400000);
+                        const label = q.status === 'approved' ? 'APPROVED' : 
+                                      q.status === 'rejected' ? 'REJECTED' : 
+                                      q.status === 'revised'  ? 'REVISED' :
+                                      q.status === 'waiting'  ? 'WAITING' : 'SENT';
+                        return (q.status === 'approved' || q.status === 'rejected') ? label : `${label} (${days}D)`;
+                      })()}
                     </div>
 
-                    {/* Zone 2: PO Status */}
-                    <div className="flex items-center justify-center gap-2 h-full bg-amber-500/[0.03] border border-amber-500/10 rounded-lg px-2">
-                      <BigStep icon={<FileSearch size={14}/>} active={isPOWaiting} color="amber" />
-                      <TightConnector active={isPORecieved} color="emerald" />
-                      <BigStep icon={<CheckCircle2 size={14}/>} active={isPORecieved} color="emerald" />
+                    <div className={clsx(
+                      "flex items-center justify-center text-[10px] font-bold uppercase tracking-wider h-full border rounded-lg px-1 text-center truncate",
+                      q.status !== 'approved' ? "bg-white/[0.02] text-slate-600 border-white/5" :
+                      hasPO ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" :
+                      "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                    )}>
+                      {q.status !== 'approved' ? '-' : 
+                       hasPO ? 'PO RECEIVED' : 
+                       `WAIT PO (${Math.floor((Date.now() - (q.approvalDate || q.date)) / 86400000)}D)`}
                     </div>
 
-                    {/* Zone 3: Execution */}
-                    <div className="flex items-center justify-center gap-2 h-full bg-fuchsia-500/[0.03] border border-fuchsia-500/10 rounded-lg px-2">
-                      <BigStep icon={<Briefcase size={14}/>} active={isWorkPending} color="amber" />
-                      <TightConnector active={isWorkOngoing} color="blue" />
-                      <BigStep icon={<PlayCircle size={14}/>} active={isWorkOngoing} color="blue" />
-                      <TightConnector active={isWorkDone} color="emerald" />
-                      <BigStep icon={<CheckSquare size={14}/>} active={isWorkDone} color="emerald" />
+                    <div className={clsx(
+                      "flex items-center justify-center text-[10px] font-bold uppercase tracking-wider h-full border rounded-lg px-1 text-center truncate",
+                      q.status !== 'approved' ? "bg-white/[0.02] text-slate-600 border-white/5" :
+                      isWorkDone ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" :
+                      isWorkOngoing ? "bg-blue-500/10 text-blue-400 border-blue-500/20" :
+                      "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                    )}>
+                      {(() => {
+                        if (q.status !== 'approved') return '-';
+                        if (isWorkDone) return 'COMPLETED';
+                        
+                        const execStartDate = q.poDate || q.approvalDate || q.date;
+                        const execDays = Math.floor((Date.now() - execStartDate) / 86400000);
+                        
+                        return isWorkOngoing ? `ON GOING (${execDays}D)` : `PENDING (${execDays}D)`;
+                      })()}
                     </div>
 
-                    {/* Zone 4: Financial */}
-                    <div className="flex items-center justify-center gap-2 h-full bg-emerald-500/[0.03] border border-emerald-500/10 rounded-lg px-2">
-                      <BigStep icon={<Receipt size={14}/>} active={isInvoiced} color="amber" />
-                      <TightConnector active={isWaitingPayment} color="blue" />
-                      <BigStep icon={<Clock size={14}/>} active={isWaitingPayment} color="blue" />
-                      <TightConnector active={isPaid} color="emerald" />
-                      <BigStep icon={<DollarSign size={14}/>} active={isPaid} color="emerald" />
+                    <div className={clsx(
+                      "flex items-center justify-center text-[10px] font-bold uppercase tracking-wider h-full border rounded-lg px-1 text-center truncate",
+                      !hasPO || !isWorkDone || q.status !== 'approved' ? "bg-white/[0.02] text-slate-600 border-white/5" :
+                      isPaid ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" :
+                      isPartial ? "bg-blue-500/10 text-blue-400 border-blue-500/20" :
+                      isOverdue ? "bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-[0_0_10px_rgba(244,63,94,0.1)]" :
+                      "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                    )}>
+                      {!hasPO || !isWorkDone || q.status !== 'approved' ? '-' :
+                       isPaid ? 'RECEIVED' :
+                       isPartial ? 'PARTIAL' :
+                       isOverdue ? `OVERDUE (${daysDiffFin}D)` :
+                       `PENDING (${daysDiffFin}D)`}
                     </div>
                   </div>
 
-                  <div className="text-right font-bold text-emerald-400 text-[0.875rem] tabular-nums truncate">
+                  <div className="text-right font-medium text-emerald-400 tabular-nums truncate">
                     {formatCurrency(q.grandTotal)}
                   </div>
                 </div>
@@ -216,15 +358,15 @@ const getProjectFlags = (q: any) => {
   const ps = (q.paymentStatus || '').toLowerCase();
   const ss = (q.salesStatus || '').toLowerCase();
 
-  const isApproved = s === 'approved' || ss.includes('recieved') || ss.includes('received') || !!q.poNumber;
+  const isApproved = s === 'approved';
+  const isPORecieved = ss === 'po recieved' || ss === 'po received' || !!q.poNumber;
   const isSent = s === 'sent' || s === 'waiting' || s === 'revised' || isApproved;
   const isWaiting = s === 'waiting' || isApproved;
-  const isPORecieved = ss.includes('recieved') || ss.includes('received') || !!q.poNumber;
-  const isPOWaiting = isApproved || isPORecieved;
-  const isWorkDone = ws.includes('done');
-  const isWorkOngoing = ws.includes('going') || ws.includes('ongoing') || isWorkDone;
+  const isPOWaiting = isApproved;
+  const isWorkDone = ws.includes('done') || ws === 'completed';
+  const isWorkOngoing = ws.includes('going') || ws.includes('ongoing') || ws === 'in_progress' || isWorkDone;
   const isWorkPending = (isPORecieved && (ws.includes('pending') || !ws)) || isWorkOngoing;
-  const isPaid = ps.includes('done') || ps.includes('paid');
+  const isPaid = ps.includes('done') || ps.includes('paid') || (q.receivedAmount >= q.grandTotal - 0.01);
   const isInvoiced = !!(q.invoiceNumber || q.uuid || q.invoiceDate) || isPaid;
   const isWaitingPayment = (isInvoiced && (ps.includes('pending') || ps.includes('wait'))) || isPaid;
 
@@ -268,33 +410,33 @@ const ProjectAnalyticsModal = ({ quotation, client, onClose }: { quotation: any,
               <Activity size={40} className="text-white" />
             </div>
             <div>
-              <h2 className="text-4xl font-black text-white tracking-tighter">
+              <h2 className="text-4xl font-normal text-white tracking-tighter">
                 {quotation.invoiceNumber || quotation.number}
               </h2>
-              <p className="text-slate-400 text-lg font-bold">{client?.name || 'Generic Client'}</p>
+              <p className="text-slate-400 text-lg font-medium">{client?.name || 'Generic Client'}</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
             <div className="p-8 rounded-3xl bg-white/[0.04] border border-white/10">
-              <h4 className="text-[11px] uppercase font-black tracking-[0.2em] text-slate-500 mb-4 flex items-center gap-2">
+              <h4 className="text-[13px] uppercase font-normal tracking-[0.2em] text-slate-500 mb-4 flex items-center gap-2">
                 <AlertCircle size={14} className="text-amber-400" /> Current Bottleneck
               </h4>
-              <p className="text-2xl font-black text-white mb-1">{bottleneckPhase}</p>
-              <p className="text-sm text-amber-400 font-bold">{bottleneck} Days Pending</p>
+              <p className="text-2xl font-normal text-white mb-1">{bottleneckPhase}</p>
+              <p className="text-sm text-amber-400 font-medium">{bottleneck} Days Pending</p>
             </div>
 
             <div className="p-8 rounded-3xl bg-white/[0.04] border border-white/10">
-              <h4 className="text-[11px] uppercase font-black tracking-[0.2em] text-slate-500 mb-4 flex items-center gap-2">
+              <h4 className="text-[13px] uppercase font-normal tracking-[0.2em] text-slate-500 mb-4 flex items-center gap-2">
                 <Calendar size={14} className="text-emerald-400" /> Financial Volume
               </h4>
-              <p className="text-2xl font-black text-emerald-400 mb-1">{formatCurrency(quotation.grandTotal)}</p>
-              <p className="text-sm text-slate-500 font-bold">Total Project Value</p>
+              <p className="text-2xl font-normal text-emerald-400 mb-1">{formatCurrency(quotation.grandTotal)}</p>
+              <p className="text-sm text-slate-500 font-medium">Total Project Value</p>
             </div>
           </div>
 
           <div className="space-y-4">
-            <h4 className="text-[11px] uppercase font-black tracking-[0.2em] text-slate-500 flex items-center gap-2">
+            <h4 className="text-[13px] uppercase font-normal tracking-[0.2em] text-slate-500 flex items-center gap-2">
               <History size={14} /> Lifecycle Analysis
             </h4>
             <AgeingBar label="Quotation Phase" days={daysInQuotation} color="blue" isBottleneck={bottleneckPhase === 'Quotation'} />
@@ -315,9 +457,9 @@ const ProjectAnalyticsModal = ({ quotation, client, onClose }: { quotation: any,
 };
 
 const StatusCard = ({ label, value }: { label: string, value: string }) => (
-  <div className="flex-1 p-5 rounded-2xl bg-white/[0.02] border border-white/5 text-center shadow-inner">
-    <p className="text-[10px] uppercase font-black text-slate-500 mb-1">{label}</p>
-    <p className="text-xs font-black text-white tracking-widest">{value.toUpperCase()}</p>
+  <div className="flex-1 p-5 rounded-2xl bg-white/[0.02] border border-white/5 text-center shadow-inner text-white">
+    <p className="text-[12px] uppercase font-normal text-slate-500 mb-1">{label}</p>
+    <p className="text-sm font-normal tracking-widest">{value.toUpperCase()}</p>
   </div>
 );
 
@@ -335,8 +477,8 @@ const AgeingBar = ({ label, days, color, isBottleneck }: { label: string, days: 
       isBottleneck ? "bg-white/[0.08] border-white/25 shadow-2xl" : "bg-white/[0.02] border-white/5"
     )}>
       <div className="flex justify-between items-center mb-2">
-        <span className="text-sm font-black text-white">{label}</span>
-        <span className={clsx("text-xs font-black px-3 py-1 rounded-full", isBottleneck ? "bg-rose-500 text-white" : "text-slate-500")}>
+        <span className="text-sm font-normal text-white">{label}</span>
+        <span className={clsx("text-sm font-normal px-3 py-1 rounded-full", isBottleneck ? "bg-rose-500 text-white" : "text-slate-500")}>
           {days} Days
         </span>
       </div>
@@ -350,40 +492,4 @@ const AgeingBar = ({ label, days, color, isBottleneck }: { label: string, days: 
       </div>
     </div>
   );
-};
-
-const LegendItem = ({ color, label }: { color: string, label: string }) => (
-  <span className="flex items-center gap-2.5">
-    <span className={clsx("w-2 h-2 rounded-full shadow-[0_0_8px_rgba(255,255,255,0.2)]", color)}></span>
-    {label}
-  </span>
-);
-
-const BigStep = ({ icon, active, color }: { icon: React.ReactNode, active: boolean, color: string }) => {
-  const colorMap: any = {
-    amber: active ? 'bg-amber-500/20 text-amber-400 border-amber-500/40 shadow-[0_0_20px_rgba(245,158,11,0.3)]' : 'bg-white/[0.03] text-slate-700 border-white/5',
-    blue: active ? 'bg-blue-500/20 text-blue-400 border-blue-500/40 shadow-[0_0_20px_rgba(59,130,246,0.3)]' : 'bg-white/[0.03] text-slate-700 border-white/5',
-    emerald: active ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 shadow-[0_0_20px_rgba(16,185,129,0.3)]' : 'bg-white/[0.03] text-slate-700 border-white/5',
-  };
-
-  return (
-    <div className="flex flex-col items-center group/step relative">
-      <div className={clsx(
-        "w-8 h-8 rounded-xl flex items-center justify-center border transition-all duration-500 scale-100 group-hover/step:scale-110",
-        colorMap[color]
-      )}>
-        {icon}
-      </div>
-    </div>
-  );
-};
-
-const TightConnector = ({ active, color }: { active: boolean, color: string }) => {
-  const colorMap: any = {
-    amber: active ? 'bg-amber-500/40 shadow-[0_0_10px_rgba(245,158,11,0.4)]' : 'bg-white/5',
-    blue: active ? 'bg-blue-500/40 shadow-[0_0_10px_rgba(59,130,246,0.4)]' : 'bg-white/5',
-    emerald: active ? 'bg-emerald-500/40 shadow-[0_0_10px_rgba(16,185,129,0.4)]' : 'bg-white/5',
-  };
-
-  return <div className={clsx("w-3 h-[2px] rounded-full transition-all duration-700", colorMap[color])} />;
 };

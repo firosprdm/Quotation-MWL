@@ -90,7 +90,7 @@ export function BankReconciliation() {
         <div className="lg:col-span-5">
           <div className="glass-panel min-h-[400px]">
             <div className="p-6 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
-              <h3 className="text-xl font-bold flex items-center gap-3">
+              <h3 className="text-xl font-medium flex items-center gap-3">
                 <ShieldCheck className="text-blue-400" size={24} />
                 Bank Transactions
               </h3>
@@ -137,7 +137,7 @@ export function BankReconciliation() {
                     <tr>
                       <td colSpan={4} className="text-center py-20 text-muted/30">
                         <Upload size={32} className="mx-auto mb-4 opacity-20" />
-                        <p className="text-xs uppercase tracking-widest font-normal">No transactions imported</p>
+                        <p className="text-sm uppercase tracking-widest font-normal">No transactions imported</p>
                       </td>
                     </tr>
                   ) : (
@@ -148,7 +148,7 @@ export function BankReconciliation() {
                           <div className="flex flex-col">
                             <span className="text-white">{tx.description}</span>
                             {tx.matchedEntryId && (
-                              <span className="text-emerald-400 uppercase mt-1 flex items-center gap-1 text-[10px]">
+                              <span className="text-emerald-400 uppercase mt-1 flex items-center gap-1 text-[12px]">
                                 <CheckCircle2 size={10} /> Auto-suggest
                               </span>
                             )}
@@ -182,11 +182,11 @@ export function BankReconciliation() {
         <div className="lg:col-span-7">
           <div className="glass-panel min-h-[400px]">
             <div className="p-6 border-b border-white/5 flex justify-between items-center bg-purple-500/[0.02]">
-              <h3 className="text-xl font-black flex items-center gap-3">
+              <h3 className="text-xl font-normal flex items-center gap-3">
                 <FileText className="text-purple-400" size={24} />
                 Unreconciled
               </h3>
-              <span className="text-xs font-medium text-muted uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full">
+              <span className="text-sm font-medium text-muted uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full">
                 {bankTransactions.length} Imported
               </span>
             </div>

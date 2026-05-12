@@ -1,0 +1,11 @@
+node_modules
+.next
+.git
+.env.local
+.vercel
+README.md
+Dockerfile
+docker-compose*
+*.mjs
+*.js
+scratch

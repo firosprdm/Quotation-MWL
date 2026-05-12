@@ -31,18 +31,18 @@
 
 .compactTable th {
   padding: 8px 20px !important;
-  font-size: 10px !important;
+  font-size: 12px !important;
 }
 
 .compactTable td {
   padding: 4px 20px !important;
-  font-size: 11px !important;
+  font-size: 14px !important;
 }
 
 .table th {
   text-align: left;
-  padding: 6px 12px;
-  font-size: 11px;
+  padding: 16px 24px;
+  font-size: 14px;
   font-weight: 400;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -52,7 +52,7 @@
 }
 
 .table td {
-  padding: 6px 12px;
+  padding: 16px 24px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-  font-size: 13px;
+  font-size: 14px;
 }

@@ -5,8 +5,8 @@ import { Quotation, Client, CompanySettings } from '../types';
 Font.register({
   family: 'ArabicFont',
   fonts: [
-    { src: 'https://raw.githubusercontent.com/rastikerdar/vazirmatn/master/fonts/ttf/Vazirmatn-Regular.ttf' },
-    { src: 'https://raw.githubusercontent.com/rastikerdar/vazirmatn/master/fonts/ttf/Vazirmatn-Bold.ttf', fontWeight: 'bold' },
+    { src: 'https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/ttf/Vazirmatn-Regular.ttf' },
+    { src: 'https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/ttf/Vazirmatn-Bold.ttf', fontWeight: 'bold' },
   ]
 });
 
@@ -17,13 +17,13 @@ const styles = StyleSheet.create({
     fontSize: 10.5,
     color: '#1e293b',
     backgroundColor: '#fff',
-    fontFamily: 'ArabicFont',
+    fontFamily: 'Helvetica',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 8,
-    paddingBottom: 8,
+    marginBottom: 4,
+    paddingBottom: 4,
     borderBottom: 2,
     borderBottomColor: '#10b981',
   },
@@ -54,11 +54,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#1e293b',
+    fontFamily: 'ArabicFont',
   },
   companyAddress: {
     fontSize: 8.5,
     color: '#64748b',
     lineHeight: 1.3,
+    fontFamily: 'ArabicFont',
   },
   titleContainer: {
     alignItems: 'flex-end',
@@ -74,28 +76,31 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1e293b',
     marginTop: -4,
+    fontFamily: 'ArabicFont',
   },
   mainGrid: {
     flexDirection: 'row',
-    marginBottom: 10,
-    gap: 12,
+    marginBottom: 6,
+    gap: 8,
   },
   infoBox: {
     flex: 1,
-    padding: 10,
+    padding: '6 10',
     backgroundColor: '#f8fafc',
     borderRadius: 4,
     border: 1,
     borderColor: '#e2e8f0',
   },
   infoLabel: {
-    fontSize: 9,
+    fontSize: 10,
     color: '#94a3b8',
     textTransform: 'uppercase',
     fontWeight: 'bold',
-    marginBottom: 4,
+    marginBottom: 2,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
+    gap: 6,
+    fontFamily: 'ArabicFont',
   },
   infoValue: {
     fontSize: 11,
@@ -103,7 +108,7 @@ const styles = StyleSheet.create({
     lineHeight: 1.2,
   },
   invoiceMeta: {
-    width: 180,
+    width: 210,
     gap: 6,
   },
   metaRow: {
@@ -114,7 +119,7 @@ const styles = StyleSheet.create({
     paddingBottom: 3,
   },
   metaLabel: {
-    fontSize: 9,
+    fontSize: 9.5,
     color: '#94a3b8',
     fontWeight: 'bold',
   },
@@ -123,40 +128,56 @@ const styles = StyleSheet.create({
     color: '#1e293b',
     fontWeight: 'bold',
   },
+  subjectSection: {
+    marginBottom: 8,
+    padding: '8 12',
+    backgroundColor: '#f1f5f9',
+    borderRadius: 4,
+    borderLeft: 3,
+    borderLeftColor: '#475569',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  subjectText: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: '#1e293b',
+    fontFamily: 'ArabicFont',
+  },
   table: {
     width: '100%',
     marginBottom: 10,
   },
   tableHeader: {
     flexDirection: 'row',
-    backgroundColor: '#475569',
-    padding: '8 4',
+    backgroundColor: '#60a5fa',
+    padding: '2 4',
     borderRadius: 3,
-    marginBottom: 2,
+    marginBottom: 1,
   },
   headerText: {
     color: '#fff',
-    fontSize: 8.5,
-    fontWeight: 'bold',
+    fontSize: 9.5,
     textAlign: 'center',
   },
   tableRow: {
     flexDirection: 'row',
-    padding: '10 4',
+    padding: '2 4',
     borderBottom: 1,
     borderBottomColor: '#f1f5f9',
     alignItems: 'center',
   },
   colDesc: { width: '30%' },
-  colUnit: { width: '8%', textAlign: 'center' },
-  colQty: { width: '7%', textAlign: 'center' },
-  colPrice: { width: '12%', textAlign: 'center' },
-  colExVat: { width: '14%', textAlign: 'right' },
-  colVat: { width: '13%', textAlign: 'right' },
-  colTotal: { width: '16%', textAlign: 'right' },
+  colUnit: { width: '8%', textAlign: 'center', fontSize: 9.5, color: '#1e293b' },
+  colQty: { width: '7%', textAlign: 'center', fontSize: 9.5, color: '#1e293b' },
+  colPrice: { width: '12%', textAlign: 'center', fontSize: 9.5, color: '#1e293b' },
+  colExVat: { width: '14%', textAlign: 'right', fontSize: 9.5, color: '#1e293b' },
+  colVat: { width: '13%', textAlign: 'right', fontSize: 9.5, color: '#1e293b' },
+  colTotal: { width: '16%', textAlign: 'right', fontSize: 9.5, color: '#1e293b' },
   
-  descEn: { fontSize: 10, fontWeight: 'bold', color: '#1e293b' },
-  descAr: { fontSize: 9, color: '#64748b', marginTop: 2 },
+  descEn: { fontSize: 9.5, fontWeight: 'bold', color: '#1e293b' },
+  descAr: { fontSize: 9.5, color: '#64748b', marginTop: 0, fontFamily: 'ArabicFont' },
 
   summarySection: {
     flexDirection: 'row',
@@ -179,22 +200,27 @@ const styles = StyleSheet.create({
     height: 85, // Made bigger
   },
   summaryBlock: {
-    width: '35%',
+    width: '45%',
+    border: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 4,
+    overflow: 'hidden',
   },
-  summaryRow: {
+   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 4,
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+    backgroundColor: '#f1f5f9',
     borderBottom: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: '#e2e8f0',
+    fontSize: 9.5,
   },
   grandTotal: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     backgroundColor: '#10b981',
     padding: '8 8',
-    borderRadius: 4,
-    marginTop: 6,
   },
   totalLabelBox: {
     flex: 1,
@@ -217,9 +243,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     marginBottom: 6,
-    fontSize: 9,
+    fontSize: 9.5,
     color: '#1e293b',
     fontWeight: 'bold',
+    fontFamily: 'ArabicFont',
     backgroundColor: '#f0fdf4',
     padding: '6 12',
     borderRadius: 4,
@@ -241,10 +268,11 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   contactText: {
-    fontSize: 9,
+    fontSize: 9.5,
     color: '#334155',
     fontWeight: 'bold',
     letterSpacing: 0.2,
+    fontFamily: 'ArabicFont',
   },
   iconSvg: {
     width: 12,
@@ -285,176 +313,265 @@ interface Props {
 }
 
 export const InvoicePDF = ({ quotation, client, settings, qrDataUrl }: Props) => {
-  const invoiceDate = quotation.invoiceDate ? new Date(quotation.invoiceDate).toLocaleDateString('en-GB') : new Date().toLocaleDateString('en-GB');
-  const invoiceNumber = quotation.invoiceNumber || `INV-${quotation.number}`;
+  if (!quotation || !client || !settings) {
+    return (
+      <Document title="Loading...">
+        <Page size="A4" style={styles.page}>
+          <View><Text>Loading document data...</Text></View>
+        </Page>
+      </Document>
+    );
+  }
+  const qDate = quotation.invoiceDate ? new Date(quotation.invoiceDate).toLocaleDateString('en-GB') : new Date().toLocaleDateString('en-GB');
+  const vDate = quotation.supplyDate ? new Date(quotation.supplyDate).toLocaleDateString('en-GB') : qDate;
+
+  // Extract invoice number: prefer top-level, fallback to metadata item in items
+  const metadata: any = (quotation.items || []).find((it: any) => it._isWorkflowMetadata) || {};
+  const effectiveInvoiceNumber = quotation.invoiceNumber || metadata.invoiceNumber;
+  
+  const isZatcaDone = !!effectiveInvoiceNumber;
+  const invoiceNumber = isZatcaDone
+    ? effectiveInvoiceNumber                 // Official: INV-YYYY-XXXX
+    : 'DRAFT';                                 // Before ZATCA
 
   return (
-    <Document title={`Invoice - ${invoiceNumber}`}>
+    <Document title={isZatcaDone ? `Invoice - ${invoiceNumber}` : `Draft Invoice - ${quotation.number}`}>
       <Page size="A4" style={styles.page}>
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <View style={styles.logoRow}>
-              {settings.logo && (
-                <View style={styles.logoContainer}>
-                  <Image src={settings.logo} style={styles.logo} />
+            <View style={{ 
+              backgroundColor: '#fff',
+              padding: '6 10',
+              borderRadius: 4,
+              border: 1,
+              borderColor: '#e2e8f0',
+            }}>
+              <View style={[styles.logoRow, { marginBottom: 4 }]}>
+                {!!settings.logo && (
+                  <View style={styles.logoContainer}>
+                    <Image src={settings.logo} style={styles.logo} />
+                  </View>
+                )}
+                <View>
+                  <Text style={styles.companyName}>{`${settings.name || 'Marina WorldLink Co.'}`}</Text>
+                  <Text style={[styles.companyAr, { fontFamily: 'ArabicFont' }]}>{`${settings.nameAr || 'شركة مارينا وورلدلينك'}`}</Text>
                 </View>
-              )}
-              <View>
-                <Text style={styles.companyName}>Marina WorldLink Co.</Text>
-                <Text style={styles.companyAr}>شركة مارينا وورلدلينك</Text>
               </View>
-            </View>
-            <View style={styles.companyAddress}>
-              <Text>1234 King Fahd Road, Al Olaya District</Text>
-              <Text>Riyadh 12211, Kingdom of Saudi Arabia</Text>
-              <Text style={{ fontWeight: 'bold', color: '#1e293b' }}>
-                VAT: 300000000000003 | CR: 1010000000
-              </Text>
-              <Text>Mob: +966 507465418</Text>
+              <View style={styles.companyAddress}>
+                {settings.splitAddress ? (
+                  <View style={{ gap: 1 }}>
+                    <Text>{`${settings.splitAddress.buildingNumber || ' '} ${settings.splitAddress.streetName || ' '}`}</Text>
+                    <Text>{`${settings.splitAddress.district || ' '}, ${settings.splitAddress.city || ' '} ${settings.splitAddress.postalCode || ' '}`}</Text>
+                    <Text>{settings.splitAddress.countryCode === 'SA' ? 'Kingdom of Saudi Arabia' : `${settings.splitAddress.countryCode || ' '}`}</Text>
+                  </View>
+                ) : (
+                  <View style={{ gap: 1 }}>
+                    <Text>{`${settings.address || ' '}`}</Text>
+                  </View>
+                )}
+                <View style={{ marginTop: 2, flexDirection: 'row', gap: 10 }}>
+                  <Text style={{ fontWeight: 'bold', color: '#1e293b' }}>{`VAT: ${settings.vatNumber || ' '}`}</Text>
+                  <Text style={{ fontWeight: 'bold', color: '#1e293b' }}>{`CR: ${settings.crNumber || ' '}`}</Text>
+                </View>
+                <Text style={{ marginTop: 1 }}>{`Mob: ${settings.contact || ' '}`}</Text>
+              </View>
             </View>
           </View>
           <View style={styles.titleContainer}>
             <Text style={styles.titleEn}>Tax Invoice</Text>
-            <Text style={styles.titleAr}>فاتورة ضريبية</Text>
-            <Text style={{ fontSize: 7, color: '#10b981', marginTop: 8, fontWeight: 'bold' }}>ZATCA Compliant / متوافق مع الزكاة</Text>
+            <Text style={[styles.titleAr, { fontFamily: 'ArabicFont' }]}>فاتورة ضريبية</Text>
+            <View style={{ flexDirection: 'row', gap: 4, marginTop: 8 }}>
+              <Text style={{ fontSize: 7, color: '#10b981', fontWeight: 'bold' }}>ZATCA Compliant /</Text>
+              <Text style={{ fontSize: 7, color: '#10b981', fontWeight: 'bold', fontFamily: 'ArabicFont' }}>متوافق مع الزكاة</Text>
+            </View>
           </View>
         </View>
 
         {/* Info Grid */}
         <View style={styles.mainGrid}>
           <View style={styles.infoBox}>
-            <View style={styles.infoLabel}>
-              <Text>Bill To</Text>
-              <Text>فاتورة إلى</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+              <Text style={[styles.infoValue, { fontWeight: 'bold', fontSize: 11, marginBottom: 0 }]}>{`${client?.name || ' '}`}</Text>
+              <View style={[styles.infoLabel, { marginBottom: 0 }]}>
+                <Text>Bill To</Text>
+                <Text style={{ fontFamily: 'ArabicFont' }}>فاتورة إلى</Text>
+              </View>
             </View>
-            <Text style={[styles.infoValue, { fontWeight: 'bold', fontSize: 11 }]}>{client.name}</Text>
-            <View style={{ marginTop: 2 }}>
-              {client.splitAddress ? (
-                <View style={{ gap: 1 }}>
-                  <Text style={styles.companyAddress}>{client.splitAddress.buildingNumber} {client.splitAddress.streetName}</Text>
-                  <Text style={styles.companyAddress}>{client.splitAddress.district}, {client.splitAddress.city} {client.splitAddress.postalCode || ''}</Text>
-                  <Text style={styles.companyAddress}>{client.splitAddress.countryCode}</Text>
+            <View style={styles.companyAddress}>
+              <View style={{ gap: 1 }}>
+                {client?.splitAddress ? (
+                  <>
+                    <Text>{`${client.splitAddress.buildingNumber || ' '} ${client.splitAddress.streetName || ' '}`}</Text>
+                    <Text>{`${client.splitAddress.district || ' '}, ${client.splitAddress.city || ' '} ${client.splitAddress.postalCode || ' '}`}</Text>
+                    <Text>{client.splitAddress.countryCode === 'SA' ? 'Kingdom of Saudi Arabia' : `${client.splitAddress.countryCode || ' '}`}</Text>
+                  </>
+                ) : (
+                  <Text>{`${client?.address || 'Address Not Provided'}`}</Text>
+                )}
+                <View style={{ flexDirection: 'row', gap: 10 }}>
+                  {!!client?.vatNumber && (
+                    <Text style={{ fontWeight: 'bold', color: '#1e293b' }}>
+                      {`VAT: ${client.vatNumber || ' '}`}
+                    </Text>
+                  )}
+                  {!!client?.otherId && (
+                    <Text style={{ fontWeight: 'bold', color: '#1e293b' }}>
+                      {`CR: ${client.otherId || ' '}`}
+                    </Text>
+                  )}
                 </View>
-              ) : (
-                <Text style={styles.companyAddress}>{client.address}</Text>
-              )}
+                {!!client?.phone && (
+                  <Text>{`Mob: ${client.phone || ' '}`}</Text>
+                )}
+              </View>
             </View>
-            {client.vatNumber && <Text style={[styles.companyAddress, { color: '#1e293b', marginTop: 2 }]}>VAT: {client.vatNumber}</Text>}
           </View>
           
           <View style={styles.invoiceMeta}>
             <View style={styles.metaRow}>
-              <Text style={styles.metaLabel}>Invoice No / رقم الفاتورة</Text>
-              <Text style={styles.metaValue}>{invoiceNumber}</Text>
+              <View style={{ flexDirection: 'row', gap: 4 }}>
+                <Text style={styles.metaLabel}>{String('Invoice No /')}</Text>
+                <Text style={[styles.metaLabel, { fontFamily: 'ArabicFont' }]}>{String('رقم الفاتورة')}</Text>
+              </View>
+              <Text style={[
+                styles.metaValue,
+                { fontWeight: 'bold' },
+                !isZatcaDone ? { color: '#f59e0b' } : {}   // amber for DRAFT
+              ] as any}>{String(invoiceNumber)}</Text>
             </View>
             <View style={styles.metaRow}>
-              <Text style={styles.metaLabel}>Date / التاريخ</Text>
-              <Text style={styles.metaValue}>{invoiceDate}</Text>
+              <View style={{ flexDirection: 'row', gap: 4 }}>
+                <Text style={styles.metaLabel}>Date /</Text>
+                <Text style={[styles.metaLabel, { fontFamily: 'ArabicFont' }]}>{String('التاريخ')}</Text>
+              </View>
+              <Text style={styles.metaValue}>{String(qDate || ' ')}</Text>
             </View>
-            <View style={styles.metaRow}>
-              <Text style={styles.metaLabel}>Payment / طريقة الدفع</Text>
-              <Text style={styles.metaValue}>{quotation.paymentMethod || 'Bank Transfer'}</Text>
-            </View>
+            {!!quotation.poNumber && (
+              <View style={styles.metaRow}>
+                <View style={{ flexDirection: 'row', gap: 4 }}>
+                  <Text style={styles.metaLabel}>{String('PO No /')}</Text>
+                  <Text style={[styles.metaLabel, { fontFamily: 'ArabicFont' }]}>{String('رقم التعميد')}</Text>
+                </View>
+                <Text style={styles.metaValue}>{String(quotation.poNumber || ' ')}</Text>
+              </View>
+            )}
+            {!!quotation.ticketNumber && (
+              <View style={styles.metaRow}>
+                <View style={{ flexDirection: 'row', gap: 4 }}>
+                  <Text style={styles.metaLabel}>{String('Ticket No /')}</Text>
+                  <Text style={[styles.metaLabel, { fontFamily: 'ArabicFont' }]}>{String('رقم التذكرة')}</Text>
+                </View>
+                <Text style={[styles.metaValue, { fontWeight: 'bold' }]}>{String(quotation.ticketNumber || ' ')}</Text>
+              </View>
+            )}
           </View>
         </View>
+
+        {/* Subject */}
+        {!!quotation.subject && (
+          <View style={styles.subjectSection}>
+            <Text style={styles.subjectText}>{`Subject: ${quotation.subject || ' '}`}</Text>
+            {!!quotation.subjectAr && (
+              <Text style={[styles.subjectText, { fontFamily: 'ArabicFont' }]}>{`الموضوع: ${quotation.subjectAr || ' '}`}</Text>
+            )}
+          </View>
+        )}
 
         {/* Table */}
         <View style={styles.table}>
           <View style={styles.tableHeader}>
             <View style={styles.colDesc}>
-              <Text style={styles.headerText}>Description</Text>
-              <Text style={[styles.headerText, { fontSize: 7 }]}>الوصف</Text>
+              <Text style={styles.headerText}>{String('Description')}</Text>
+              <Text style={[styles.headerText, { fontFamily: 'ArabicFont' }]}>{String('بيان الأعمال')}</Text>
             </View>
             <View style={styles.colUnit}>
               <Text style={styles.headerText}>Unit</Text>
-              <Text style={[styles.headerText, { fontSize: 7 }]}>الوحدة</Text>
+              <Text style={[styles.headerText, { fontFamily: 'ArabicFont' }]}>الوحدة</Text>
             </View>
             <View style={styles.colQty}>
               <Text style={styles.headerText}>Qty</Text>
-              <Text style={[styles.headerText, { fontSize: 7 }]}>الكمية</Text>
+              <Text style={[styles.headerText, { fontFamily: 'ArabicFont' }]}>الكمية</Text>
             </View>
             <View style={styles.colPrice}>
               <Text style={styles.headerText}>Rate</Text>
-              <Text style={[styles.headerText, { fontSize: 7 }]}>السعر</Text>
+              <Text style={[styles.headerText, { fontFamily: 'ArabicFont' }]}>سعر الوحدة</Text>
             </View>
             <View style={styles.colExVat}>
               <Text style={styles.headerText}>Total (Ex. VAT)</Text>
-              <Text style={[styles.headerText, { fontSize: 7 }]}>بدون ضريبة</Text>
+              <Text style={[styles.headerText, { fontFamily: 'ArabicFont' }]}>المبلغ</Text>
             </View>
             <View style={styles.colVat}>
-              <Text style={styles.headerText}>VAT</Text>
-              <Text style={[styles.headerText, { fontSize: 7 }]}>الضريبة</Text>
+              <Text style={styles.headerText}>{String('VAT')}</Text>
+              <Text style={[styles.headerText, { fontFamily: 'ArabicFont' }]}>{String('ضريبة (15%)')}</Text>
             </View>
             <View style={styles.colTotal}>
-              <Text style={styles.headerText}>Total (Inc. VAT)</Text>
-              <Text style={[styles.headerText, { fontSize: 7 }]}>الإجمالي</Text>
+              <Text style={styles.headerText}>{String('Total (Inc. VAT)')}</Text>
+              <Text style={[styles.headerText, { fontFamily: 'ArabicFont' }]}>{String('الإجمالي الكلي')}</Text>
             </View>
           </View>
 
-          {quotation.items.map((item, i) => (
-            <View key={item.id} style={[styles.tableRow, { backgroundColor: i % 2 === 0 ? '#fff' : '#fcfdfd' }]}>
+          {(quotation.items || []).filter((item: any) => item && typeof item === 'object' && !item._isWorkflowMetadata).map((item, i) => (
+            <View key={item.id || i} style={[styles.tableRow, { backgroundColor: i % 2 === 0 ? '#fff' : '#fcfdfd' }]}>
               <View style={styles.colDesc}>
-                <Text style={(item.description || '').includes('\n') ? styles.descEn : [styles.descEn, { marginBottom: 2 }]}>{item.description || ''}</Text>
-                <Text style={styles.descAr}>وصف المنتج بالعربية</Text>
+                <Text style={(`${item.description || ' '}`).includes('\n') ? styles.descEn : [styles.descEn, { marginBottom: 2 }]}>{`${item.description || ' '}`}</Text>
+                <Text style={styles.descAr}>{`${item.descriptionAr || 'وصف المنتج بالعربية'}`}</Text>
               </View>
-              <Text style={styles.colUnit}>{item.unit || ''}</Text>
-              <Text style={styles.colQty}>{item.quantity || 0}</Text>
-              <Text style={styles.colPrice}>{(item.price || 0).toFixed(2)}</Text>
-              <Text style={styles.colExVat}>{(item.total || 0).toFixed(2)}</Text>
-              <Text style={styles.colVat}>{(item.vatAmount || 0).toFixed(2)}</Text>
-              <Text style={[styles.colTotal, { fontWeight: 'bold' }]}>{(item.totalWithVat || 0).toFixed(2)}</Text>
+              <Text style={styles.colUnit}>{`${item.unit || ' '}`}</Text>
+              <Text style={styles.colQty}>{`${item.quantity || 0}`}</Text>
+              <Text style={styles.colPrice}>{(Number(item.price) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+              <Text style={styles.colExVat}>{(Number(item.total) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+              <Text style={styles.colVat}>{(Number(item.vatAmount) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+              <Text style={[styles.colTotal, { fontWeight: 'bold' }]}>{(Number(item.totalWithVat) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
             </View>
           ))}
         </View>
 
         {/* Summary */}
-        <View style={styles.summarySection}>
+        <View style={styles.summarySection} wrap={false}>
           <View style={styles.qrSection}>
-            {qrDataUrl && <Image src={qrDataUrl} style={styles.qrCode} />}
+            {!!qrDataUrl && <Image src={qrDataUrl} style={styles.qrCode} />}
             <View style={{ gap: 4 }}>
               <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#10b981' }}>E-Invoice Verification</Text>
               <Text style={{ fontSize: 7, color: '#94a3b8', width: 130 }}>This invoice is digitally signed and compliant with ZATCA regulations.</Text>
-              <Text style={{ fontSize: 6, color: '#10b981', fontWeight: 'bold' }}>Scan to verify / امسح للتحقق</Text>
+              <View style={{ flexDirection: 'row', gap: 4 }}>
+                <Text style={{ fontSize: 6, color: '#10b981', fontWeight: 'bold' }}>Scan to verify /</Text>
+                <Text style={{ fontSize: 6, color: '#10b981', fontWeight: 'bold', fontFamily: 'ArabicFont' }}>امسح للتحقق</Text>
+              </View>
             </View>
           </View>
 
           <View style={styles.summaryBlock}>
-            <View style={styles.summaryRow}>
-              <Text style={{ color: '#94a3b8' }}>Subtotal / المجموع الفرعي</Text>
-              <Text>SAR {(quotation.subtotal || 0).toFixed(2)}</Text>
+            <View style={[styles.summaryRow, { alignItems: 'center' }]}>
+              <Text style={{ color: '#94a3b8', fontSize: 8, fontWeight: 'bold', fontFamily: 'ArabicFont', flex: 1 }}>{'Subtotal / المجموع الفرعي'}</Text>
+              <Text style={{ fontSize: 9, fontWeight: 'bold' }}>{String((quotation.subtotal || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}</Text>
             </View>
-            <View style={styles.summaryRow}>
-              <Text style={{ color: '#94a3b8' }}>VAT (15%) / الضريبة</Text>
-              <Text>SAR {(quotation.vatAmount || 0).toFixed(2)}</Text>
+            <View style={[styles.summaryRow, { alignItems: 'center' }]}>
+              <Text style={{ color: '#94a3b8', fontSize: 8, fontWeight: 'bold', fontFamily: 'ArabicFont', flex: 1 }}>{'VAT (15%) / الضريبة'}</Text>
+              <Text style={{ fontSize: 9, fontWeight: 'bold' }}>{String((quotation.vatAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}</Text>
             </View>
-            <View style={grandTotalStyles.grandTotal}>
-              <View style={grandTotalStyles.totalLabelBox}>
-                <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>Total Amount</Text>
-                <Text style={{ color: '#fff', fontSize: 8 }}>المجموع الكلي</Text>
-              </View>
-              <View style={grandTotalStyles.totalValueBox}>
-                <Text style={{ color: '#fff', fontSize: 13, fontWeight: 'bold' }}>SAR {(quotation.grandTotal || 0).toFixed(2)}</Text>
-              </View>
+            <View style={[styles.grandTotal, { alignItems: 'center' }]}>
+              <Text style={{ color: '#fff', fontSize: 9, fontWeight: 'bold', fontFamily: 'ArabicFont', flex: 1 }}>{'Total Amount / المجموع الكلي'}</Text>
+              <Text style={{ color: '#fff', fontSize: 11, fontWeight: 'bold' }}>{`SAR ${String((quotation.grandTotal || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}`}</Text>
             </View>
           </View>
         </View>
 
         {/* Note about Digital Signature instead of Stamp Section */}
-        <View style={{ marginTop: 20, padding: 10, borderTop: 1, borderTopColor: '#f1f5f9' }}>
+        <View style={{ marginTop: 4, padding: 6, borderTop: 1, borderTopColor: '#f1f5f9' }}>
            <Text style={{ fontSize: 8, color: '#94a3b8', textAlign: 'center' }}>
              Electronically Generated Invoice - No Signature or Stamp Required
            </Text>
-           <Text style={{ fontSize: 7, color: '#94a3b8', textAlign: 'center', marginTop: 2 }}>
-             فاتورة تم إنشاؤها إلكترونياً - لا تطلب توقيعاً أو ختماً
-           </Text>
+            <Text style={{ fontSize: 7, color: '#94a3b8', textAlign: 'center', marginTop: 2, fontFamily: 'ArabicFont' }}>
+              فاتورة صادرة إلكترونياً - لا تتطلب توقيعاً أو ختماً
+            </Text>
         </View>
 
         {/* Footer */}
         <View style={styles.footer} fixed>
           <View style={styles.bankLine}>
             <BankIcon />
-            <Text>Al Rajhi Bank (مصرف الراجحي)</Text>
+            <Text>{String('Al Rajhi Bank (مصرف الراجحي)')}</Text>
             <Text>|</Text>
             <Text>Acc: 525000010006080456305</Text>
             <Text>|</Text>
@@ -480,20 +597,3 @@ export const InvoicePDF = ({ quotation, client, settings, qrDataUrl }: Props) =>
     </Document>
   );
 };
-
-const grandTotalStyles = StyleSheet.create({
-  grandTotal: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: '#10b981',
-    padding: '8 8',
-    borderRadius: 4,
-    marginTop: 6,
-  },
-  totalLabelBox: {
-    flex: 1,
-  },
-  totalValueBox: {
-    textAlign: 'right',
-  },
-});

@@ -65,14 +65,14 @@
   align-items: center;
   justify-content: center;
   font-size: 28px;
-  font-weight: 700;
+  font-weight: 500;
   color: white;
   box-shadow: 0 8px 20px -5px rgba(59, 130, 246, 0.5);
 }
 
 .title {
   font-size: 24px;
-  font-weight: 700;
+  font-weight: 500;
   color: white;
   margin-bottom: 4px;
 }
@@ -91,7 +91,7 @@
 
 .sectionTitle {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 400;
   color: white;
   margin-bottom: 16px;
   letter-spacing: 0.5px;
@@ -155,14 +155,14 @@
 
 .statInfo label {
   display: block;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-muted);
   margin-bottom: 4px;
 }
 
 .statInfo p {
   font-size: 24px;
-  font-weight: 700;
+  font-weight: 500;
   color: white;
 }
 
@@ -180,7 +180,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 800;
+  font-weight: 600;
   font-size: 14px;
   color: white;
 }

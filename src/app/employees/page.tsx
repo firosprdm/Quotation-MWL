@@ -129,8 +129,8 @@ export default function EmployeesPage() {
     <div className="fade-in">
       <header className={styles.header}>
         <div>
-          <h2 className={styles.title}>Payroll Management</h2>
-          <p className={styles.subtitle}>Manage your workforce and WPS compliance details.</p>
+          <h2 className="premium-title">Payroll Management</h2>
+          <p className="premium-subtitle">Manage your workforce and WPS compliance details.</p>
         </div>
         <button onClick={handleOpenAdd} className={styles.addButton}>
           <Plus size={20} />
@@ -144,8 +144,8 @@ export default function EmployeesPage() {
             <Users2 size={28} />
           </div>
           <div>
-            <p className="text-[10px] text-muted font-bold uppercase tracking-[0.2em] mb-1">Total Workforce</p>
-            <p className="text-2xl font-bold text-white tracking-tight">{employees.length}</p>
+            <p className="premium-label mb-1">Total Workforce</p>
+            <p className="text-2xl font-normal text-white tracking-tight">{employees.length}</p>
           </div>
         </div>
 
@@ -154,8 +154,8 @@ export default function EmployeesPage() {
             <UserCheck size={28} />
           </div>
           <div>
-            <p className="text-[10px] text-muted font-bold uppercase tracking-[0.2em] mb-1">Active Staff</p>
-            <p className="text-2xl font-bold text-white tracking-tight">
+            <p className="premium-label mb-1">Active Staff</p>
+            <p className="text-2xl font-normal text-white tracking-tight">
               {employees.filter(e => e.status === 'Active').length}
             </p>
           </div>
@@ -166,8 +166,8 @@ export default function EmployeesPage() {
             <Briefcase size={28} />
           </div>
           <div>
-            <p className="text-[10px] text-muted font-bold uppercase tracking-[0.2em] mb-1">Monthly Payroll</p>
-            <p className="text-2xl font-bold text-white tracking-tight">
+            <p className="premium-label mb-1">Monthly Payroll</p>
+            <p className="text-2xl font-normal text-white tracking-tight">
               {formatCurrency(employees.reduce((acc, e) => acc + e.basicSalary + e.housingAllowance + e.transportAllowance + e.otherAllowances, 0))}
             </p>
           </div>
@@ -178,8 +178,8 @@ export default function EmployeesPage() {
             <CreditCard size={28} />
           </div>
           <div>
-            <p className="text-[10px] text-muted font-bold uppercase tracking-[0.2em] mb-1">WPS Compliance</p>
-            <p className="text-2xl font-bold text-orange-400 tracking-tight">Pending</p>
+            <p className="premium-label mb-1">WPS Compliance</p>
+            <p className="text-2xl font-normal text-orange-400 tracking-tight">Pending</p>
           </div>
         </div>
       </div>
@@ -211,14 +211,14 @@ export default function EmployeesPage() {
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th onClick={() => handleSort('name')} className="cursor-pointer hover:text-white transition-colors select-none">Employee <SortIcon field="name" /></th>
-                  <th onClick={() => handleSort('iqamaNo')} className="cursor-pointer hover:text-white transition-colors select-none">Iqama No. <SortIcon field="iqamaNo" /></th>
-                  <th onClick={() => handleSort('jobTitle')} className="cursor-pointer hover:text-white transition-colors select-none">Job Title <SortIcon field="jobTitle" /></th>
-                  <th onClick={() => handleSort('basicSalary')} className="cursor-pointer hover:text-white transition-colors select-none">Basic Salary <SortIcon field="basicSalary" /></th>
-                  <th onClick={() => handleSort('allowances')} className="cursor-pointer hover:text-white transition-colors select-none">Allowances <SortIcon field="allowances" /></th>
-                  <th onClick={() => handleSort('netPay')} className="cursor-pointer hover:text-white transition-colors select-none">Net Pay <SortIcon field="netPay" /></th>
-                  <th onClick={() => handleSort('status')} className="cursor-pointer hover:text-white transition-colors select-none">Status <SortIcon field="status" /></th>
-                  <th className="text-right">Actions</th>
+                  <th onClick={() => handleSort('name')} className="premium-label cursor-pointer hover:text-white transition-colors select-none">Employee <SortIcon field="name" /></th>
+                  <th onClick={() => handleSort('iqamaNo')} className="premium-label cursor-pointer hover:text-white transition-colors select-none">Iqama No. <SortIcon field="iqamaNo" /></th>
+                  <th onClick={() => handleSort('jobTitle')} className="premium-label cursor-pointer hover:text-white transition-colors select-none">Job Title <SortIcon field="jobTitle" /></th>
+                  <th onClick={() => handleSort('basicSalary')} className="premium-label cursor-pointer hover:text-white transition-colors select-none">Basic Salary <SortIcon field="basicSalary" /></th>
+                  <th onClick={() => handleSort('allowances')} className="premium-label cursor-pointer hover:text-white transition-colors select-none">Allowances <SortIcon field="allowances" /></th>
+                  <th onClick={() => handleSort('netPay')} className="premium-label cursor-pointer hover:text-white transition-colors select-none">Net Pay <SortIcon field="netPay" /></th>
+                  <th onClick={() => handleSort('status')} className="premium-label cursor-pointer hover:text-white transition-colors select-none">Status <SortIcon field="status" /></th>
+                  <th className="premium-label text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -230,13 +230,18 @@ export default function EmployeesPage() {
                         <span>{emp.nameAr}</span>
                       </div>
                     </td>
-                    <td className="font-mono">{emp.iqamaNo}</td>
-                    <td>{emp.jobTitle}</td>
+                    <td className="font-mono text-white/70">{emp.iqamaNo}</td>
+                    <td className="text-white/70">{emp.jobTitle}</td>
                     <td className="font-mono text-emerald-400">{formatCurrency(emp.basicSalary)}</td>
                     <td className="font-mono text-blue-400">{formatCurrency(emp.housingAllowance + emp.transportAllowance + emp.otherAllowances)}</td>
-                    <td className="font-mono font-bold text-white">{formatCurrency(emp.basicSalary + emp.housingAllowance + emp.transportAllowance + emp.otherAllowances)}</td>
+                    <td className="font-mono font-normal text-white">{formatCurrency(emp.basicSalary + emp.housingAllowance + emp.transportAllowance + emp.otherAllowances)}</td>
                     <td>
-                      <span className={clsx(styles.status, styles[emp.status.replace(/\s+/g, '')])}>
+                      <span className={clsx(
+                        "inline-flex items-center justify-center text-[10px] font-bold uppercase tracking-widest min-w-[90px] h-6 border rounded-lg px-2 text-center",
+                        emp.status === 'Active' ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" :
+                        emp.status === 'On Leave' ? "bg-amber-500/10 text-amber-400 border-amber-500/20" :
+                        "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                      )}>
                         {emp.status}
                       </span>
                     </td>
@@ -272,7 +277,7 @@ export default function EmployeesPage() {
           <div className={clsx('glass-panel', styles.modalContent)} onClick={e => e.stopPropagation()}>
             <form onSubmit={handleSubmit}>
               <div className={styles.modalHeader}>
-                <h3 className="text-xl font-bold text-white">
+                <h3 className="text-xl font-medium text-white">
                   {editingEmployee ? 'Edit Employee' : 'Add New Employee'}
                 </h3>
                 <button type="button" onClick={() => setIsModalOpen(false)}><X size={20}/></button>

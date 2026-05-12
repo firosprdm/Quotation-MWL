@@ -1,0 +1,12 @@
+include README.md
+include license.txt
+recursive-include zatca *.py
+recursive-include zatca *.html
+recursive-include zatca *.js
+recursive-include zatca *.xml
+recursive-include zatca *.css
+recursive-include zatca *.png
+recursive-include zatca *.jpg
+recursive-include zatca *.svg
+recursive-include zatca *.json
+recursive-exclude zatca *.pyc

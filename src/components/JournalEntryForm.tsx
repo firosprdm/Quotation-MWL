@@ -90,10 +90,10 @@ export function JournalEntryForm({ onClose }: Props) {
               </div>
             </div>
             <div className="flex flex-col justify-center">
-              <h2 className="text-3xl font-black tracking-tight text-white leading-none mb-2">New Journal Entry</h2>
+              <h2 className="text-3xl font-normal tracking-tight text-white leading-none mb-2">New Journal Entry</h2>
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 bg-purple-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(168,85,247,0.8)]" />
-                <p className="text-purple-300/80 font-black tracking-[0.2em] text-xs uppercase leading-none">Double-Entry Core</p>
+                <p className="text-purple-300/80 font-normal tracking-[0.2em] text-sm uppercase leading-none">Double-Entry Core</p>
               </div>
             </div>
           </div>
@@ -105,11 +105,11 @@ export function JournalEntryForm({ onClose }: Props) {
             {/* Meta Information Section */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 p-6 rounded-2xl bg-slate-900/50 border border-white/10 shadow-inner">
               <div className="flex flex-col gap-2">
-                <label className="text-xs font-bold text-blue-300 uppercase tracking-wider ml-1">Date</label>
+                <label className="text-sm font-medium text-blue-300 uppercase tracking-wider ml-1">Date</label>
                 <div className="relative group">
                   <input 
                     type="date" 
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-base text-white font-semibold focus:outline-none focus:border-blue-500 focus:bg-blue-500/20 transition-all cursor-pointer"
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-base text-white font-normal focus:outline-none focus:border-blue-500 focus:bg-blue-500/20 transition-all cursor-pointer"
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
                     required
@@ -117,10 +117,10 @@ export function JournalEntryForm({ onClose }: Props) {
                 </div>
               </div>
               <div className="md:col-span-2 flex flex-col gap-2">
-                <label className="text-xs font-bold text-blue-300 uppercase tracking-wider ml-1">Description</label>
+                <label className="text-sm font-medium text-blue-300 uppercase tracking-wider ml-1">Description</label>
                 <input 
                   type="text" 
-                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-base text-white font-semibold focus:outline-none focus:border-blue-500 focus:bg-blue-500/20 transition-all placeholder-white/40"
+                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-base text-white font-normal focus:outline-none focus:border-blue-500 focus:bg-blue-500/20 transition-all placeholder-white/40"
                   placeholder="e.g., Initial Capital Investment"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -128,10 +128,10 @@ export function JournalEntryForm({ onClose }: Props) {
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <label className="text-xs font-bold text-blue-300 uppercase tracking-wider ml-1">Reference</label>
+                <label className="text-sm font-medium text-blue-300 uppercase tracking-wider ml-1">Reference</label>
                 <input 
                   type="text" 
-                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-base text-white font-semibold focus:outline-none focus:border-blue-500 focus:bg-blue-500/20 transition-all placeholder-white/40"
+                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-base text-white font-normal focus:outline-none focus:border-blue-500 focus:bg-blue-500/20 transition-all placeholder-white/40"
                   placeholder="Optional"
                   value={reference}
                   onChange={(e) => setReference(e.target.value)}
@@ -142,11 +142,11 @@ export function JournalEntryForm({ onClose }: Props) {
             {/* Entry Lines Section */}
             <div className="space-y-6">
               <div className="flex justify-between items-center px-4">
-                <h3 className="text-xl font-bold tracking-tight text-white">Entry Lines</h3>
+                <h3 className="text-xl font-medium tracking-tight text-white">Entry Lines</h3>
                 <button 
                   type="button" 
                   onClick={addLine} 
-                  className="mr-8 text-sm px-5 py-2.5 rounded-xl bg-blue-500/20 text-blue-300 border border-blue-500/40 hover:bg-blue-500/30 hover:border-blue-400 hover:text-white transition-all flex items-center font-bold group shadow-lg"
+                  className="mr-8 text-sm px-5 py-2.5 rounded-xl bg-blue-500/20 text-blue-300 border border-blue-500/40 hover:bg-blue-500/30 hover:border-blue-400 hover:text-white transition-all flex items-center font-medium group shadow-lg"
                 >
                   <div className="pr-4 border-r border-blue-500/40 group-hover:border-blue-400 mr-4 transition-colors">
                     <Plus size={20} className="group-hover:rotate-90 transition-transform duration-300" />
@@ -159,9 +159,9 @@ export function JournalEntryForm({ onClose }: Props) {
                 <table className="w-full text-left border-collapse table-fixed">
                   <thead>
                     <tr className="border-b border-white/20 bg-white/10">
-                      <th className="p-5 pl-8 text-sm font-black text-white/90 uppercase tracking-widest">Account</th>
-                      <th className="p-5 w-52 text-right text-sm font-black text-emerald-300 uppercase tracking-widest">Debit (SAR)</th>
-                      <th className="p-5 w-52 text-right text-sm font-black text-orange-300 uppercase tracking-widest">Credit (SAR)</th>
+                      <th className="p-5 pl-8 text-sm font-normal text-white/90 uppercase tracking-widest">Account</th>
+                      <th className="p-5 w-52 text-right text-sm font-normal text-emerald-300 uppercase tracking-widest">Debit</th>
+                      <th className="p-5 w-52 text-right text-sm font-normal text-orange-300 uppercase tracking-widest">Credit</th>
                       <th className="p-5 w-24"></th>
                     </tr>
                   </thead>
@@ -170,14 +170,14 @@ export function JournalEntryForm({ onClose }: Props) {
                       <tr key={index} className="group hover:bg-white/[0.04] transition-colors duration-200 animate-in fade-in slide-in-from-right-3" style={{ animationDelay: `${index * 50}ms` }}>
                         <td className="p-4 pl-8">
                           <select
-                            className="w-full bg-white/10 border border-transparent hover:border-white/20 rounded-xl px-4 py-3 text-base text-white font-semibold focus:outline-none focus:border-blue-500 focus:bg-blue-500/10 transition-all cursor-pointer appearance-none truncate"
+                            className="w-full bg-white/10 border border-transparent hover:border-white/20 rounded-xl px-4 py-3 text-base text-white font-normal focus:outline-none focus:border-blue-500 focus:bg-blue-500/10 transition-all cursor-pointer appearance-none truncate"
                             value={line.accountId}
                             onChange={(e) => updateLine(index, 'accountId', e.target.value)}
                             required
                           >
                             <option value="" disabled className="bg-slate-900 text-white/60">Select Account...</option>
                             {['Asset', 'Liability', 'Equity', 'Revenue', 'Expense'].map(type => (
-                              <optgroup key={type} label={type} className="bg-slate-900 text-blue-300 font-bold uppercase text-xs">
+                              <optgroup key={type} label={type} className="bg-slate-900 text-blue-300 font-medium uppercase text-sm">
                                 {accounts.filter(a => a.type === type).map(acc => (
                                   <option key={acc.id} value={acc.id} className="text-white font-medium bg-slate-800 normal-case text-base py-1">
                                     {acc.code} — {acc.name}
@@ -192,7 +192,7 @@ export function JournalEntryForm({ onClose }: Props) {
                             type="number"
                             min="0"
                             step="0.01"
-                            className="w-full bg-white/10 border border-transparent hover:border-white/20 rounded-xl px-4 py-3 text-base text-right font-mono font-bold text-emerald-300 focus:outline-none focus:border-emerald-500 focus:bg-emerald-500/10 transition-all placeholder-emerald-500/40"
+                            className="w-full bg-white/10 border border-transparent hover:border-white/20 rounded-xl px-4 py-3 text-base text-right font-mono font-medium text-emerald-300 focus:outline-none focus:border-emerald-500 focus:bg-emerald-500/10 transition-all placeholder-emerald-500/40"
                             placeholder="0.00"
                             value={line.debit || ''}
                             onChange={(e) => updateLine(index, 'debit', parseFloat(e.target.value) || 0)}
@@ -203,7 +203,7 @@ export function JournalEntryForm({ onClose }: Props) {
                             type="number"
                             min="0"
                             step="0.01"
-                            className="w-full bg-white/10 border border-transparent hover:border-white/20 rounded-xl px-4 py-3 text-base text-right font-mono font-bold text-orange-300 focus:outline-none focus:border-orange-500 focus:bg-orange-500/10 transition-all placeholder-orange-500/40"
+                            className="w-full bg-white/10 border border-transparent hover:border-white/20 rounded-xl px-4 py-3 text-base text-right font-mono font-medium text-orange-300 focus:outline-none focus:border-orange-500 focus:bg-orange-500/10 transition-all placeholder-orange-500/40"
                             placeholder="0.00"
                             value={line.credit || ''}
                             onChange={(e) => updateLine(index, 'credit', parseFloat(e.target.value) || 0)}
@@ -224,15 +224,15 @@ export function JournalEntryForm({ onClose }: Props) {
                   </tbody>
                   <tfoot>
                     <tr className="bg-black/60 border-t-2 border-white/20">
-                      <td className="p-6 pl-8 text-right text-sm font-bold uppercase tracking-wider text-white/80">Total Balance</td>
+                      <td className="p-6 pl-8 text-right text-sm font-medium uppercase tracking-wider text-white/80">Total Balance</td>
                       <td className={clsx(
-                        "p-6 text-right font-mono font-bold text-2xl transition-all duration-300 drop-shadow-md",
+                        "p-6 text-right font-mono font-medium text-2xl transition-all duration-300 drop-shadow-md",
                         totalDebit !== totalCredit ? "text-red-400" : "text-emerald-400"
                       )}>
                         {totalDebit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                       </td>
                       <td className={clsx(
-                        "p-6 text-right font-mono font-bold text-2xl transition-all duration-300 drop-shadow-md",
+                        "p-6 text-right font-mono font-medium text-2xl transition-all duration-300 drop-shadow-md",
                         totalDebit !== totalCredit ? "text-red-400" : "text-emerald-400"
                       )}>
                         {totalCredit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -247,9 +247,9 @@ export function JournalEntryForm({ onClose }: Props) {
               <div className="h-8 mt-2 flex justify-end px-4">
                 {!isBalanced && totalDebit > 0 && totalCredit > 0 && (
                   <div className="bg-red-500/10 border border-red-500/20 px-4 py-2 rounded-xl animate-in fade-in slide-in-from-top-2 duration-300">
-                    <p className="text-red-400 text-sm font-bold flex items-center gap-2">
+                    <p className="text-red-400 text-sm font-medium flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
-                      Difference: {Math.abs(totalDebit - totalCredit).toLocaleString(undefined, { minimumFractionDigits: 2 })} SAR
+                      Difference: {Math.abs(totalDebit - totalCredit).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </p>
                   </div>
                 )}
@@ -261,7 +261,7 @@ export function JournalEntryForm({ onClose }: Props) {
             <button 
               type="button" 
               onClick={onClose}
-              className="px-8 py-4 rounded-2xl text-white/70 font-bold hover:bg-red-500/10 hover:text-red-400 transition-all flex items-center justify-center border border-transparent hover:border-red-500/30 hover:shadow-[0_0_20px_rgba(239,68,68,0.15)] group relative overflow-hidden"
+              className="px-8 py-4 rounded-2xl text-white/70 font-medium hover:bg-red-500/10 hover:text-red-400 transition-all flex items-center justify-center border border-transparent hover:border-red-500/30 hover:shadow-[0_0_20px_rgba(239,68,68,0.15)] group relative overflow-hidden"
             >
               <div className="pr-5 border-r border-white/10 group-hover:border-red-500/40 mr-5 transition-colors z-10">
                 <XCircle size={24} className="group-hover:-rotate-180 group-hover:scale-110 transition-transform duration-700 ease-in-out" />
@@ -271,7 +271,7 @@ export function JournalEntryForm({ onClose }: Props) {
             <button 
               type="submit" 
               disabled={!canSubmit}
-              className="px-10 py-4 rounded-2xl flex items-center justify-center font-black tracking-wide bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-[length:200%_auto] text-white shadow-[0_0_30px_rgba(236,72,153,0.4)] hover:shadow-[0_0_50px_rgba(236,72,153,0.8)] hover:bg-[center_right_1rem] hover:scale-[1.03] active:scale-95 transition-all duration-500 disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed group border border-white/20 relative overflow-hidden"
+              className="px-10 py-4 rounded-2xl flex items-center justify-center font-normal tracking-wide bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-[length:200%_auto] text-white shadow-[0_0_30px_rgba(236,72,153,0.4)] hover:shadow-[0_0_50px_rgba(236,72,153,0.8)] hover:bg-[center_right_1rem] hover:scale-[1.03] active:scale-95 transition-all duration-500 disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed group border border-white/20 relative overflow-hidden"
             >
               {/* Shimmer Overlay */}
               <div className="absolute inset-0 w-[200%] h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />

@@ -3,10 +3,10 @@
  * Example: 1234.56 -> "SAR 1,234.56"
  */
 export function formatCurrency(amount: number): string {
-  return `SAR ${new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(amount)}`;
+  }).format(amount);
 }
 
 /**

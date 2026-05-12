@@ -35,6 +35,10 @@ function BuilderForm() {
   const [dueDate, setDueDate] = useState('');
   const [items, setItems] = useState<QuotationItem[]>([]);
   const [notes, setNotes] = useState(defaultNotes || '');
+  const [ticketNumber, setTicketNumber] = useState('');
+  const [poNumber, setPoNumber] = useState('');
+  const [subject, setSubject] = useState('');
+  const [subjectAr, setSubjectAr] = useState('');
   const [termsAndConditions, setTermsAndConditions] = useState(`• Validity: 30 days from the date of issue.
 • Delivery: As per mutual agreement.
 • Payment: 100% Payment as per the agreed terms.
@@ -43,8 +47,18 @@ function BuilderForm() {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    const savedSubject = localStorage.getItem('last_quotation_subject');
+    if (savedSubject) {
+      setSubject(savedSubject);
+    }
     setIsMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (subject) {
+      localStorage.setItem('last_quotation_subject', subject);
+    }
+  }, [subject]);
 
   const [searchItem, setSearchItem] = useState('');
   const [showItemResults, setShowItemResults] = useState(false);
@@ -131,6 +145,28 @@ function BuilderForm() {
   const totalVat = Math.max(0, netAmount * 0.15);
   const grandTotal = Math.max(0, netAmount + totalVat);
 
+  useEffect(() => {
+    if (!subject) {
+      setSubjectAr('');
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch('/api/translate', {
+          method: 'POST',
+          body: JSON.stringify({ text: subject })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setSubjectAr(data.translatedText);
+        }
+      } catch (e) {
+        console.error('Subject translation failed');
+      }
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [subject]);
+
   const currentQuotation: Omit<Quotation, 'id' | 'number'> = {
     clientId: selectedClientId,
     date: new Date(date).getTime(),
@@ -142,12 +178,16 @@ function BuilderForm() {
     total: netAmount + totalVat, // Matches grandTotal
     discount,
     grandTotal,
+    ticketNumber,
+    poNumber,
+    subject,
+    subjectAr,
     notes,
     termsAndConditions,
     revision: 0,
     status: isInvoiceMode ? 'approved' : 'sent',
     salesStatus: isInvoiceMode ? 'PO recieved' : undefined,
-    workStatus: isInvoiceMode ? 'Work Done' : undefined
+    workStatus: isInvoiceMode ? 'Work Done' : 'Work pending'
   };
 
   const handleSave = async () => {
@@ -166,9 +206,10 @@ function BuilderForm() {
           if (!exists) {
             await addItem({
               description: item.description,
+              name: item.description,
               unit: item.unit,
               price: item.price
-            });
+            } as any);
           }
         }
       }
@@ -237,6 +278,34 @@ function BuilderForm() {
                   <option value="30">30 Days</option>
                 </select>
               </div>
+              <div className="col-span-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className={styles.formGroup}>
+                  <label>PO Number (Optional)</label>
+                  <input type="text" className="glass-input" placeholder="e.g. PO-10023..." value={poNumber} onChange={e => setPoNumber(e.target.value)} />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Ticket Number (Optional)</label>
+                  <input type="text" className="glass-input" placeholder="e.g. TK-2023..." value={ticketNumber} onChange={e => setTicketNumber(e.target.value)} />
+                </div>
+              </div>
+
+              <div className="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className={styles.formGroup}>
+                  <label>Subject / Title</label>
+                  <input type="text" className="glass-input" placeholder="e.g. Server Maintenance..." value={subject} onChange={e => setSubject(e.target.value)} />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className="text-right">الموضوع / العنوان</label>
+                  <input 
+                    type="text" 
+                    className="glass-input text-right font-arabic" 
+                    placeholder="...صيانة الخوادم" 
+                    dir="rtl"
+                    value={subjectAr} 
+                    onChange={e => setSubjectAr(e.target.value)} 
+                  />
+                </div>
+              </div>
             </div>
             {selectedClient && (
               <div className={styles.clientDetail}>
@@ -275,7 +344,7 @@ function BuilderForm() {
                         onClick={() => addItemToQuote(item)}
                       >
                         <span>{item.description}</span>
-                        <span className="text-blue-400 font-semibold">SAR {item.price}</span>
+                        <span className="text-blue-400 font-normal">SAR {item.price}</span>
                       </div>
                     ))}
                   </div>
@@ -343,9 +412,9 @@ function BuilderForm() {
                           placeholder=""
                         />
                       </td>
-                      <td className={styles.cellStatic}>SAR {item.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                      <td className={styles.cellStatic}>SAR {item.vatAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                      <td className={clsx(styles.cellStatic, "font-bold text-white")}>SAR {item.totalWithVat.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                      <td className={styles.cellStatic}>{item.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                      <td className={styles.cellStatic}>{item.vatAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                      <td className={clsx(styles.cellStatic, "font-medium text-white")}>{item.totalWithVat.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                       <td>
                         <button className={styles.removeBtn} onClick={() => removeItem(item.id)}>
                           <Trash2 size={16} />
@@ -400,12 +469,12 @@ function BuilderForm() {
             <h3 className={styles.summaryTitle}>Grand Summary</h3>
             <div className={styles.summaryRow}>
               <span>Subtotal</span>
-              <span>SAR {subtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+              <span>{subtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
             </div>
             <div className={clsx(styles.summaryRow, "text-rose-400")}>
               <span>Discount</span>
               <div className="flex items-center gap-2">
-                <span>SAR</span>
+                <span></span>
                 <input 
                   type="number" 
                   className={styles.discountInput} 
@@ -417,15 +486,15 @@ function BuilderForm() {
             </div>
             <div className={styles.summaryRow}>
               <span>Net Amount</span>
-              <span>SAR {netAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+              <span>{netAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
             </div>
             <div className={styles.summaryRow}>
               <span>Total VAT (15%)</span>
-              <span>SAR {totalVat.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+              <span>{totalVat.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
             </div>
             <div className={clsx(styles.summaryRow, styles.totalRow)}>
               <span>Grand Total</span>
-              <span>SAR {grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+              <span>{grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
             </div>
             
             <div className="flex flex-col gap-3 mt-8">

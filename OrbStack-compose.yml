@@ -1,0 +1,118 @@
+version: '3.8'
+
+services:
+  erp-db:
+    image: mariadb:10.6
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
+      - --innodb-file-per-table=1
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - erp-db-data:/var/lib/mysql
+    networks:
+      - erp-network
+    restart: always
+
+  erp-redis:
+    image: redis:6.2-alpine
+    volumes:
+      - erp-redis-data:/data
+    networks:
+      - erp-network
+    restart: always
+
+  # ERPNext Web Service (Gunicorn)
+  erp-backend-web:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    image: erp-backend-custom:latest
+    environment:
+      DB_HOST: erp-db
+      DB_PORT: 3306
+      REDIS_CACHE: erp-redis:6379/0
+      REDIS_QUEUE: erp-redis:6379/1
+      REDIS_SOCKETIO: erp-redis:6379/2
+    volumes:
+      - erp-sites:/home/frappe/frappe-bench/sites
+      - erp-logs:/home/frappe/frappe-bench/logs
+    networks:
+      - erp-network
+    restart: always
+
+  # ERPNext Worker (Background Jobs)
+  erp-backend-worker:
+    image: erp-backend-custom:latest
+    command: bench worker --queue default,short,long
+    environment:
+      DB_HOST: erp-db
+      DB_PORT: 3306
+      REDIS_CACHE: erp-redis:6379/0
+      REDIS_QUEUE: erp-redis:6379/1
+      REDIS_SOCKETIO: erp-redis:6379/2
+    volumes:
+      - erp-sites:/home/frappe/frappe-bench/sites
+      - erp-logs:/home/frappe/frappe-bench/logs
+    networks:
+      - erp-network
+    restart: always
+
+  # ERPNext Scheduler
+  erp-backend-scheduler:
+    image: erp-backend-custom:latest
+    command: bench schedule
+    environment:
+      DB_HOST: erp-db
+      DB_PORT: 3306
+      REDIS_CACHE: erp-redis:6379/0
+      REDIS_QUEUE: erp-redis:6379/1
+      REDIS_SOCKETIO: erp-redis:6379/2
+    volumes:
+      - erp-sites:/home/frappe/frappe-bench/sites
+      - erp-logs:/home/frappe/frappe-bench/logs
+    networks:
+      - erp-network
+    restart: always
+
+  erp-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - ERPNEXT_URL=http://192.168.139.48
+      - ERPNEXT_API_KEY=${ERPNEXT_API_KEY}
+      - ERPNEXT_API_SECRET=${ERPNEXT_API_SECRET}
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+    networks:
+      - erp-network
+    restart: always
+
+  nginx:
+    image: nginx:1.25-alpine
+    volumes:
+      - ./nginx/conf:/etc/nginx/conf.d:ro
+      - nginx-certs:/etc/letsencrypt
+    ports:
+      - "8080:80"
+      - "8443:443"
+    networks:
+      - erp-network
+    depends_on:
+      - erp-frontend
+      - erp-backend-web
+    restart: always
+
+networks:
+  erp-network:
+    driver: bridge
+
+volumes:
+  erp-db-data:
+  erp-redis-data:
+  erp-sites:
+  erp-logs:
+  nginx-certs:

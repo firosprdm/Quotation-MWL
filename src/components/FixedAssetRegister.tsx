@@ -72,20 +72,20 @@ export function FixedAssetRegister() {
   return (
     <div className="animate-in fade-in">
       <div className="flex justify-between items-center mb-8">
-        <h3 className="text-xl font-bold flex items-center gap-3">
+        <h3 className="text-xl font-medium flex items-center gap-3">
           <Building2 className="text-blue-400" size={24} />
           Asset Management
         </h3>
         <div className="flex gap-4">
           <button 
-            className="px-6 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs font-bold uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2"
+            className="px-6 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm font-medium uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2"
             onClick={handleRunDepreciation}
             disabled={runningDep}
           >
             {runningDep ? 'Processing...' : <><Play size={14} /> Run Depreciation</>}
           </button>
           <button 
-            className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-widest transition-all flex items-center gap-2 shadow-lg shadow-blue-500/20"
+            className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium uppercase tracking-widest transition-all flex items-center gap-2 shadow-lg shadow-blue-500/20"
             onClick={() => setShowAddModal(true)}
           >
             <Plus size={14} /> Add Asset
@@ -106,8 +106,8 @@ export function FixedAssetRegister() {
             <Building2 size={24} className="transition-all duration-500 group-hover:scale-110 group-hover:rotate-12" />
           </div>
           <div className="relative z-10">
-            <p className="text-[10px] text-muted font-bold uppercase tracking-widest mb-1">Total Assets</p>
-            <p className="text-2xl font-bold text-white">
+            <p className="text-[12px] text-muted font-medium uppercase tracking-widest mb-1">Total Assets</p>
+            <p className="text-2xl font-medium text-white">
               {formatCurrency(fixedAssets.reduce((acc, a) => acc + a.cost, 0))}
             </p>
           </div>
@@ -121,8 +121,8 @@ export function FixedAssetRegister() {
             <TrendingDown size={24} className="transition-all duration-500 group-hover:scale-110 group-hover:rotate-12" />
           </div>
           <div className="relative z-10">
-            <p className="text-[10px] text-muted font-bold uppercase tracking-widest mb-1">Accum. Dep.</p>
-            <p className="text-2xl font-bold text-white">
+            <p className="text-[12px] text-muted font-medium uppercase tracking-widest mb-1">Accum. Dep.</p>
+            <p className="text-2xl font-medium text-white">
               {formatCurrency(accounts.find(a => a.code === '1690')?.balance || 0)}
             </p>
           </div>
@@ -136,8 +136,8 @@ export function FixedAssetRegister() {
             <ShieldCheck size={24} className="transition-all duration-500 group-hover:scale-110 group-hover:rotate-12" />
           </div>
           <div className="relative z-10">
-            <p className="text-[10px] text-muted font-bold uppercase tracking-widest mb-1">Net Book Value</p>
-            <p className="text-2xl font-bold text-emerald-400">
+            <p className="text-[12px] text-muted font-medium uppercase tracking-widest mb-1">Net Book Value</p>
+            <p className="text-2xl font-medium text-emerald-400">
               {formatCurrency(
                 fixedAssets.reduce((acc, a) => acc + a.cost, 0) + (accounts.find(a => a.code === '1690')?.balance || 0)
               )}
@@ -211,7 +211,7 @@ export function FixedAssetRegister() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md animate-in fade-in">
           <div className="glass-panel w-full max-w-xl shadow-2xl animate-in zoom-in-95">
             <div className="p-6 border-b border-white/5 flex justify-between items-center bg-blue-500/[0.05]">
-              <h3 className="text-xl font-bold uppercase tracking-widest flex items-center gap-3">
+              <h3 className="text-xl font-medium uppercase tracking-widest flex items-center gap-3">
                 <Plus className="text-blue-400" /> New Asset
               </h3>
               <button onClick={() => setShowAddModal(false)} className="text-muted hover:text-white transition-colors">
@@ -222,7 +222,7 @@ export function FixedAssetRegister() {
             <form onSubmit={handleAddAsset} className="p-8 space-y-6">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-muted mb-2">Asset Name</label>
+                  <label className="block text-[12px] font-medium uppercase tracking-widest text-muted mb-2">Asset Name</label>
                   <input 
                     type="text" required value={newAsset.name}
                     onChange={e => setNewAsset({...newAsset, name: e.target.value})}
@@ -233,7 +233,7 @@ export function FixedAssetRegister() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Category</label>
+                    <label className="block text-[12px] font-normal uppercase tracking-widest text-muted mb-2">Category</label>
                     <select 
                       value={newAsset.category}
                       onChange={e => setNewAsset({...newAsset, category: e.target.value as any})}
@@ -247,7 +247,7 @@ export function FixedAssetRegister() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Purchase Date</label>
+                    <label className="block text-[12px] font-normal uppercase tracking-widest text-muted mb-2">Purchase Date</label>
                     <input 
                       type="date" required
                       onChange={e => setNewAsset({...newAsset, purchaseDate: new Date(e.target.value).getTime()})}
@@ -258,7 +258,7 @@ export function FixedAssetRegister() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Cost (SAR)</label>
+                    <label className="block text-[12px] font-normal uppercase tracking-widest text-muted mb-2">Cost</label>
                     <input 
                       type="number" required value={newAsset.cost || ''}
                       onChange={e => setNewAsset({...newAsset, cost: parseFloat(e.target.value)})}
@@ -266,7 +266,7 @@ export function FixedAssetRegister() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Useful Life (Years)</label>
+                    <label className="block text-[12px] font-normal uppercase tracking-widest text-muted mb-2">Useful Life (Years)</label>
                     <input 
                       type="number" required value={newAsset.usefulLife || ''}
                       onChange={e => setNewAsset({...newAsset, usefulLife: parseInt(e.target.value)})}
@@ -276,7 +276,7 @@ export function FixedAssetRegister() {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Asset Account</label>
+                  <label className="block text-[12px] font-normal uppercase tracking-widest text-muted mb-2">Asset Account</label>
                   <select 
                     required value={newAsset.accountId}
                     onChange={e => setNewAsset({...newAsset, accountId: e.target.value})}
@@ -291,7 +291,7 @@ export function FixedAssetRegister() {
               </div>
 
               <div className="flex justify-end gap-4 pt-6">
-                <button type="submit" className="btn-primary w-full py-4 text-sm font-black uppercase tracking-widest">
+                <button type="submit" className="btn-primary w-full py-4 text-sm font-normal uppercase tracking-widest">
                   Register Asset
                 </button>
               </div>

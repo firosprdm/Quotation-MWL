@@ -11,8 +11,8 @@
 }
 
 .title {
-  font-size: 2rem;
-  font-weight: 800;
+  font-size: 1.75rem;
+  font-weight: 600;
   color: white;
   letter-spacing: -0.02em;
 }
@@ -54,7 +54,7 @@
 
 .cardTitle {
   font-size: 1.25rem;
-  font-weight: 700;
+  font-weight: 500;
   color: white;
 }
 
@@ -75,13 +75,13 @@
 }
 
 .itemLabel {
-  font-weight: 600;
+  font-weight: 400;
   color: rgba(255, 255, 255, 0.7);
 }
 
 .status {
   font-size: 0.75rem;
-  font-weight: 800;
+  font-weight: 600;
   text-transform: uppercase;
   padding: 0.25rem 0.75rem;
   border-radius: 2rem;

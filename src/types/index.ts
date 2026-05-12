@@ -19,8 +19,21 @@ export interface Client {
   createdAt: number;
 }
 
+export interface Supplier {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  splitAddress?: Address;
+  vatNumber?: string;
+  otherId?: string;
+  createdAt: number;
+}
+
 export interface CompanySettings {
   name: string;
+  nameAr?: string;
   address: string; // Legacy field
   splitAddress?: Address;
   vatNumber: string;
@@ -31,18 +44,26 @@ export interface CompanySettings {
   defaultNotes?: string;
   zatca?: {
     onboarded: boolean;
+    mode?: 'sandbox' | 'simulation' | 'production';
     egsSerialNumber?: string;
     commonName?: string;
     csr?: string;
     privateKey?: string;
     certificate?: string;
     secret?: string;
+    complianceCertificate?: string;
+    complianceApiSecret?: string;
+    productionCertificate?: string;
+    productionApiSecret?: string;
   };
 }
 
 export interface InventoryItem {
   id: string;
+  name: string;
+  nameAr?: string;
   description: string;
+  descriptionAr?: string;
   unit: string;
   price: number;
   imageUrl?: string;
@@ -54,6 +75,7 @@ export interface QuotationItem {
   id: string;
   itemId: string;
   description: string;
+  descriptionAr?: string;
   unit: string;
   quantity: number;
   price: number;
@@ -79,24 +101,62 @@ export interface Quotation {
   revision: number;
   status: 'sent' | 'waiting' | 'approved' | 'rejected' | 'revised';
   receivedAmount?: number;
-  salesStatus?: 'PO pending' | 'PO recieved';
-  workStatus?: 'Work pending' | 'Work On going' | 'Work Done';
+  salesStatus?: 'PO pending' | 'PO recieved' | 'open';
+  workStatus?: 'Work pending' | 'Work On going' | 'Work Done' | 'not_started' | 'in_progress' | 'completed';
   poNumber?: string;
   ticketNumber?: string;
+  subject?: string;
+  subjectAr?: string;
   invoiceNumber?: string;
   invoiceDate?: number;
-  paymentStatus?: 'Payment Pending' | 'Done';
+  paymentStatus?: 'Payment Pending' | 'Done' | 'unpaid' | 'partial' | 'paid';
   projectName?: string;
+  approvalDate?: number;
+  poDate?: number;
+  quotationRef?: string;
+  completionDate?: number;
+  paymentDate?: number;
   
   // ZATCA Phase 2 Fields
   uuid?: string; // 128-bit unique ID
   icv?: number; // Invoice Counter Value
   pih?: string; // Previous Invoice Hash (Base64)
   invoiceHash?: string; // Current Invoice Hash (Base64)
-  zatcaStatus?: 'cleared' | 'reported' | 'failed' | 'pending';
+  zatcaStatus?: 'cleared' | 'reported' | 'failed' | 'pending' | 'pending_clearance' | 'pending_reporting';
   qrCode?: string; // Base64 TLV string
   paymentMethod?: string; // e.g. "Bank Transfer" or "Cash"
+  supplyDate?: number;
   termsAndConditions?: string;
+}
+
+export interface PurchaseInvoiceItem {
+  id: string;
+  itemId: string;
+  description: string;
+  unit: string;
+  quantity: number;
+  price: number;
+  total: number;
+  vatAmount: number;
+  totalWithVat: number;
+}
+
+export interface PurchaseInvoice {
+  id: string;
+  number: string;
+  supplierId: string;
+  date: number;
+  dueDate: number;
+  items: PurchaseInvoiceItem[];
+  subtotal: number;
+  vatRate: number;
+  vatAmount: number;
+  grandTotal: number;
+  status: 'draft' | 'submitted' | 'paid' | 'unpaid' | 'overdue' | 'cancelled';
+  receivedAmount?: number; // amount paid to supplier
+  paymentDate?: number;
+  projectId?: string; // optional tagging to a project
+  notes?: string;
 }
 
 export type AccountType = 'Asset' | 'Liability' | 'Equity' | 'Revenue' | 'Expense';
@@ -123,6 +183,7 @@ export interface JournalEntry {
   reference?: string;
   reconciled?: boolean; // New for Bank Reconciliation
   bankRef?: string;    // New for Bank Reconciliation
+  projectId?: string;  // Project Tagging
 }
 
 export interface Employee {
@@ -173,6 +234,42 @@ export interface FixedAsset {
   depreciationExpenseAccountId: string; // The expense account
 }
 
+export interface PaymentReceipt {
+  id: string;
+  receiptNumber: string;
+  clientId: string;
+  amountReceived: number;
+  paymentDate: number;
+  paymentMethod: string;
+  bankReference?: string;
+  allocations: { invoiceId: string; amount: number }[];
+  notes?: string;
+  createdAt: number;
+}
+
+export interface Expense {
+  id: string;
+  description: string;
+  employeeId: string;
+  productId: string;
+  unitAmount: number;
+  quantity: number;
+  totalAmount: number;
+  vatAmount: number;
+  date: number;
+  status: 'draft' | 'reported' | 'approved' | 'done' | 'refused';
+  receiptUrl?: string;
+  erpnextName?: string;
+  attachmentId?: number;
+  projectId?: string;  // Project Tagging
+}
+
+export interface ExpenseProduct {
+  id: string;
+  name: string;
+  price: number;
+}
+
 export type UserRole = 'admin' | 'user';
 
 export interface User {
@@ -181,16 +278,25 @@ export interface User {
   name: string;
 }
 
+export type GlobalDateFilter = '1M' | '3M' | '6M' | '1Y' | 'ALL';
+
 export interface AppState {
   clients: Client[];
+  suppliers: Supplier[];
   inventory: InventoryItem[];
   quotations: Quotation[];
+  invoices: Quotation[];
+  purchaseInvoices: PurchaseInvoice[];
   accounts: Account[];
   journalEntries: JournalEntry[];
   employees: Employee[];
   payroll: PayrollRecord[];
-  fixedAssets: FixedAsset[]; // New for Fixed Asset Module
+  fixedAssets: FixedAsset[];
+  paymentReceipts: PaymentReceipt[];
+  expenses: Expense[];
+  expenseProducts: ExpenseProduct[];
   defaultNotes?: string;
   settings: CompanySettings;
   currentUser?: User;
+  dateFilter: GlobalDateFilter;
 }

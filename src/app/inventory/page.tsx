@@ -7,7 +7,7 @@ import styles from './inventory.module.css';
 import { clsx } from 'clsx';
 
 export default function InventoryPage() {
-  const { inventory, addItem, updateItem, deleteItem, currentUser } = useApp();
+  const { inventory, addItem, updateItem, deleteItem, currentUser, loadMoreInventory } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -41,9 +41,9 @@ export default function InventoryPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingId) {
-      updateItem(editingId, formData);
+      updateItem(editingId, { ...formData, name: formData.description });
     } else {
-      addItem(formData);
+      addItem({ ...formData, name: formData.description } as any);
     }
     setFormData({ description: '', unit: '', price: 0 });
     setEditingId(null);
@@ -71,8 +71,8 @@ export default function InventoryPage() {
     <div className="fade-in">
       <header className={styles.header}>
         <div>
-          <h2 className={styles.title}>Inventory</h2>
-          <p className={styles.subtitle}>Products and services catalog.</p>
+          <h2 className="premium-title">Inventory</h2>
+          <p className="premium-subtitle">Products and services catalog.</p>
         </div>
         <button 
           className={clsx('glass-button', styles.addButton)}
@@ -98,16 +98,16 @@ export default function InventoryPage() {
         <table className={styles.table}>
           <thead>
             <tr>
-              <th onClick={() => handleSort('description')} className="cursor-pointer hover:text-white transition-colors">
+              <th onClick={() => handleSort('description')} className="premium-label cursor-pointer hover:text-white transition-colors">
                 Description <SortIcon field="description" />
               </th>
-              <th onClick={() => handleSort('unit')} className="cursor-pointer hover:text-white transition-colors">
+              <th onClick={() => handleSort('unit')} className="premium-label cursor-pointer hover:text-white transition-colors">
                 Unit <SortIcon field="unit" />
               </th>
-              <th onClick={() => handleSort('price')} className="cursor-pointer hover:text-white transition-colors">
+              <th onClick={() => handleSort('price')} className="premium-label cursor-pointer hover:text-white transition-colors">
                 Price <SortIcon field="price" />
               </th>
-              <th>Actions</th>
+              <th className="premium-label">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -130,7 +130,7 @@ export default function InventoryPage() {
                         className={styles.actionBtn}
                         onClick={() => openEditModal(item)}
                       >
-                        <Edit2 size={16} />
+                        <Edit2 size={18} className="icon-hover" />
                       </button>
                       {currentUser?.role === 'admin' && (
                         <button 
@@ -141,7 +141,7 @@ export default function InventoryPage() {
                             }
                           }}
                         >
-                          <Trash2 size={16} />
+                          <Trash2 size={18} className="icon-hover" />
                         </button>
                       )}
                     </div>
@@ -151,6 +151,23 @@ export default function InventoryPage() {
             )}
           </tbody>
         </table>
+        {inventory.length >= 50 && inventory.length % 50 === 0 && (
+          <div className="flex justify-center p-6 border-t border-white/5">
+            <button 
+              onClick={async (e) => {
+                const btn = e.currentTarget;
+                btn.disabled = true;
+                btn.innerHTML = 'Loading...';
+                await loadMoreInventory();
+                btn.innerHTML = 'Load More';
+                btn.disabled = false;
+              }}
+              className="px-6 py-2 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl hover:bg-blue-500/20 transition-all font-medium text-sm tracking-wide"
+            >
+              Load More
+            </button>
+          </div>
+        )}
       </div>
 
       {isModalOpen && (

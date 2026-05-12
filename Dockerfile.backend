@@ -1,0 +1,23 @@
+ARG ERPNEXT_VERSION=version-15
+FROM frappe/erpnext:${ERPNEXT_VERSION}
+
+# Switch to root to install system dependencies if needed
+USER frappe
+
+WORKDIR /home/frappe/frappe-bench
+
+# Install hrms app
+RUN bench get-app --skip-assets hrms --branch version-15
+
+# Copy custom zatca app into the image
+COPY --chown=frappe:frappe apps/zatca /home/frappe/frappe-bench/apps/zatca
+
+# Install zatca Python package
+RUN ./env/bin/pip install -e apps/zatca --quiet
+
+# Register apps in apps.txt
+RUN echo "frappe\nerpnext\nhrms\nzatca" > sites/apps.txt
+
+# Build assets for all apps in one pass
+RUN cd apps/hrms && yarn --pure-lockfile --production 2>/dev/null || true
+RUN bench build --hard-link 2>/dev/null || true

@@ -123,8 +123,8 @@ export default function PayrollPage() {
     <div className="fade-in">
       <header className={styles.header}>
         <div>
-          <h2 className={styles.title}>Payroll Management</h2>
-          <p className={styles.subtitle}>WPS compliant salary processing and GOSI tracking.</p>
+          <h2 className="premium-title">Payroll Management</h2>
+          <p className="premium-subtitle">WPS compliant salary processing and GOSI tracking.</p>
         </div>
         <div className={styles.actionArea}>
           <div className="flex gap-2 items-center glass-panel px-4 py-2 rounded-xl">
@@ -159,8 +159,8 @@ export default function PayrollPage() {
         <div className={clsx('glass-panel', styles.statCard)}>
           <div className="flex justify-between items-start">
             <div>
-              <p className={styles.statLabel}>Total Net Pay</p>
-              <p className={styles.statValue}>{formatCurrency(totalPayroll)}</p>
+              <p className="premium-label mb-1">Total Net Pay</p>
+              <p className="text-2xl font-normal text-white tracking-tighter">{formatCurrency(totalPayroll)}</p>
             </div>
             <div className={clsx(styles.statIcon, styles.blue)}>
               <Banknote size={20} />
@@ -170,8 +170,8 @@ export default function PayrollPage() {
         <div className={clsx('glass-panel', styles.statCard)}>
           <div className="flex justify-between items-start">
             <div>
-              <p className={styles.statLabel}>GOSI Liability</p>
-              <p className={styles.statValue}>{formatCurrency(totalGosi)}</p>
+              <p className="premium-label mb-1">GOSI Liability</p>
+              <p className="text-2xl font-normal text-white tracking-tighter">{formatCurrency(totalGosi)}</p>
             </div>
             <div className={clsx(styles.statIcon, styles.purple)}>
               <ShieldAlert size={20} />
@@ -181,8 +181,8 @@ export default function PayrollPage() {
         <div className={clsx('glass-panel', styles.statCard)}>
           <div className="flex justify-between items-start">
             <div>
-              <p className={styles.statLabel}>WPS Status</p>
-              <p className={clsx(styles.statValue, currentPayroll.every(p => p.status === 'Paid') ? 'text-emerald-400' : 'text-amber-400')}>
+              <p className="premium-label mb-1">WPS Status</p>
+              <p className={clsx("text-2xl font-normal tracking-tighter", currentPayroll.every(p => p.status === 'Paid') ? 'text-emerald-400' : 'text-amber-400')}>
                 {currentPayroll.length > 0 ? (currentPayroll.every(p => p.status === 'Paid') ? 'Fully Paid' : 'Pending') : 'N/A'}
               </p>
             </div>
@@ -194,8 +194,8 @@ export default function PayrollPage() {
         <div className={clsx('glass-panel', styles.statCard)}>
           <div className="flex justify-between items-start">
             <div>
-              <p className={styles.statLabel}>Pending Payment</p>
-              <p className={styles.statValue}>{formatCurrency(currentPayroll.filter(p => p.status !== 'Paid').reduce((s, p) => s + p.netSalary, 0))}</p>
+              <p className="premium-label mb-1">Pending Payment</p>
+              <p className="text-2xl font-normal text-white tracking-tighter">{formatCurrency(currentPayroll.filter(p => p.status !== 'Paid').reduce((s, p) => s + p.netSalary, 0))}</p>
             </div>
             <div className={clsx(styles.statIcon, styles.rose)}>
               <Clock size={20} />
@@ -218,22 +218,22 @@ export default function PayrollPage() {
        )}
       <div className={clsx('glass-panel', styles.tableWrapper)}>
         <div className={styles.reportRowHeader}>
-          <span className="flex-[2] cursor-pointer hover:text-white" onClick={() => handleSort('name')}>
+          <span className="flex-[2] premium-label !text-white/60 cursor-pointer hover:text-white" onClick={() => handleSort('name')}>
             Employee {sortField === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
           </span>
-          <span className="w-40 text-right cursor-pointer hover:text-white" onClick={() => handleSort('basicSalary')}>
+          <span className="w-40 text-right premium-label !text-white/60 cursor-pointer hover:text-white" onClick={() => handleSort('basicSalary')}>
             Basic {sortField === 'basicSalary' && (sortOrder === 'asc' ? '↑' : '↓')}
           </span>
-          <span className="w-40 text-right cursor-pointer hover:text-white" onClick={() => handleSort('housingAllowance')}>
+          <span className="w-40 text-right premium-label !text-white/60 cursor-pointer hover:text-white" onClick={() => handleSort('housingAllowance')}>
             Allowances {sortField === 'housingAllowance' && (sortOrder === 'asc' ? '↑' : '↓')}
           </span>
-          <span className="w-40 text-right cursor-pointer hover:text-white" onClick={() => handleSort('gosiDeduction')}>
+          <span className="w-40 text-right premium-label !text-white/60 cursor-pointer hover:text-white" onClick={() => handleSort('gosiDeduction')}>
             GOSI (10%) {sortField === 'gosiDeduction' && (sortOrder === 'asc' ? '↑' : '↓')}
           </span>
-          <span className="w-40 text-right cursor-pointer hover:text-white" onClick={() => handleSort('netSalary')}>
+          <span className="w-40 text-right premium-label !text-white/60 cursor-pointer hover:text-white" onClick={() => handleSort('netSalary')}>
             Net Salary {sortField === 'netSalary' && (sortOrder === 'asc' ? '↑' : '↓')}
           </span>
-          <span className="w-32 text-center">Status</span>
+          <span className="w-32 text-center premium-label !text-white/60">Status</span>
         </div>
         
         <div className={styles.reportSection}>
@@ -256,14 +256,14 @@ export default function PayrollPage() {
                 <div key={p.id} className={styles.reportRow}>
                   <span className="flex-[2]">
                     <div className="flex flex-col">
-                      <span className="font-bold text-white">{emp?.name || 'Unknown'}</span>
-                      <span className="text-[10px] text-muted">{emp?.jobTitle}</span>
+                      <span className="font-normal text-white">{emp?.name || 'Unknown'}</span>
+                      <span className="text-[12px] text-muted">{emp?.jobTitle}</span>
                     </div>
                   </span>
                   <span className="w-40 text-right font-mono">{formatCurrency(p.basicSalary)}</span>
                   <span className="w-40 text-right font-mono">{formatCurrency(p.housingAllowance + p.transportAllowance + p.otherAllowances)}</span>
                   <span className="w-40 text-right font-mono text-rose-400">-{formatCurrency(p.gosiDeduction)}</span>
-                  <span className="w-40 text-right font-mono font-bold text-emerald-400">{formatCurrency(p.netSalary)}</span>
+                  <span className="w-40 text-right font-mono font-medium text-emerald-400">{formatCurrency(p.netSalary)}</span>
                   <span className="w-32 flex justify-center">
                     <button 
                       onClick={() => updatePayrollRecord(p.id, { status: isPaid ? 'Processed' : 'Paid', paymentDate: isPaid ? undefined : Date.now() })}

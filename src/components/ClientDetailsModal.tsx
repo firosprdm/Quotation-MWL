@@ -110,14 +110,14 @@ export function ClientDetailsModal({ client, quotations, onClose }: Props) {
                 <CheckCircle size={24} className="text-emerald-400" />
                 <div className={styles.statInfo}>
                   <label>Received</label>
-                  <p className="text-emerald-400">SAR {totalReceivedAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                  <p className="text-emerald-400">{totalReceivedAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
                 </div>
               </div>
               <div className={clsx('glass-panel', styles.statCard)}>
                 <Clock size={24} className="text-amber-400" />
                 <div className={styles.statInfo}>
                   <label>Pending</label>
-                  <p className="text-amber-400">SAR {totalPendingAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                  <p className="text-amber-400">{totalPendingAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
                 </div>
               </div>
             </div>

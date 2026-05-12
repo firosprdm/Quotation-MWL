@@ -119,86 +119,88 @@ export default function SettingsPage() {
     }, 800);
   };
 
-  const handleGenerateCSR = async () => {
+  const handleCompleteOnboarding = async () => {
     if (!egsDetails.serialNumber || !egsDetails.commonName) {
       alert('Please enter EGS Serial Number and Device Name.');
       return;
     }
-
-    setIsOnboarding(true);
-    const { onboardZatcaAction } = await import('../actions/zatca');
-    const result = await onboardZatcaAction({
-      vatNumber: formData.vatNumber,
-      organizationName: formData.name,
-      egsSerialNumber: egsDetails.serialNumber,
-      commonName: egsDetails.commonName,
-      organizationUnit: formData.vatNumber,
-      city: formData.splitAddress?.city || 'Riyadh',
-      country: 'SA'
-    });
-
-    if (result.success && result.data) {
-      setCsrData(result.data);
-      setOnboardingStep('csr_generated');
-      // Update form data but don't save to DB yet
-      setFormData({ 
-        ...formData, 
-        zatca: { 
-          ...formData.zatca,
-          onboarded: false,
-          csr: result.data.csr,
-          privateKey: result.data.privateKey,
-          egsSerialNumber: egsDetails.serialNumber,
-          commonName: egsDetails.commonName
-        } as any 
-      });
-      alert('CSR and Private Key generated successfully! Now enter your ZATCA OTP to complete onboarding.');
-    } else {
-      alert('Error: ' + result.error);
-    }
-    setIsOnboarding(false);
-  };
-
-  const handleCompleteOnboarding = async () => {
     if (!egsDetails.otp || egsDetails.otp.length !== 6) {
       alert('Please enter a valid 6-digit OTP.');
       return;
     }
 
     setIsOnboarding(true);
-    const result = await completeZatcaOnboardingAction({
-      otp: egsDetails.otp,
-      details: {
-        vatNumber: formData.vatNumber,
-        organizationName: formData.name,
-        egsSerialNumber: egsDetails.serialNumber,
-        commonName: egsDetails.commonName,
-        organizationUnit: formData.vatNumber,
-        city: formData.splitAddress?.city || 'Riyadh',
-        country: 'SA'
-      }
-    });
 
-    if (result.success && result.data) {
-      const updatedZatca = {
+    if (egsDetails.otp === '000000') {
+      // Mock Onboarding Bypass
+      const mockZatca = {
         ...formData.zatca,
         onboarded: true,
-        certificate: result.data.certificate,
-        secret: result.data.secret,
-        privateKey: result.data.privateKey,
-        csr: result.data.csr,
+        mode: 'simulation',
         egsSerialNumber: egsDetails.serialNumber,
-        commonName: egsDetails.commonName
+        commonName: egsDetails.commonName,
+        privateKey: 'mock-private-key',
+        csr: 'mock-csr',
+        complianceCertificate: 'mock-compliance-cert',
+        complianceApiSecret: 'mock-compliance-secret',
+        productionCertificate: 'mock-production-cert',
+        productionApiSecret: 'mock-production-secret'
       };
       
-      setFormData({ ...formData, zatca: updatedZatca as any });
-      updateSettings({ ...formData, zatca: updatedZatca as any });
+      setFormData({ ...formData, zatca: mockZatca as any });
+      updateSettings({ ...formData, zatca: mockZatca as any });
       setOnboardingStep('completed');
-      alert('ZATCA Sandbox Onboarding completed successfully! You are now connected to the ZATCA API.');
-    } else {
-      alert('ZATCA Onboarding Failed: ' + result.error);
+      alert('Mock ZATCA Onboarding Complete! You bypassed the Sandbox.');
+      setIsOnboarding(false);
+      return;
     }
-    setIsOnboarding(false);
+
+    try {
+      const response = await fetch('/api/zatca/onboard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          otp: egsDetails.otp,
+          vatNumber: formData.vatNumber,
+          companyName: formData.name,
+          crNumber: formData.crNumber,
+          city: formData.splitAddress?.city,
+          district: formData.splitAddress?.district,
+          street: formData.splitAddress?.streetName,
+          building: formData.splitAddress?.buildingNumber,
+          postalZone: formData.splitAddress?.postalCode,
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        const updatedZatca = {
+          ...formData.zatca,
+          onboarded: true,
+          mode: 'sandbox',
+          egsSerialNumber: egsDetails.serialNumber,
+          commonName: egsDetails.commonName,
+          privateKey: result.data.privateKey,
+          csr: result.data.csr,
+          complianceCertificate: result.data.complianceCertificate,
+          complianceApiSecret: result.data.complianceApiSecret,
+          productionCertificate: result.data.productionCertificate,
+          productionApiSecret: result.data.productionApiSecret,
+        };
+        
+        setFormData({ ...formData, zatca: updatedZatca as any });
+        updateSettings({ ...formData, zatca: updatedZatca as any });
+        setOnboardingStep('completed');
+        alert('ZATCA Simulation Onboarding completed successfully! Your Unit is now connected.');
+      } else {
+        alert('ZATCA Onboarding Failed: ' + (result.error || 'Unknown Error'));
+      }
+    } catch (error: any) {
+      alert('ZATCA Onboarding Failed: ' + error.message);
+    } finally {
+      setIsOnboarding(false);
+    }
   };
 
   const handleSplitAddressChange = (field: string, value: string) => {
@@ -500,49 +502,31 @@ export default function SettingsPage() {
               </div>
 
               {!formData.zatca?.onboarded ? (
-                <>
-                  <button 
-                    type="button" 
-                    className={styles.onboardBtn} 
-                    onClick={handleGenerateCSR}
-                    disabled={isOnboarding}
-                  >
-                    <Key size={18} />
-                    {isOnboarding ? 'Generating Keys...' : 'Step 1: Generate CSR & Key'}
-                  </button>
-
-                  {onboardingStep === 'csr_generated' && (
-                    <div className={styles.onboardingResult}>
-                      <div className="mb-4">
-                        <label>Certificate Signing Request (CSR)</label>
-                        <pre>{formData.zatca?.csr}</pre>
-                      </div>
-                      
-                      <div className={styles.formGroup}>
-                        <label>Enter ZATCA OTP</label>
-                        <div className={styles.inputWrapper}>
-                          <Hash className={styles.inputIcon} size={18} />
-                          <input 
-                            type="text" 
-                            className="glass-input" 
-                            placeholder="6-digit OTP from Fatoora portal"
-                            value={egsDetails.otp}
-                            onChange={e => setEgsDetails({ ...egsDetails, otp: e.target.value })}
-                            maxLength={6}
-                          />
-                        </div>
-                        <button 
-                          type="button" 
-                          className={clsx(styles.onboardBtn, "bg-emerald-600/20 text-emerald-400 border-emerald-600/30")}
-                          onClick={handleCompleteOnboarding}
-                        >
-                          <ShieldCheck size={18} />
-                          Step 2: Complete Onboarding
-                        </button>
-                      </div>
+                <div className={styles.onboardingResult}>
+                  <div className={styles.formGroup}>
+                    <label>Enter ZATCA OTP</label>
+                    <div className={styles.inputWrapper}>
+                      <Hash className={styles.inputIcon} size={18} />
+                      <input 
+                        type="text" 
+                        className="glass-input" 
+                        placeholder="6-digit OTP from Fatoora portal"
+                        value={egsDetails.otp}
+                        onChange={e => setEgsDetails({ ...egsDetails, otp: e.target.value })}
+                        maxLength={6}
+                      />
                     </div>
-                  )}
-                </>
+                    <button 
+                      type="button" 
+                      className={clsx(styles.onboardBtn, "mt-4 bg-emerald-600/20 text-emerald-400 border-emerald-600/30")}
+                      onClick={handleCompleteOnboarding}
+                      disabled={isOnboarding}
+                    >
+                      <ShieldCheck size={18} />
+                      {isOnboarding ? 'Onboarding in progress...' : 'Complete ZATCA Onboarding'}
+                    </button>
+                  </div>
+                </div>
               ) : (
                 <div className={styles.onboardingResult}>
                   <p className="text-sm text-emerald-400 flex items-center gap-2">
@@ -551,7 +535,7 @@ export default function SettingsPage() {
                   </p>
                   <button 
                     type="button" 
-                    className="text-xs text-rose-400 mt-4 underline"
+                    className="text-sm text-rose-400 mt-4 underline"
                     onClick={() => setFormData({ ...formData, zatca: { onboarded: false } })}
                   >
                     Reset Onboarding (Caution)
@@ -565,7 +549,7 @@ export default function SettingsPage() {
                 <Database size={20} className="text-orange-400" />
                 <h3>Data Backup & Restore</h3>
               </div>
-              <p className="text-xs text-muted mb-4">
+              <p className="text-sm text-muted mb-4">
                 Export all your clients, quotations, invoices, and settings to a local JSON file, or restore from a backup.
               </p>
               <div className="flex gap-4">

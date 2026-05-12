@@ -40,27 +40,27 @@ export const ComplianceAuditPDF = ({ data }: Props) => (
           <Text style={{ fontSize: 10, color: '#64748b' }}>Ministry of Investment (MISA) & ZATCA Unified Report</Text>
         </View>
         <View style={{ textAlign: 'right' }}>
-          <Text style={{ fontSize: 12, fontWeight: 'bold' }}>{data.companyName}</Text>
-          <Text style={{ fontSize: 8, color: '#94a3b8' }}>Report Date: {data.date}</Text>
+          <Text style={{ fontSize: 12, fontWeight: 'bold' }}>{`${data?.companyName || ''}`}</Text>
+          <Text style={{ fontSize: 8, color: '#94a3b8' }}>{`Report Date: ${data?.date || ''}`}</Text>
         </View>
       </View>
 
       <View style={styles.kpiGrid}>
         <View style={styles.kpiCard}>
           <Text style={styles.kpiLabel}>Revenue (SAR)</Text>
-          <Text style={styles.kpiValue}>{data.totalRevenue.toLocaleString()}</Text>
+          <Text style={styles.kpiValue}>{`${(Number(data?.totalRevenue) || 0).toLocaleString()}`}</Text>
         </View>
         <View style={styles.kpiCard}>
           <Text style={styles.kpiLabel}>Employees</Text>
-          <Text style={styles.kpiValue}>{data.totalEmployees}</Text>
+          <Text style={styles.kpiValue}>{`${data?.totalEmployees || 0}`}</Text>
         </View>
         <View style={[styles.kpiCard, { borderLeftColor: '#10b981' }]}>
           <Text style={styles.kpiLabel}>WPS Compliance</Text>
-          <Text style={styles.kpiValue}>{data.wpsRatio}%</Text>
+          <Text style={styles.kpiValue}>{`${data?.wpsRatio || 0}`}%</Text>
         </View>
         <View style={[styles.kpiCard, { borderLeftColor: '#f59e0b' }]}>
           <Text style={styles.kpiLabel}>Saudization</Text>
-          <Text style={styles.kpiValue}>{data.saudizationLevel}</Text>
+          <Text style={styles.kpiValue}>{`${data?.saudizationLevel || 'N/A'}`}</Text>
         </View>
       </View>
 

@@ -42,8 +42,8 @@
 .iconOrange { background: rgba(249, 115, 22, 0.1); border: 1px solid rgba(249, 115, 22, 0.2); color: #fb923c; }
 
 .title {
-  font-size: 2rem;
-  font-weight: 800;
+  font-size: 1.75rem;
+  font-weight: 600;
   letter-spacing: -0.02em;
   background: linear-gradient(to right, #60a5fa, #34d399, #c084fc, #60a5fa);
   background-size: 200% auto;
@@ -71,7 +71,7 @@
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
   border-radius: 1rem;
-  font-weight: 700;
+  font-weight: 500;
   color: white;
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -132,7 +132,7 @@
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: rgba(255, 255, 255, 0.4);
-  font-weight: 800;
+  font-weight: 600;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -157,7 +157,7 @@
 }
 
 .employeeName span:first-child {
-  font-weight: 700;
+  font-weight: 500;
   color: white;
 }
 
@@ -170,7 +170,7 @@
   padding: 0.25rem 0.75rem;
   border-radius: 2rem;
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 500;
   display: inline-flex;
 }
 
@@ -257,7 +257,7 @@
 
 .inputGroup label {
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 500;
   color: rgba(255, 255, 255, 0.4);
   text-transform: uppercase;
 }

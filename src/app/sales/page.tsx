@@ -8,25 +8,53 @@ import {
   Download, 
   Eye,
   ShoppingCart,
-  TrendingUp
+  TrendingUp,
+  Pencil,
+  Trash2
 } from 'lucide-react';
 import styles from '../quotations/quotations.module.css';
 import { clsx } from 'clsx';
+import Link from 'next/link';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { QuotationPDF } from '@/components/QuotationPDF';
 import { ViewQuotationModal } from '@/components/ViewQuotationModal';
+import { OnDemandPDFDownload } from '@/components/OnDemandPDFDownload';
 import { formatCurrency, formatNumber } from '@/lib/format';
+import { StatusChangeModal, StatusChangeData } from '@/components/StatusChangeModal';
 
 export default function SalesPage() {
-  const { quotations, clients, settings, updateQuotation, currentUser } = useApp();
+  const { quotations, clients, settings, updateQuotation, deleteQuotation, currentUser } = useApp();
   const [viewQuotation, setViewQuotation] = useState<any>(null);
   const [search, setSearch] = useState('');
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pendingPoChange, setPendingPoChange] = useState<{ quotationId: string; quotationNumber: string; clientName: string } | null>(null);
+  const PAGE_SIZE = 25;
 
   React.useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  React.useEffect(() => { setPage(1); }, [search]);
+  
+  // Helper: normalize salesStatus to a canonical value
+  const normalizeSalesStatus = (q: any) => {
+    const s = (q.salesStatus || '').toLowerCase();
+    const hasPO = s === 'po recieved' || s === 'po received' || !!q.poNumber;
+    return hasPO ? 'PO recieved' : 'PO pending';
+  };
+
+  // Helper: display label
+  const salesStatusLabel = (q: any) => {
+    const norm = normalizeSalesStatus(q);
+    return norm === 'PO recieved' ? 'PO Received' : 'PO Pending';
+  };
+  
+  const salesStatusOptions = [
+    { value: 'PO pending', label: 'PO Pending' },
+    { value: 'PO recieved', label: 'PO Received' },
+  ];
   
   // Filter for approved quotations only
   const salesQuotations = quotations.filter(q => q.status === 'approved');
@@ -69,8 +97,8 @@ export default function SalesPage() {
             bValue = b.grandTotal;
             break;
           case 'status':
-            aValue = a.salesStatus || 'PO pending';
-            bValue = b.salesStatus || 'PO pending';
+            aValue = normalizeSalesStatus(a);
+            bValue = normalizeSalesStatus(b);
             break;
           default:
             return 0;
@@ -94,6 +122,8 @@ export default function SalesPage() {
   };
 
   const totalSales = filteredQuotations.reduce((acc, q) => acc + q.grandTotal, 0);
+  const totalPages = Math.max(1, Math.ceil(filteredQuotations.length / PAGE_SIZE));
+  const pagedQuotations = filteredQuotations.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <div className="fade-in">
@@ -104,19 +134,35 @@ export default function SalesPage() {
           onClose={() => setViewQuotation(null)} 
         />
       )}
+      {pendingPoChange && (
+        <StatusChangeModal
+          type="po-received"
+          quotationNumber={pendingPoChange.quotationNumber}
+          clientName={pendingPoChange.clientName}
+          onConfirm={(data: StatusChangeData) => {
+            updateQuotation(pendingPoChange.quotationId, {
+              salesStatus: 'PO recieved',
+              poNumber: data.poNumber,
+              poDate: data.poDate,
+            } as any);
+            setPendingPoChange(null);
+          }}
+          onCancel={() => setPendingPoChange(null)}
+        />
+      )}
       
       <header className={styles.header}>
         <div>
-          <h2 className={styles.title}>Sales Dashboard</h2>
-          <p className={styles.subtitle}>All approved quotations and closed deals.</p>
+          <h2 className="premium-title">Sales Dashboard</h2>
+          <p className="premium-subtitle">All approved quotations and closed deals.</p>
         </div>
         <div className={clsx('glass-panel', styles.statCard)}>
           <div className={styles.statIcon}>
             <TrendingUp size={24} className="text-green-400" />
           </div>
           <div>
-            <label className="text-xs text-muted uppercase font-bold">Total Revenue</label>
-            <p className="text-xl font-bold text-white">{formatCurrency(totalSales)}</p>
+            <label className="premium-label">Total Revenue</label>
+            <p className="text-xl font-normal text-white">{formatCurrency(totalSales)}</p>
           </div>
         </div>
       </header>
@@ -138,56 +184,96 @@ export default function SalesPage() {
         <table className={styles.table}>
           <thead>
             <tr>
-              <th className="cursor-pointer hover:text-white transition-colors" onClick={() => requestSort('number')}>
+              <th className="premium-label cursor-pointer hover:text-white transition-colors" onClick={() => requestSort('number')}>
                 No. <SortIcon column="number" />
               </th>
-              <th className="cursor-pointer hover:text-white transition-colors" onClick={() => requestSort('client')}>
+              <th className="premium-label cursor-pointer hover:text-white transition-colors" onClick={() => requestSort('client')}>
                 Client <SortIcon column="client" />
               </th>
-              <th className="cursor-pointer hover:text-white transition-colors" onClick={() => requestSort('date')}>
+              <th className="premium-label cursor-pointer hover:text-white transition-colors" onClick={() => requestSort('date')}>
                 Approval Date <SortIcon column="date" />
               </th>
-              <th className="cursor-pointer hover:text-white transition-colors" onClick={() => requestSort('total')}>
+              <th className="premium-label cursor-pointer hover:text-white transition-colors" onClick={() => requestSort('total')}>
                 Grand Total <SortIcon column="total" />
               </th>
-              <th className="cursor-pointer hover:text-white transition-colors" onClick={() => requestSort('status')}>
-                Status <SortIcon column="status" />
-              </th>
-              <th>Actions</th>
+              <th className="premium-label">PO Status</th>
+              <th className="premium-label">PO Number</th>
+              <th className="premium-label">PO Date</th>
+              <th className="premium-label">Actions</th>
             </tr>
           </thead>
           <tbody>
             {filteredQuotations.length === 0 ? (
               <tr>
-                <td colSpan={6} className={styles.emptyState}>
+                <td colSpan={7} className={styles.emptyState}>
                   {search ? 'No sales match your search.' : 'No sales recorded yet. Approve quotations to see them here.'}
                 </td>
               </tr>
             ) : (
-              filteredQuotations.map((q) => (
+              pagedQuotations.map((q) => (
                 <tr key={q.id}>
-                  <td className="font-bold text-white">
+                  <td className="font-normal text-white">
                     {q.number}
-                    {q.revision > 0 && <span className="text-xs text-muted ml-1">-R{q.revision}</span>}
+                    {q.revision > 0 && <span className="text-sm text-muted ml-1">-R{q.revision}</span>}
                   </td>
-                  <td>{clients.find(c => c.id === q.clientId)?.name || 'Unknown'}</td>
-                  <td>{new Date(q.date).toLocaleDateString()}</td>
-                  <td className="font-bold text-green-400">{formatCurrency(q.grandTotal)}</td>
-                  <td>
-                    <select
-                      className={clsx(
-                        'glass-input', 
-                        styles.statusSelect,
-                        q.salesStatus === 'PO recieved' ? 'status-done' : 'status-pending'
-                      )}
-                      value={q.salesStatus || 'PO pending'}
-                      onChange={(e) => updateQuotation(q.id, { salesStatus: e.target.value as any })}
-                      disabled={currentUser?.role !== 'admin' && q.salesStatus === 'PO recieved'}
-                    >
-                      <option value="PO pending" className="text-gray-900">PO pending</option>
-                      <option value="PO recieved" className="text-gray-900">PO recieved</option>
-                    </select>
+                  <td className="text-white/70">{clients.find(c => c.id === q.clientId)?.name || 'Unknown'}</td>
+                  <td className="text-white/70">{new Date(q.approvalDate || q.date).toLocaleDateString()}</td>
+                  <td className="font-normal text-green-400">{formatCurrency(q.grandTotal)}</td>
+                  <td className="text-center">
+                    <div className="flex justify-center relative group">
+                      {/* Visible Premium Badge with Days */}
+                      <div className={clsx(
+                        "flex items-center justify-center text-[10px] font-bold uppercase tracking-wider min-w-[120px] h-7 border rounded-lg px-2 text-center pointer-events-none transition-all group-hover:brightness-110",
+                        normalizeSalesStatus(q) === 'PO recieved' ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" :
+                        "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                      )}>
+                        {(() => {
+                          const days = Math.floor((Date.now() - (q.approvalDate || q.date)) / 86400000);
+                          const label = normalizeSalesStatus(q) === 'PO recieved' ? 'PO RECEIVED' : 'AWAITING PO';
+                          return (label === 'PO RECEIVED') ? label : `${label} (${days}D)`;
+                        })()}
+                        <div className="ml-1 opacity-40">▼</div>
+                      </div>
+
+                      {/* Invisible Select overlay - opens modal on PO Received */}
+                      <select 
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        value={normalizeSalesStatus(q)}
+                        onChange={(e) => {
+                          const newStatus = e.target.value;
+                          const currentStatus = normalizeSalesStatus(q);
+                          
+                          if (newStatus === 'PO recieved' && currentStatus !== 'PO recieved') {
+                            // Open modal to capture PO details
+                            const client = clients.find(c => c.id === q.clientId);
+                            setPendingPoChange({
+                              quotationId: q.id,
+                              quotationNumber: q.number,
+                              clientName: client?.name || 'Unknown',
+                            });
+                            return;
+                          }
+                          
+                          if (currentStatus === 'PO recieved' && newStatus !== 'PO recieved') {
+                            // Revert - clear PO data
+                            updateQuotation(q.id, {
+                              salesStatus: newStatus,
+                              poNumber: '',
+                              poDate: null,
+                            } as any);
+                            return;
+                          }
+
+                          updateQuotation(q.id, { salesStatus: newStatus } as any);
+                        }}
+                      >
+                        <option value="PO pending">Awaiting PO</option>
+                        <option value="PO recieved">PO Received</option>
+                      </select>
+                    </div>
                   </td>
+                  <td className="text-white/70 text-sm font-medium text-center">{q.poNumber || '-'}</td>
+                  <td className="text-white/70 text-sm text-center">{q.poDate ? new Date(q.poDate).toLocaleDateString() : '-'}</td>
                   <td>
                     <div className={styles.actions}>
                       <button 
@@ -197,16 +283,51 @@ export default function SalesPage() {
                       >
                         <Eye size={16} />
                       </button>
-                      {isMounted && clients.find(c => c.id === q.clientId) && (
-                        <PDFDownloadLink 
-                          document={<QuotationPDF quotation={q} client={clients.find(c => c.id === q.clientId)!} settings={settings} />} 
-                          fileName={`Sale_${q.number}.pdf`}
-                          className={styles.actionBtn}
-                          title="Download PDF"
+                      <Link 
+                        href={`/quotations/edit/${q.id}`}
+                        className={styles.actionBtn} 
+                        title="Edit"
+                      >
+                        <Pencil size={16} />
+                      </Link>
+                      {(() => {
+                        const client = clients.find(c => c.id === q.clientId);
+                        if (client) {
+                          return (
+                            <OnDemandPDFDownload 
+                              document={<QuotationPDF quotation={q} client={client} settings={settings} />} 
+                              fileName={`Sale_${q.number}.pdf`}
+                              className={styles.actionBtn}
+                              title="Download PDF"
+                              icon={<Download size={16} />}
+                            />
+                          );
+                        }
+                        return (
+                          <button 
+                            className={clsx(styles.actionBtn, "opacity-50 cursor-not-allowed text-red-400")} 
+                            title="Missing Client Information"
+                            disabled
+                          >
+                            <Download size={16} />
+                          </button>
+                        );
+                      })()}
+                      {currentUser?.role === 'admin' && (
+                        <button 
+                          type="button"
+                          className={clsx(styles.actionBtn, styles.deleteBtn)} 
+                          title="Delete"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (confirm('Are you sure you want to delete this sales record?')) {
+                              deleteQuotation(q.id);
+                            }
+                          }}
                         >
-                          {/* @ts-ignore */}
-                          {({ loading }) => <Download size={16} className={clsx(loading && "animate-pulse")} />}
-                        </PDFDownloadLink>
+                          <Trash2 size={16} className="pointer-events-none" />
+                        </button>
                       )}
                     </div>
                   </td>
@@ -216,6 +337,32 @@ export default function SalesPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4 px-1">
+          <span className="text-sm text-muted">
+            Showing {((page - 1) * PAGE_SIZE) + 1}–{Math.min(page * PAGE_SIZE, filteredQuotations.length)} of {filteredQuotations.length}
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              className="glass-button px-3 py-1.5 text-sm disabled:opacity-30"
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+            >
+              ← Prev
+            </button>
+            <span className="text-sm font-medium text-white px-3">{page} / {totalPages}</span>
+            <button
+              className="glass-button px-3 py-1.5 text-sm disabled:opacity-30"
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+            >
+              Next →
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

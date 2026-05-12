@@ -16,12 +16,14 @@ import { clsx } from 'clsx';
 import { Calendar, Download, X, Eye, FileText } from 'lucide-react';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { QuotationPDF } from '@/components/QuotationPDF';
+import { ViewQuotationModal } from '@/components/ViewQuotationModal';
 
 export default function GraphsPage() {
   const { isLoaded, journalEntries, accounts, quotations, clients, settings } = useApp();
   const [period, setPeriod] = useState(6); // Default 6 months
   const [selectedDetails, setSelectedDetails] = useState<{ title: string; type: 'quotations' | 'entries'; items: any[] } | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [viewQuotation, setViewQuotation] = useState<any>(null);
 
   React.useEffect(() => {
     setIsMounted(true);
@@ -172,8 +174,8 @@ export default function GraphsPage() {
     <div className="fade-in space-y-8 pb-12 relative">
       <header className={styles.header}>
         <div>
-          <h2 className={styles.title}>Financial Performance Graphs</h2>
-          <p className={styles.subtitle}>Real-time synchronization with General Ledger. Click bars to view details.</p>
+          <h2 className="premium-title">Financial Performance Graphs</h2>
+          <p className="premium-subtitle">Real-time synchronization with General Ledger. Click bars to view details.</p>
         </div>
         <div className="flex items-center gap-3 bg-white/5 p-1 rounded-xl border border-white/10">
           {[3, 6, 12, 24].map(m => (
@@ -181,7 +183,7 @@ export default function GraphsPage() {
               key={m}
               onClick={() => setPeriod(m)}
               className={clsx(
-                'px-4 py-2 rounded-lg text-xs font-bold transition-all',
+                'px-4 py-2 rounded-lg text-sm font-medium transition-all',
                 period === m ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-muted hover:text-white'
               )}
             >
@@ -193,19 +195,28 @@ export default function GraphsPage() {
         </div>
       </header>
 
+      {/* View Modal Integration */}
+      {viewQuotation && (
+        <ViewQuotationModal 
+          quotation={viewQuotation} 
+          client={clients.find(c => c.id === viewQuotation.clientId)} 
+          onClose={() => setViewQuotation(null)} 
+        />
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* 1. Cash Flow Trend */}
         <div className="glass-panel p-6 hover:border-primary/30 transition-colors group">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-bold text-white">Cash Flow Trend</h3>
-            <span className="text-[10px] text-primary font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Click to Inspect</span>
+            <h3 className="premium-label !text-white !text-sm">Cash Flow Trend</h3>
+            <span className="premium-label !text-primary !text-[12px] opacity-0 group-hover:opacity-100 transition-opacity">Click to Inspect</span>
           </div>
           <div className="h-[300px] cursor-pointer">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData.monthly} onClick={(e) => handleChartClick(e, 'Cash Flow Documents', 'entries')}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                <XAxis dataKey="month" stroke="#64748b" fontSize={10} />
-                <YAxis stroke="#64748b" fontSize={10} tickFormatter={(val) => `${val/1000}k`} />
+                <XAxis dataKey="month" stroke="#94a3b8" fontSize={10} />
+                <YAxis stroke="#94a3b8" fontSize={10} tickFormatter={(val) => `${val/1000}k`} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', backdropFilter: 'blur(10px)' }}
                   formatter={(val: any) => formatCurrency(Number(val))}
@@ -221,15 +232,15 @@ export default function GraphsPage() {
         {/* 2. Revenue vs Expenses */}
         <div className="glass-panel p-6 hover:border-primary/30 transition-colors group">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-bold text-white">Revenue vs Expenses</h3>
-            <span className="text-[10px] text-primary font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Inspect Revenue</span>
+            <h3 className="premium-label !text-white !text-sm">Revenue vs Expenses</h3>
+            <span className="premium-label !text-primary !text-[12px] opacity-0 group-hover:opacity-100 transition-opacity">Inspect Revenue</span>
           </div>
           <div className="h-[300px] cursor-pointer">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={chartData.monthly} onClick={(e) => handleChartClick(e, 'Approved Revenue Items', 'quotations')}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                <XAxis dataKey="month" stroke="#64748b" fontSize={10} />
-                <YAxis stroke="#64748b" fontSize={10} tickFormatter={(val) => `${val/1000}k`} />
+                <XAxis dataKey="month" stroke="#94a3b8" fontSize={10} />
+                <YAxis stroke="#94a3b8" fontSize={10} tickFormatter={(val) => `${val/1000}k`} />
                 <Tooltip 
                    contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', backdropFilter: 'blur(10px)' }}
                   formatter={(val: any) => formatCurrency(Number(val))}
@@ -245,15 +256,15 @@ export default function GraphsPage() {
         {/* 3. A/R Aging */}
         <div className="glass-panel p-6 hover:border-primary/30 transition-colors group">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-bold text-white">Accounts Receivable Aging</h3>
-            <span className="text-[10px] text-primary font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">See Unpaid Invoices</span>
+            <h3 className="premium-label !text-white !text-sm">Accounts Receivable Aging</h3>
+            <span className="premium-label !text-primary !text-[12px] opacity-0 group-hover:opacity-100 transition-opacity">See Unpaid Invoices</span>
           </div>
           <div className="h-[300px] cursor-pointer">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData.aging} layout="vertical" onClick={(e) => handleChartClick(e, 'Overdue Quotations', 'quotations')}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
-                <XAxis type="number" stroke="#64748b" fontSize={10} hide />
-                <YAxis dataKey="name" type="category" stroke="#64748b" fontSize={10} width={100} />
+                <XAxis type="number" stroke="#94a3b8" fontSize={10} hide />
+                <YAxis dataKey="name" type="category" stroke="#94a3b8" fontSize={10} width={100} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
                   formatter={(val: any) => formatCurrency(Number(val))}
@@ -271,8 +282,8 @@ export default function GraphsPage() {
         {/* 4. Expense Breakdown */}
         <div className="glass-panel p-6 hover:border-primary/30 transition-colors group">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-bold text-white">Top Expense Categories</h3>
-            <span className="text-[10px] text-primary font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">View Vouchers</span>
+            <h3 className="premium-label !text-white !text-sm">Top Expense Categories</h3>
+            <span className="premium-label !text-primary !text-[12px] opacity-0 group-hover:opacity-100 transition-opacity">View Vouchers</span>
           </div>
           <div className="h-[300px] cursor-pointer">
             <ResponsiveContainer width="100%" height="100%">
@@ -304,15 +315,15 @@ export default function GraphsPage() {
         {/* 5. Revenue by Client */}
         <div className="glass-panel p-6 hover:border-primary/30 transition-colors group">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-bold text-white">Top Revenue by Client</h3>
-            <span className="text-[10px] text-primary font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Client Quotations</span>
+            <h3 className="premium-label !text-white !text-sm">Top Revenue by Client</h3>
+            <span className="premium-label !text-primary !text-[12px] opacity-0 group-hover:opacity-100 transition-opacity">Client Quotations</span>
           </div>
           <div className="h-[300px] cursor-pointer">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData.clientRevenue} layout="vertical" onClick={(e) => handleChartClick(e, 'Client Documents', 'quotations')}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
                 <XAxis type="number" hide />
-                <YAxis dataKey="name" type="category" stroke="#64748b" fontSize={10} width={120} />
+                <YAxis dataKey="name" type="category" stroke="#94a3b8" fontSize={10} width={120} />
                 <Tooltip 
                    contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
                   formatter={(val: any) => formatCurrency(Number(val))}
@@ -326,15 +337,15 @@ export default function GraphsPage() {
         {/* 6. VAT Liability Tracking */}
         <div className="glass-panel p-6 hover:border-primary/30 transition-colors group">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-bold text-white">VAT Liability (ZATCA)</h3>
-            <span className="text-[10px] text-primary font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">VAT Vouchers</span>
+            <h3 className="premium-label !text-white !text-sm">VAT Liability (ZATCA)</h3>
+            <span className="premium-label !text-primary !text-[12px] opacity-0 group-hover:opacity-100 transition-opacity">VAT Vouchers</span>
           </div>
           <div className="h-[300px] cursor-pointer">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData.vat} onClick={(e) => handleChartClick(e, 'VAT Related Entries', 'entries')}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                <XAxis dataKey="month" stroke="#64748b" fontSize={10} />
-                <YAxis stroke="#64748b" fontSize={10} />
+                <XAxis dataKey="month" stroke="#94a3b8" fontSize={10} />
+                <YAxis stroke="#94a3b8" fontSize={10} />
                 <Tooltip 
                    contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
                   formatter={(val: any) => formatCurrency(Number(val))}
@@ -353,8 +364,8 @@ export default function GraphsPage() {
           <div className="glass-panel w-full max-w-4xl max-h-[80vh] overflow-hidden flex flex-col shadow-2xl border-primary/20">
             <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/5">
               <div>
-                <h3 className="text-xl font-bold text-white">{selectedDetails.title}</h3>
-                <p className="text-xs text-muted mt-1">Underlying {selectedDetails.type === 'quotations' ? 'Quotations & Invoices' : 'Journal Entries'}</p>
+                <h3 className="text-xl font-medium text-white">{selectedDetails.title}</h3>
+                <p className="text-sm text-muted mt-1">Underlying {selectedDetails.type === 'quotations' ? 'Quotations & Invoices' : 'Journal Entries'}</p>
               </div>
               <button onClick={() => setSelectedDetails(null)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
                 <X size={24} className="text-muted hover:text-white" />
@@ -364,7 +375,7 @@ export default function GraphsPage() {
             <div className="flex-1 overflow-y-auto p-6">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="text-[10px] text-muted uppercase tracking-widest border-b border-white/5">
+                  <tr className="text-[12px] text-muted uppercase tracking-widest border-b border-white/5">
                     <th className="pb-4">Date</th>
                     <th className="pb-4">Ref/Number</th>
                     <th className="pb-4">Description</th>
@@ -373,26 +384,43 @@ export default function GraphsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
-                  {selectedDetails.items.map((item, idx) => (
-                    <tr key={idx} className="hover:bg-white/5 transition-colors group">
-                      <td className="py-4 text-sm text-muted">{new Date(item.date).toLocaleDateString()}</td>
-                      <td className="py-4 text-sm font-bold text-white">{item.number || item.id.substring(0,8)}</td>
-                      <td className="py-4 text-sm text-muted max-w-xs truncate">{item.description || item.projectName || 'General Entry'}</td>
-                      <td className="py-4 text-sm font-bold text-white text-right">
+                  {selectedDetails.items.filter(Boolean).map((item, idx) => (
+                    <tr key={item.id || idx} className="hover:bg-white/5 transition-colors group">
+                      <td className="py-4 text-sm text-muted">
+                        {item.date ? new Date(item.date).toLocaleDateString() : 'N/A'}
+                      </td>
+                      <td className="py-4 text-sm font-medium text-white">
+                        {item.number || (item.id ? item.id.substring(0,8) : 'N/A')}
+                      </td>
+                      <td className="py-4 text-sm text-muted max-w-xs truncate">
+                        {item.description || item.projectName || item.subject || 'General Entry'}
+                      </td>
+                      <td className="py-4 text-sm font-medium text-white text-right">
                         {formatCurrency(item.grandTotal || (item.lines?.reduce((s:any, l:any)=> s + l.debit, 0) || 0))}
                       </td>
                       <td className="py-4 text-right">
                         {selectedDetails.type === 'quotations' ? (
                           <div className="flex justify-end gap-2">
-                            {isMounted && (
-                              <PDFDownloadLink
-                                document={<QuotationPDF quotation={item} client={clients.find(c => c.id === item.clientId)!} settings={settings} />}
-                                fileName={`Quote_${item.number}.pdf`}
-                                className="p-2 hover:bg-primary/20 rounded-lg text-primary transition-colors"
-                              >
-                                 {/* @ts-ignore */}
-                                {({ loading }) => <Download size={16} className={loading ? 'animate-pulse' : ''} />}
-                              </PDFDownloadLink>
+                            {isMounted && item.clientId && (
+                              (() => {
+                                const client = clients.find(c => c.id === item.clientId);
+                                if (!client) return <span className="text-[12px] text-red-400">Client Missing</span>;
+                                return (
+                                  <>
+                                    <button onClick={() => setViewQuotation(item)} className="p-2 hover:bg-primary/20 rounded-lg text-primary transition-colors">
+                                      <Eye size={16} />
+                                    </button>
+                                    <PDFDownloadLink
+                                      document={<QuotationPDF quotation={item} client={client} settings={settings} />}
+                                      fileName={`Quote_${item.number || 'Draft'}.pdf`}
+                                      className="p-2 hover:bg-primary/20 rounded-lg text-primary transition-colors"
+                                    >
+                                      {/* @ts-ignore */}
+                                      {({ loading }) => <Download size={16} className={loading ? 'animate-pulse' : ''} />}
+                                    </PDFDownloadLink>
+                                  </>
+                                );
+                              })()
                             )}
                           </div>
                         ) : (
@@ -408,10 +436,10 @@ export default function GraphsPage() {
             </div>
 
             <div className="p-6 border-t border-white/10 bg-white/5 flex justify-between items-center">
-              <p className="text-xs text-muted">Total items: {selectedDetails.items.length}</p>
+              <p className="text-sm text-muted">Total items: {selectedDetails.items.length}</p>
               <button 
                 onClick={() => window.print()}
-                className="flex items-center gap-2 bg-primary px-6 py-2 rounded-xl text-white font-bold hover:scale-105 transition-all shadow-lg shadow-primary/20"
+                className="flex items-center gap-2 bg-primary px-6 py-2 rounded-xl text-white font-medium hover:scale-105 transition-all shadow-lg shadow-primary/20"
               >
                 <FileText size={18} />
                 <span>Export Report</span>

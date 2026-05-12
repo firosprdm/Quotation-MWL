@@ -1,0 +1,28 @@
+[project]
+name = "zatca"
+authors = [
+    { name = "Antigravity", email = "admin@antigravity.com"}
+]
+description = "ZATCA Phase 2 Integration for Saudi Arabia"
+requires-python = ">=3.10"
+dependencies = [
+    "cryptography",
+    "lxml",
+    "requests"
+]
+version = "0.0.1"
+
+[project.license]
+text = "MIT"
+
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.bench.frappe-app]
+app_name = "zatca"
+app_title = "Zatca"
+app_publisher = "Antigravity"
+app_description = "ZATCA Phase 2 Integration for Saudi Arabia"
+app_email = "admin@antigravity.com"
+app_license = "mit"

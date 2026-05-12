@@ -137,8 +137,8 @@ export default function ClientsPage() {
     <div className="fade-in">
       <header className={styles.header}>
         <div>
-          <h2 className={styles.title}>Clients</h2>
-          <p className={styles.subtitle}>Manage your customer relationships.</p>
+          <h2 className="premium-title">Client Directory</h2>
+          <p className="premium-subtitle">Manage your customer relationships and financial profiles.</p>
         </div>
         <button 
           className={clsx('glass-button', styles.addButton)}
@@ -177,7 +177,7 @@ export default function ClientsPage() {
                   className={styles.actionBtn}
                   onClick={(e) => openEditModal(client, e)}
                 >
-                  <Edit2 size={16} />
+                  <Edit2 size={18} className="icon-hover" />
                 </button>
                 {currentUser?.role === 'admin' && (
                   <button 
@@ -193,40 +193,40 @@ export default function ClientsPage() {
                       }
                     }}
                   >
-                    <Trash2 size={16} />
+                    <Trash2 size={18} className="icon-hover" />
                   </button>
                 )}
               </div>
             </div>
             
-            <h3 className={styles.clientName}>{client.name}</h3>
+            <h3 className="premium-card-title mt-4 px-1">{client.name}</h3>
             
-            <div className={styles.clientInfo}>
-              <div className={styles.infoItem}>
-                <Mail size={14} />
+            <div className="flex flex-col gap-2 mt-4 px-1">
+              <div className="flex items-center gap-3 text-[14px] text-white/70">
+                <Mail size={14} className="text-blue-400/70" />
                 <span>{client.email}</span>
               </div>
-              <div className={styles.infoItem}>
-                <Phone size={14} />
+              <div className="flex items-center gap-3 text-[14px] text-white/70">
+                <Phone size={14} className="text-emerald-400/70" />
                 <span>{client.phone}</span>
               </div>
               {client.vatNumber && (
-                <div className={styles.infoItem}>
-                  <Hash size={14} className="text-purple-400" />
-                  <span>VAT: {client.vatNumber}</span>
+                <div className="flex items-center gap-3 text-[14px] text-white/70">
+                  <Hash size={14} className="text-purple-400/70" />
+                  <span className="premium-label !text-purple-400/80 !normal-case !tracking-normal">VAT: {client.vatNumber}</span>
                 </div>
               )}
               {client.otherId && (
-                <div className={styles.infoItem}>
-                  <Hash size={14} className="text-amber-400" />
-                  <span>CR: {client.otherId}</span>
+                <div className="flex items-center gap-3 text-[14px] text-white/70">
+                  <Hash size={14} className="text-amber-400/70" />
+                  <span className="premium-label !text-amber-400/80 !normal-case !tracking-normal">CR: {client.otherId}</span>
                 </div>
               )}
-              <div className={styles.infoItem}>
-                <MapPin size={14} />
-                <span className={styles.address}>
+              <div className="flex items-center gap-3 text-[14px] text-white/70">
+                <MapPin size={14} className="text-rose-400/70" />
+                <span className="truncate">
                   {client.splitAddress ? (
-                    `${client.splitAddress.buildingNumber}, ${client.splitAddress.streetName}, ${client.splitAddress.district}, ${client.splitAddress.city}, ${client.splitAddress.postalCode}, ${client.splitAddress.countryCode}`
+                    `${client.splitAddress.buildingNumber}, ${client.splitAddress.streetName}, ${client.splitAddress.district}, ${client.splitAddress.city}`
                   ) : client.address}
                 </span>
               </div>

@@ -49,8 +49,8 @@ export default function MisaPortal() {
     <div className={clsx("fade-in", styles.container)}>
       <header className={styles.header}>
         <div>
-          <h2 className={styles.title}>MISA Compliance Portal</h2>
-          <p className={styles.subtitle}>Unified dashboard for Saudi Arabian regulatory reporting.</p>
+          <h2 className="premium-title">MISA Compliance Portal</h2>
+          <p className="premium-subtitle">Unified dashboard for Saudi Arabian regulatory reporting.</p>
         </div>
         <div className="flex gap-3">
           {isMounted && (
@@ -90,8 +90,8 @@ export default function MisaPortal() {
             <h3 className={styles.cardTitle}>MISA Reporting</h3>
           </div>
           <div className="flex flex-col gap-1">
-            <p className={styles.subtitle}>Total Revenue (Invoiced)</p>
-            <p className={styles.kpi}>{formatCurrency(totalRevenue)}</p>
+            <p className="premium-label !text-muted/60">Total Revenue (Invoiced)</p>
+            <p className="text-3xl font-normal text-white tracking-tighter">{formatCurrency(totalRevenue)}</p>
           </div>
           <div className={styles.complianceList}>
             <ComplianceItem label="MISA Quarterly Financials" status={totalRevenue > 0 ? "Active" : "Warning"} />
@@ -109,8 +109,8 @@ export default function MisaPortal() {
             <h3 className={styles.cardTitle}>ZATCA & Tax</h3>
           </div>
           <div className="flex flex-col gap-1">
-            <p className={styles.subtitle}>VAT Liability (Estimated)</p>
-            <p className={styles.kpi}>{formatCurrency(totalRevenue * 0.15)}</p>
+            <p className="premium-label !text-muted/60">VAT Liability (Estimated)</p>
+            <p className="text-3xl font-normal text-white tracking-tighter">{formatCurrency(totalRevenue * 0.15)}</p>
           </div>
           <div className={styles.complianceList}>
             <ComplianceItem label="E-Invoicing Phase 2" status="Active" />
@@ -141,13 +141,13 @@ export default function MisaPortal() {
                 />
               </div>
               <div className="flex justify-between mt-1">
-                <span className="text-[10px] font-bold text-emerald-400">{saudizationRatio.toFixed(0)}% Saudi</span>
-                <span className="text-[10px] font-bold text-amber-400">{(100 - saudizationRatio).toFixed(0)}% Expat</span>
+                <span className="text-[12px] font-medium text-emerald-400">{saudizationRatio.toFixed(0)}% Saudi</span>
+                <span className="text-[12px] font-medium text-amber-400">{(100 - saudizationRatio).toFixed(0)}% Expat</span>
               </div>
             </div>
             <div>
-              <p className={styles.subtitle}>Employees Registered</p>
-              <p className={styles.kpi}>{totalEmployees}</p>
+              <p className="premium-label !text-muted/60">Employees Registered</p>
+              <p className="text-3xl font-normal text-white tracking-tighter">{totalEmployees}</p>
             </div>
           </div>
           <div className={styles.complianceList}>
@@ -165,7 +165,7 @@ export default function MisaPortal() {
               <History size={28} />
             </div>
             <div>
-              <h3 className="text-2xl font-black text-white tracking-tight">Compliance Timeline {new Date().getFullYear()}</h3>
+              <h3 className="text-2xl font-normal text-white tracking-tight">Compliance Timeline {new Date().getFullYear()}</h3>
               <p className="text-sm text-slate-400 font-medium">Critical regulatory deadlines for the current fiscal period.</p>
             </div>
           </div>
@@ -184,11 +184,11 @@ export default function MisaPortal() {
 const ComplianceItem = ({ label, status, date, value }: any) => (
   <div className={styles.item}>
     <div className="flex flex-col">
-      <span className={styles.itemLabel}>{label}</span>
-      {date && <span className="text-[10px] text-slate-500 font-bold">{date}</span>}
+      <span className="text-[12px] font-medium text-white tracking-tight">{label}</span>
+      {date && <span className="premium-label !text-slate-500 !text-[12px] mt-0.5">{date}</span>}
     </div>
     <div className="flex items-center gap-3">
-      {value && <span className="text-xs font-bold text-white">{value}</span>}
+      {value && <span className="text-sm font-medium text-white">{value}</span>}
       <span className={clsx(styles.status, styles[status])}>{status}</span>
     </div>
   </div>
@@ -204,13 +204,13 @@ const CalendarEvent = ({ month, day, event, type, desc }: any) => {
   return (
     <div className={clsx(styles.eventCard, typeColors[type])}>
       <div className="flex flex-col items-center min-w-[50px]">
-        <span className="text-[9px] font-black opacity-60 tracking-widest">{month}</span>
-        <span className="text-3xl font-black">{day}</span>
+        <span className="text-[12px] font-normal opacity-60 tracking-widest">{month}</span>
+        <span className="text-3xl font-normal">{day}</span>
       </div>
       <div className="h-10 w-[1px] bg-white/10" />
       <div className="flex flex-col">
-        <span className="text-base font-black text-white leading-tight">{event}</span>
-        <span className="text-[10px] text-white/40 font-medium mt-1">{desc}</span>
+        <span className="text-base font-normal text-white leading-tight">{event}</span>
+        <span className="text-[12px] text-white/40 font-medium mt-1">{desc}</span>
       </div>
     </div>
   );

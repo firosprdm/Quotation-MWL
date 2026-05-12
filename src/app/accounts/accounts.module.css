@@ -7,7 +7,7 @@
 
 .title {
   font-size: 32px;
-  font-weight: 700;
+  font-weight: 500;
   margin-bottom: 8px;
   background: linear-gradient(to right, #60a5fa, #34d399, #c084fc, #60a5fa);
   background-size: 200% auto;
@@ -33,7 +33,7 @@
   gap: 8px;
   padding: 12px 24px;
   border-radius: 14px;
-  font-weight: 600;
+  font-weight: 400;
   background: var(--primary);
   color: white;
   transition: all 0.3s ease;
@@ -77,6 +77,14 @@
   border-color: rgba(59, 130, 246, 0.3);
   box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
 }
+
+.tabZatca.tabActive {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.3);
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+}
+
 
 .kpiGrid {
   display: grid;
@@ -137,31 +145,31 @@
 
 .compactTable th {
   padding: 8px 20px !important;
-  font-size: 10px !important;
+  font-size: 12px !important;
 }
 
 .compactTable td {
   padding: 4px 20px !important;
-  font-size: 11px !important;
+  font-size: 14px !important;
 }
 
 .table th {
   text-align: left;
-  padding: 6px 12px;
-  font-size: 11px;
+  padding: 8px 20px;
+  font-size: 12px;
   font-weight: 400;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.1em;
   border-bottom: 1px solid var(--border-glass);
   background: rgba(0, 0, 0, 0.4);
 }
 
 .table td {
-  padding: 6px 12px;
+  padding: 6px 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .table tr {
@@ -278,7 +286,7 @@
   display: flex;
   justify-content: space-between;
   padding: 6px 12px;
-  font-size: 13px;
+  font-size: 14px;
   border-radius: 6px;
   transition: background-color 0.2s ease;
 }

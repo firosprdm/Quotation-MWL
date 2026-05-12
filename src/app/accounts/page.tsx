@@ -27,18 +27,43 @@ import { JournalEntryForm } from '@/components/JournalEntryForm';
 import { QuickAddModal } from '@/components/QuickAddModal';
 import { BankReconciliation } from '@/components/BankReconciliation';
 import { FixedAssetRegister } from '@/components/FixedAssetRegister';
-import { ShieldCheck, Building2 } from 'lucide-react';
+import { ShieldCheck, Building2, Activity } from 'lucide-react';
 import styles from './accounts.module.css';
 import { formatCurrency, formatNumber } from '@/lib/format';
 
 export default function AccountsPage() {
-  const { accounts, journalEntries } = useApp();
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'journal' | 'recon' | 'assets'>('dashboard');
+  const { accounts, journalEntries, settings, updateSettings } = useApp();
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'journal' | 'recon' | 'assets' | 'zatca'>('dashboard');
   const [showEntryForm, setShowEntryForm] = useState(false);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [accountFilter, setAccountFilter] = useState<string | null>(null);
+  const [journalPage, setJournalPage] = useState(1);
+  const entriesPerPage = 50;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { importData, exportData } = useApp(); // Assuming these might exist or we add them
+  const [zatcaOtp, setZatcaOtp] = useState('');
+  const [isOnboarding, setIsOnboarding] = useState(false);
+  const [localMode, setLocalMode] = useState<'sandbox' | 'simulation' | 'production'>(settings.zatca?.mode || 'sandbox');
+
+  const handleZatcaModeSelect = async (e: React.MouseEvent, mode: 'sandbox' | 'simulation' | 'production') => {
+    e.preventDefault();
+    setLocalMode(mode);
+    try {
+      const newSettings = { 
+        ...settings, 
+        zatca: { 
+          onboarded: false,
+          ...(settings.zatca || {}), 
+          mode 
+        } 
+      };
+      await updateSettings(newSettings);
+    } catch (err: any) {
+      console.error('Mode Selection Error:', err);
+      alert('Failed to change mode: ' + err.message);
+      setLocalMode(settings.zatca?.mode || 'sandbox');
+    }
+  };
 
   // Calculate summaries
   const totalAssets = accounts.filter(a => a.type === 'Asset').reduce((acc, a) => acc + a.balance, 0);
@@ -245,8 +270,8 @@ export default function AccountsPage() {
 
       <header className={styles.header}>
         <div>
-          <h2 className={styles.title}>Accounts</h2>
-          <p className={styles.subtitle}>Manage your chart of accounts and double-entry bookkeeping.</p>
+          <h2 className="premium-title">Financial Ledger</h2>
+          <p className="premium-subtitle">Manage your chart of accounts and double-entry bookkeeping.</p>
         </div>
         <div className="flex gap-4">
           <button 
@@ -277,7 +302,7 @@ export default function AccountsPage() {
               <span className="text-[16px] font-medium uppercase tracking-[0.15em] text-emerald-100 group-hover:text-white group-hover:drop-shadow-[0_0_10px_rgba(16,185,129,0.8)] transition-all duration-300">Quick Add</span>
               <div className="flex items-center gap-2 mt-2">
                 <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_rgba(52,211,153,0.8)]" />
-                <span className="text-[10px] font-medium text-emerald-400/80 uppercase tracking-[0.25em]">Instant Entry</span>
+                <span className="text-[12px] font-medium text-emerald-400/80 uppercase tracking-[0.25em]">Instant Entry</span>
               </div>
             </div>
           </button>
@@ -310,7 +335,7 @@ export default function AccountsPage() {
               <span className="text-[16px] font-medium uppercase tracking-[0.15em] text-purple-100 group-hover:text-white group-hover:drop-shadow-[0_0_10px_rgba(168,85,247,0.8)] transition-all duration-300">Journal Entry</span>
               <div className="flex items-center gap-2 mt-2">
                 <div className="w-2 h-2 rounded-full bg-purple-400 animate-pulse shadow-[0_0_10px_rgba(192,132,252,0.8)]" />
-                <span className="text-[10px] font-medium text-purple-400/80 uppercase tracking-[0.25em]">Double Entry</span>
+                <span className="text-[12px] font-medium text-purple-400/80 uppercase tracking-[0.25em]">Double Entry</span>
               </div>
             </div>
           </button>
@@ -342,6 +367,12 @@ export default function AccountsPage() {
         >
           <Building2 size={18} /> Fixed Assets
         </button>
+        <button 
+          className={clsx(styles.tab, activeTab === 'zatca' && styles.tabActive, styles.tabZatca)}
+          onClick={() => setActiveTab('zatca')}
+        >
+          <ShieldCheck size={18} /> ZATCA Hub
+        </button>
       </div>
 
       {activeTab === 'dashboard' && (
@@ -361,8 +392,8 @@ export default function AccountsPage() {
                 <Wallet size={28} />
               </div>
               <div>
-                <p className="text-[10px] text-muted font-bold uppercase tracking-[0.2em]">Total Assets</p>
-                <p className="text-2xl font-bold text-white">{formatCurrency(totalAssets)}</p>
+                <p className="premium-label mb-1">Total Assets</p>
+                <p className="text-2xl font-normal text-white tracking-tighter">{formatCurrency(totalAssets)}</p>
               </div>
               {accountFilter === 'Asset' && <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-blue-500 animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.8)]" />}
             </div>
@@ -376,12 +407,12 @@ export default function AccountsPage() {
               )}
               onClick={() => setAccountFilter(accountFilter === 'Liability' ? null : 'Liability')}
             >
-              <div className={clsx(styles.kpiIcon, styles.iconRed)}>
-                <TrendingDown size={28} />
+              <div className={clsx(styles.kpiIcon, styles.iconRed, "icon-hover")}>
+                <TrendingDown size={32} />
               </div>
               <div>
-                <p className="text-[10px] text-muted font-bold uppercase tracking-[0.2em]">Total Liabilities</p>
-                <p className="text-2xl font-bold text-white">{formatCurrency(totalLiabilities)}</p>
+                <p className="premium-label mb-1">Total Liabilities</p>
+                <p className="text-2xl font-normal text-white tracking-tighter">{formatCurrency(totalLiabilities)}</p>
               </div>
               {accountFilter === 'Liability' && <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.8)]" />}
             </div>
@@ -395,12 +426,12 @@ export default function AccountsPage() {
               )}
               onClick={() => setAccountFilter(accountFilter === 'Equity' ? null : 'Equity')}
             >
-              <div className={clsx(styles.kpiIcon, styles.iconPurple)}>
-                <Scale size={28} />
+              <div className={clsx(styles.kpiIcon, styles.iconPurple, "icon-hover")}>
+                <Scale size={32} />
               </div>
               <div>
-                <p className="text-[10px] text-muted font-bold uppercase tracking-[0.2em]">Equity</p>
-                <p className="text-2xl font-bold text-white">{formatCurrency(totalEquity)}</p>
+                <p className="premium-label mb-1">Equity</p>
+                <p className="text-2xl font-normal text-white tracking-tighter">{formatCurrency(totalEquity)}</p>
               </div>
               {accountFilter === 'Equity' && <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-purple-500 animate-pulse shadow-[0_0_10px_rgba(168,85,247,0.8)]" />}
             </div>
@@ -414,12 +445,12 @@ export default function AccountsPage() {
               )}
               onClick={() => setAccountFilter(accountFilter === 'Profit' ? null : 'Profit')}
             >
-              <div className={clsx(styles.kpiIcon, styles.iconGreen)}>
-                <TrendingUp size={28} />
+              <div className={clsx(styles.kpiIcon, styles.iconGreen, "icon-hover")}>
+                <TrendingUp size={32} />
               </div>
               <div>
-                <p className="text-[10px] text-muted font-bold uppercase tracking-[0.2em]">Net Profit</p>
-                <p className="text-2xl font-bold text-emerald-400">{formatCurrency(netProfit)}</p>
+                <p className="premium-label mb-1">Net Profit</p>
+                <p className="text-2xl font-normal text-emerald-400 tracking-tighter">{formatCurrency(netProfit)}</p>
               </div>
               {accountFilter === 'Profit' && <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]" />}
             </div>
@@ -428,12 +459,12 @@ export default function AccountsPage() {
           {/* Chart of Accounts Table */}
           <div className={clsx('glass-panel', styles.tableWrapper)}>
             <div className="p-6 border-b border-white/5 flex justify-between items-center">
-              <h3 className="text-xl font-black flex items-center gap-3">
+              <h3 className="premium-card-title flex items-center gap-3">
                 <Wallet className="text-blue-400" size={24} />
                 <div className="flex flex-col">
                   <span>Chart of Accounts</span>
                   {accountFilter && (
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-blue-400/60 mt-0.5">
+                    <span className="text-[12px] font-medium uppercase tracking-widest text-blue-400/60 mt-0.5">
                       Filtered by {accountFilter === 'Profit' ? 'Revenue & Expenses' : accountFilter}
                     </span>
                   )}
@@ -442,7 +473,7 @@ export default function AccountsPage() {
               {accountFilter && (
                 <button 
                   onClick={() => setAccountFilter(null)}
-                  className="text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-muted hover:text-white"
+                  className="text-[12px] font-medium uppercase tracking-widest px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-muted hover:text-white"
                 >
                   View All
                 </button>
@@ -452,10 +483,10 @@ export default function AccountsPage() {
               <table className={styles.table}>
                 <thead>
                   <tr>
-                    <th>Account Code</th>
-                    <th>Account Name</th>
-                    <th>Type</th>
-                    <th className="text-right">Balance (SAR)</th>
+                    <th className="premium-label">Account Code</th>
+                    <th className="premium-label">Account Name</th>
+                    <th className="premium-label">Type</th>
+                    <th className="premium-label text-right">Balance (SAR)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -471,13 +502,12 @@ export default function AccountsPage() {
                         <td className="text-white font-medium">{acc.name}</td>
                         <td>
                           <span className={clsx(
-                            styles.badge,
-                            acc.type === 'Asset' && styles.badgeAsset,
-                            acc.type === 'Liability' && styles.badgeLiability,
-                            acc.type === 'Equity' && styles.badgeEquity,
-                            acc.type === 'Revenue' && styles.badgeRevenue,
-                            acc.type === 'Expense' && styles.badgeExpense,
-                            "text-[9px] px-1.5 py-0.5 uppercase tracking-tighter inline-block"
+                            "inline-flex items-center justify-center text-[10px] font-bold uppercase tracking-widest min-w-[80px] h-6 border rounded-lg px-2 text-center",
+                            acc.type === 'Asset' && "bg-blue-500/10 text-blue-400 border-blue-500/20",
+                            acc.type === 'Liability' && "bg-rose-500/10 text-rose-400 border-rose-500/20",
+                            acc.type === 'Equity' && "bg-purple-500/10 text-purple-400 border-purple-500/20",
+                            acc.type === 'Revenue' && "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+                            acc.type === 'Expense' && "bg-amber-500/10 text-amber-400 border-amber-500/20"
                           )}>
                             {acc.type}
                           </span>
@@ -502,20 +532,20 @@ export default function AccountsPage() {
       {activeTab === 'journal' && (
         <div className={clsx('glass-panel', styles.tableWrapper, 'animate-in fade-in')}>
           <div className="p-6 border-b border-white/5 flex justify-between items-center">
-            <h3 className="text-xl font-bold flex items-center gap-2">
+            <h3 className="premium-card-title flex items-center gap-2">
               <BookOpen className="text-purple-400" size={20} />
               Journal Entries
             </h3>
             <div className="flex gap-3">
               <button 
                 onClick={handleExportXLSX}
-                className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-emerald-500/10 hover:border-emerald-500/30 hover:text-emerald-400 transition-all text-white/70 shadow-sm"
+                className="flex items-center gap-2 text-sm font-medium uppercase tracking-widest px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-emerald-500/10 hover:border-emerald-500/30 hover:text-emerald-400 transition-all text-white/70 shadow-sm"
               >
                 <Download size={14} /> Export XLS
               </button>
               <button 
                 onClick={handleExportPDF}
-                className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-400 transition-all text-white/70 shadow-sm"
+                className="flex items-center gap-2 text-sm font-medium uppercase tracking-widest px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-400 transition-all text-white/70 shadow-sm"
               >
                 <Download size={14} /> Export PDF
               </button>
@@ -525,12 +555,12 @@ export default function AccountsPage() {
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th>Date</th>
-                  <th>Description</th>
-                  <th>Ref</th>
-                  <th>Account</th>
-                  <th className="text-right">Debit</th>
-                  <th className="text-right">Credit</th>
+                  <th className="premium-label">Date</th>
+                  <th className="premium-label">Description</th>
+                  <th className="premium-label">Ref</th>
+                  <th className="premium-label">Account</th>
+                  <th className="premium-label text-right">Debit</th>
+                  <th className="premium-label text-right">Credit</th>
                 </tr>
               </thead>
               <tbody>
@@ -541,45 +571,79 @@ export default function AccountsPage() {
                     </td>
                   </tr>
                 ) : (
-                  journalEntries.flatMap(entry => 
-                    entry.lines.map((line, idx) => {
-                      const acc = accounts.find(a => a.id === line.accountId);
-                      return (
-                        <tr key={`${entry.id}-${idx}`}>
-                          {idx === 0 ? (
-                            <>
-                              <td rowSpan={entry.lines.length} className="font-mono text-blue-400 align-top">
-                                {new Date(entry.date).toLocaleDateString()}
-                              </td>
-                              <td rowSpan={entry.lines.length} className="align-top text-white font-medium">
-                                {entry.description}
-                              </td>
-                              <td rowSpan={entry.lines.length} className="align-top">
-                                {entry.reference && (
-                                  <span className="px-2 py-1 rounded bg-blue-500/10 text-blue-400 text-[10px] font-bold uppercase border border-blue-500/20">
-                                    {entry.reference}
-                                  </span>
-                                )}
-                              </td>
-                            </>
-                          ) : null}
-                          <td>
-                            <span className="text-white/80">{acc?.code} — {acc?.name}</span>
-                            <span className="ml-2 text-[9px] text-muted/50 uppercase tracking-widest bg-white/5 px-1.5 py-0.5 rounded">{acc?.type}</span>
-                          </td>
-                          <td className="text-right font-mono text-emerald-400">
-                            {line.debit > 0 ? line.debit.toLocaleString(undefined, { minimumFractionDigits: 2 }) : ''}
-                          </td>
-                          <td className="text-right font-mono text-orange-400">
-                            {line.credit > 0 ? line.credit.toLocaleString(undefined, { minimumFractionDigits: 2 }) : ''}
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )
+                  (() => {
+                    const totalPages = Math.ceil(journalEntries.length / entriesPerPage);
+                    const paginatedEntries = journalEntries.slice((journalPage - 1) * entriesPerPage, journalPage * entriesPerPage);
+                    
+                    return (
+                      <React.Fragment>
+                        {paginatedEntries.flatMap(entry => 
+                          entry.lines.map((line, idx) => {
+                            const acc = accounts.find(a => a.id === line.accountId);
+                            return (
+                              <tr key={`${entry.id}-${idx}`}>
+                                {idx === 0 ? (
+                                  <>
+                                    <td rowSpan={entry.lines.length} className="font-mono text-blue-400 align-top">
+                                      {new Date(entry.date).toLocaleDateString()}
+                                    </td>
+                                    <td rowSpan={entry.lines.length} className="align-top text-white font-normal">
+                                      {entry.description}
+                                    </td>
+                                    <td rowSpan={entry.lines.length} className="align-top">
+                                      {entry.reference && (
+                                        <span className="px-2 py-1 rounded bg-blue-500/10 text-blue-400 text-[12px] font-medium uppercase border border-blue-500/20">
+                                          {entry.reference}
+                                        </span>
+                                      )}
+                                    </td>
+                                  </>
+                                ) : null}
+                                <td>
+                                  <span className="text-white/80">{acc?.code} — {acc?.name}</span>
+                                  <span className="ml-2 text-[12px] text-muted/50 uppercase tracking-widest bg-white/5 px-1.5 py-0.5 rounded">{acc?.type}</span>
+                                </td>
+                                <td className="text-right font-mono text-emerald-400">
+                                  {line.debit > 0 ? line.debit.toLocaleString(undefined, { minimumFractionDigits: 2 }) : ''}
+                                </td>
+                                <td className="text-right font-mono text-orange-400">
+                                  {line.credit > 0 ? line.credit.toLocaleString(undefined, { minimumFractionDigits: 2 }) : ''}
+                                </td>
+                              </tr>
+                            );
+                          })
+                        )}
+                      </React.Fragment>
+                    );
+                  })()
                 )}
               </tbody>
             </table>
+            
+            {/* Pagination Controls */}
+            {journalEntries.length > entriesPerPage && (
+              <div className="flex justify-between items-center p-4 border-t border-white/5">
+                <span className="text-sm text-muted">
+                  Showing {(journalPage - 1) * entriesPerPage + 1} to {Math.min(journalPage * entriesPerPage, journalEntries.length)} of {journalEntries.length} entries
+                </span>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setJournalPage(p => Math.max(1, p - 1))}
+                    disabled={journalPage === 1}
+                    className="px-3 py-1 rounded bg-white/5 hover:bg-white/10 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm"
+                  >
+                    Previous
+                  </button>
+                  <button 
+                    onClick={() => setJournalPage(p => Math.min(Math.ceil(journalEntries.length / entriesPerPage), p + 1))}
+                    disabled={journalPage === Math.ceil(journalEntries.length / entriesPerPage)}
+                    className="px-3 py-1 rounded bg-white/5 hover:bg-white/10 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}      {activeTab === 'recon' && (
@@ -588,6 +652,157 @@ export default function AccountsPage() {
 
       {activeTab === 'assets' && (
         <FixedAssetRegister />
+      )}
+
+      {activeTab === 'zatca' && (
+        <div className="animate-in fade-in space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <button 
+              type="button"
+              className={clsx(
+                'glass-panel p-8 flex flex-col items-center justify-center text-center cursor-pointer border-2 transition-all duration-500 ease-out relative overflow-hidden',
+                localMode === 'sandbox' 
+                  ? 'border-blue-500 bg-blue-500/10 shadow-[0_0_30px_rgba(59,130,246,0.3)] scale-[1.02] ring-1 ring-blue-500 z-10' 
+                  : 'border-white/5 hover:border-white/20 hover:scale-[1.01] hover:bg-white/5'
+              )}
+              onClick={(e) => handleZatcaModeSelect(e, 'sandbox')}
+            >
+              {localMode === 'sandbox' && <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/0 via-blue-500/5 to-blue-500/10 animate-pulse pointer-events-none" />}
+              <div className="p-3 rounded-full bg-blue-500/20 text-blue-400 mb-4 ring-4 ring-blue-500/10">
+                <Zap size={24} />
+              </div>
+              <h4 className="text-lg font-medium mb-2">Sandbox</h4>
+              <p className="text-sm text-muted leading-relaxed max-w-[200px]">Common pre-configured testing environment for developers.</p>
+            </button>
+
+            <button 
+              type="button"
+              className={clsx(
+                'glass-panel p-8 flex flex-col items-center justify-center text-center cursor-pointer border-2 transition-all duration-500 ease-out relative overflow-hidden',
+                localMode === 'simulation' 
+                  ? 'border-orange-500 bg-orange-500/10 shadow-[0_0_30px_rgba(249,115,34,0.3)] scale-[1.02] ring-1 ring-orange-500 z-10' 
+                  : 'border-white/5 hover:border-white/20 hover:scale-[1.01] hover:bg-white/5'
+              )}
+              onClick={(e) => handleZatcaModeSelect(e, 'simulation')}
+            >
+              {localMode === 'simulation' && <div className="absolute inset-0 bg-gradient-to-tr from-orange-500/0 via-orange-500/5 to-orange-500/10 animate-pulse pointer-events-none" />}
+              <div className="p-3 rounded-full bg-orange-500/20 text-orange-400 mb-4 ring-4 ring-orange-500/10">
+                <Activity size={24} />
+              </div>
+              <h4 className="text-lg font-medium mb-2">Simulation</h4>
+              <p className="text-sm text-muted leading-relaxed max-w-[200px]">Unique testing environment specifically for your solution.</p>
+            </button>
+
+            <button 
+              type="button"
+              className={clsx(
+                'glass-panel p-8 flex flex-col items-center justify-center text-center cursor-pointer border-2 transition-all duration-500 ease-out relative overflow-hidden',
+                localMode === 'production' 
+                  ? 'border-emerald-500 bg-emerald-500/10 shadow-[0_0_30px_rgba(16,185,129,0.3)] scale-[1.02] ring-1 ring-emerald-500 z-10' 
+                  : 'border-white/5 hover:border-white/20 hover:scale-[1.01] hover:bg-white/5'
+              )}
+              onClick={(e) => handleZatcaModeSelect(e, 'production')}
+            >
+              {localMode === 'production' && <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/0 via-emerald-500/5 to-emerald-500/10 animate-pulse pointer-events-none" />}
+              <div className="p-3 rounded-full bg-emerald-500/20 text-emerald-400 mb-4 ring-4 ring-emerald-500/10">
+                <ShieldCheck size={24} />
+              </div>
+              <h4 className="text-lg font-medium mb-2">Production</h4>
+              <p className="text-sm text-muted leading-relaxed max-w-[200px]">Live environment for reporting real fiscal transactions.</p>
+            </button>
+          </div>
+
+          <div className="glass-panel p-10 flex flex-col items-center text-center relative overflow-hidden">
+            {/* Background decorative glow */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-lg h-32 bg-blue-500/5 blur-[50px] rounded-full pointer-events-none" />
+            
+            <div className="flex flex-col items-center mb-10 relative z-10">
+              <div className={clsx(
+                "px-4 py-1.5 rounded-full border flex items-center gap-2 font-medium text-[12px] uppercase tracking-widest mb-6 shadow-sm",
+                settings.zatca?.onboarded ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" : "bg-orange-500/10 border-orange-500/30 text-orange-400"
+              )}>
+                <div className={clsx("w-1.5 h-1.5 rounded-full", settings.zatca?.onboarded ? "bg-emerald-400" : "bg-orange-400 animate-pulse")} />
+                {settings.zatca?.onboarded ? "Onboarded" : "Pending Onboarding"}
+              </div>
+              <h3 className="text-2xl font-medium mb-3 tracking-tight">Solution Onboarding</h3>
+              <p className="text-sm text-muted max-w-md leading-relaxed">Securely register this environment with ZATCA by providing the OTP generated from your Fatoora Portal.</p>
+            </div>
+
+            <div className="w-full max-w-md space-y-8 relative z-10">
+              <div className="space-y-4">
+                <label className="text-[12px] text-muted font-medium uppercase tracking-[0.2em]">Fatoora Portal OTP</label>
+                <div className="flex flex-col gap-3">
+                  <input 
+                    type="text" 
+                    placeholder="ENTER 6-DIGIT OTP"
+                    className="glass-input w-full px-4 py-3 font-mono text-lg tracking-[0.5em] text-center uppercase shadow-inner"
+                    maxLength={6}
+                    value={zatcaOtp}
+                    onChange={(e) => setZatcaOtp(e.target.value)}
+                  />
+                  <button 
+                    className="glass-button w-full bg-emerald-500/20 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/30 hover:border-emerald-500/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.2)] py-3 font-medium tracking-widest text-sm uppercase active:scale-[0.98] transition-all disabled:opacity-50"
+                    disabled={isOnboarding || zatcaOtp.length < 5}
+                    onClick={async () => {
+                      if (!zatcaOtp) return;
+                      setIsOnboarding(true);
+                      try {
+                        const res = await fetch('/api/zatca/onboard', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            otp: zatcaOtp,
+                            vatNumber: settings.vatNumber || '311111111111113',
+                            companyName: settings.name,
+                            address: settings.address,
+                            branchName: 'Main',
+                            mode: settings.zatca?.mode || 'sandbox'
+                          })
+                        });
+
+                        const data = await res.json();
+                        
+                        if (!res.ok) {
+                          alert(`ZATCA API Error: ${data.error || 'Failed to onboard'}\nCheck console for details.`);
+                          console.warn('ZATCA API Details:', data.details || data);
+                        } else {
+                          // Success! Save the actual CSID and Secret
+                          await updateSettings({ 
+                            ...settings, 
+                            zatca: { 
+                              ...settings.zatca, 
+                              onboarded: true,
+                              privateKey: data.privateKey,
+                              csr: data.csr,
+                              certificate: data.binarySecurityToken,
+                              secret: data.secret
+                            } 
+                          });
+                          alert('Success! Real CSR Generated and Journal Onboarded for ' + (settings.zatca?.mode || 'sandbox').toUpperCase() + ' mode.');
+                          setZatcaOtp('');
+                        }
+                      } catch (err: any) {
+                        alert('Network Error: ' + err.message);
+                      } finally {
+                        setIsOnboarding(false);
+                      }
+                    }}
+                  >
+                    {isOnboarding ? 'Connecting...' : 'Onboard Now'}
+                  </button>
+                </div>
+              </div>
+
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col items-center text-center mt-8">
+                <div className="mb-3 p-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/20"><Sparkles size={12} className="text-yellow-400" /></div>
+                <p className="text-sm text-muted/80 leading-relaxed font-light">
+                  <strong className="font-normal text-slate-300">Important:</strong> Once onboarded, you can begin using the selected environment immediately. 
+                  Ensure your VAT Number and Company Details are strictly correct in the General Settings before continuing.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
     </div>

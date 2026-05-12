@@ -93,10 +93,10 @@ export function QuickAddModal({ onClose }: Props) {
                 </div>
               </div>
               <div className="flex flex-col justify-center">
-                <h2 className="text-3xl font-black tracking-tight text-white mb-0.5">Quick Add</h2>
+                <h2 className="text-3xl font-normal tracking-tight text-white mb-0.5">Quick Add</h2>
                 <div className="flex items-center gap-2">
                   <div className={clsx("w-2 h-2 rounded-full shadow-[0_0_8px_currentColor] animate-pulse", type === 'income' ? "bg-emerald-400 text-emerald-400" : "bg-red-400 text-red-400")} />
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/80 mt-0.5">Lightning Entry</p>
+                  <p className="text-sm font-medium uppercase tracking-[0.2em] text-white/80 mt-0.5">Lightning Entry</p>
                 </div>
               </div>
             </div>
@@ -117,7 +117,7 @@ export function QuickAddModal({ onClose }: Props) {
               <button 
                 onClick={() => setType('income')}
                 className={clsx(
-                  "flex-1 py-3 text-sm font-black uppercase tracking-widest relative z-10 transition-colors duration-300",
+                  "flex-1 py-3 text-sm font-normal uppercase tracking-widest relative z-10 transition-colors duration-300",
                   type === 'income' ? "text-white" : "text-white/50 hover:text-white"
                 )}
               >
@@ -131,7 +131,7 @@ export function QuickAddModal({ onClose }: Props) {
               <button 
                 onClick={() => setType('expense')}
                 className={clsx(
-                  "flex-1 py-3 text-sm font-black uppercase tracking-widest relative z-10 transition-colors duration-300",
+                  "flex-1 py-3 text-sm font-normal uppercase tracking-widest relative z-10 transition-colors duration-300",
                   type === 'expense' ? "text-white" : "text-white/50 hover:text-white"
                 )}
               >
@@ -146,12 +146,12 @@ export function QuickAddModal({ onClose }: Props) {
 
             {/* Amount Input */}
             <div className="space-y-3">
-              <label className="text-xs font-bold text-white/80 uppercase tracking-widest ml-2">Amount (SAR)</label>
+              <label className="text-sm font-medium text-white/80 uppercase tracking-widest ml-2">Amount</label>
               <input 
                 type="number"
                 placeholder="0.00"
                 className={clsx(
-                  "w-full bg-white/10 border border-white/20 rounded-2xl px-5 py-3 text-2xl font-mono font-black text-center focus:outline-none transition-all placeholder-white/30 shadow-inner",
+                  "w-full bg-white/10 border border-white/20 rounded-2xl px-5 py-3 text-2xl font-mono font-normal text-center focus:outline-none transition-all placeholder-white/30 shadow-inner",
                   type === 'income' ? "focus:border-emerald-400 focus:bg-emerald-500/10 text-emerald-300" : "focus:border-red-400 focus:bg-red-500/10 text-red-300"
                 )}
                 value={amount}
@@ -163,9 +163,9 @@ export function QuickAddModal({ onClose }: Props) {
             {/* Selects */}
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-3">
-                <label className="text-xs font-bold text-white/80 uppercase tracking-widest ml-2">Category</label>
+                <label className="text-sm font-medium text-white/80 uppercase tracking-widest ml-2">Category</label>
                 <select 
-                  className="w-full bg-white/10 border border-white/20 rounded-xl px-5 py-4 text-base text-white font-bold focus:outline-none focus:border-white/40 transition-all appearance-none cursor-pointer"
+                  className="w-full bg-white/10 border border-white/20 rounded-xl px-5 py-4 text-base text-white font-medium focus:outline-none focus:border-white/40 transition-all appearance-none cursor-pointer"
                   value={categoryAccountId}
                   onChange={(e) => setCategoryAccountId(e.target.value)}
                 >
@@ -176,9 +176,9 @@ export function QuickAddModal({ onClose }: Props) {
                 </select>
               </div>
               <div className="space-y-3">
-                <label className="text-xs font-bold text-white/80 uppercase tracking-widest ml-2">Source</label>
+                <label className="text-sm font-medium text-white/80 uppercase tracking-widest ml-2">Source</label>
                 <select 
-                  className="w-full bg-white/10 border border-white/20 rounded-xl px-5 py-4 text-base text-white font-bold focus:outline-none focus:border-white/40 transition-all appearance-none cursor-pointer"
+                  className="w-full bg-white/10 border border-white/20 rounded-xl px-5 py-4 text-base text-white font-medium focus:outline-none focus:border-white/40 transition-all appearance-none cursor-pointer"
                   value={sourceAccountId}
                   onChange={(e) => setSourceAccountId(e.target.value)}
                 >
@@ -192,18 +192,18 @@ export function QuickAddModal({ onClose }: Props) {
 
             {/* Description */}
             <div className="space-y-3">
-              <label className="text-xs font-bold text-white/80 uppercase tracking-widest ml-2">Description (Optional)</label>
+              <label className="text-sm font-medium text-white/80 uppercase tracking-widest ml-2">Description (Optional)</label>
               <textarea 
                 rows={3}
                 placeholder="Enter note..."
-                className="w-full bg-white/10 border border-white/20 rounded-xl px-5 py-4 text-base text-white font-bold focus:outline-none focus:border-white/40 transition-all placeholder-white/40 shadow-inner resize-none"
+                className="w-full bg-white/10 border border-white/20 rounded-xl px-5 py-4 text-base text-white font-medium focus:outline-none focus:border-white/40 transition-all placeholder-white/40 shadow-inner resize-none"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
             </div>
 
             {error && (
-              <div className="flex items-center gap-3 text-red-400 text-sm font-bold animate-in slide-in-from-top-1 bg-red-500/10 p-4 rounded-xl border border-red-500/20">
+              <div className="flex items-center gap-3 text-red-400 text-sm font-medium animate-in slide-in-from-top-1 bg-red-500/10 p-4 rounded-xl border border-red-500/20">
                 <AlertCircle size={18} /> {error}
               </div>
             )}
@@ -212,7 +212,7 @@ export function QuickAddModal({ onClose }: Props) {
               onClick={handleSave}
               disabled={!canSave}
               className={clsx(
-                "w-full py-4 rounded-2xl flex items-center justify-center text-lg font-black uppercase tracking-[0.2em] transition-all duration-500 transform active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed disabled:grayscale group mt-6",
+                "w-full py-4 rounded-2xl flex items-center justify-center text-lg font-normal uppercase tracking-[0.2em] transition-all duration-500 transform active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed disabled:grayscale group mt-6",
                 type === 'income' 
                   ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-[0_10px_30px_rgba(16,185,129,0.4)] hover:shadow-[0_20px_50px_rgba(16,185,129,0.6)] border border-emerald-400/50" 
                   : "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-[0_10px_30px_rgba(239,68,68,0.4)] hover:shadow-[0_20px_50px_rgba(239,68,68,0.6)] border border-red-400/50"

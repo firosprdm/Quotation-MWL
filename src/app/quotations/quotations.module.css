@@ -48,6 +48,8 @@
   padding: 4px 8px;
   border-radius: 6px;
   font-size: 0.75rem;
+  text-align: center;
+  text-transform: uppercase;
   outline: none;
   cursor: pointer;
   transition: all 0.2s;
@@ -67,8 +69,8 @@
 }
 
 .title {
-  font-size: 2rem;
-  font-weight: 800;
+  font-size: 1.75rem;
+  font-weight: 600;
   background: linear-gradient(to right, #fff, #94a3b8);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -84,7 +86,7 @@
   gap: 0.5rem;
   padding: 0.75rem 1.25rem;
   border-radius: 12px;
-  font-weight: 600;
+  font-weight: 400;
   background: linear-gradient(135deg, var(--primary), var(--secondary));
   border: none;
   color: white;
@@ -130,11 +132,12 @@
 }
 
 .table th {
-  padding: 14px 1.5rem;
-  font-size: 0.75rem;
-  font-weight: 700;
+  text-align: center;
+  padding: 2px 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 1.5px;
+  letter-spacing: 1.2px;
   color: #f8fafc;
   background: linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.01) 100%);
   border-top: 1px solid rgba(255, 255, 255, 0.05);
@@ -143,9 +146,9 @@
 }
 
 .table td {
-  padding: 7px 1.5rem;
+  padding: 2px 1.5rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  font-size: 0.875rem;
+  font-size: 1rem;
   color: var(--text-secondary);
 }
 
@@ -156,6 +159,9 @@
 .actions {
   display: flex;
   gap: 0.5rem;
+  justify-content: center;
+  white-space: nowrap;
+  flex-wrap: nowrap;
 }
 
 .actionBtn {
@@ -178,6 +184,12 @@
   border-color: var(--primary);
 }
 
+.actionBtn:active {
+  transform: scale(0.92);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+
 .deleteBtn:hover {
   border-color: var(--accent);
   color: var(--accent);
@@ -192,8 +204,10 @@
 .status {
   padding: 0.4rem 1rem;
   border-radius: 1rem;
+  text-align: center;
+  text-transform: uppercase;
   font-size: 0.75rem;
-  font-weight: 800;
+  font-weight: 600;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.05);
   color: white;
@@ -251,3 +265,81 @@
   border-color: rgba(168, 85, 247, 0.3);
 }
 .status.revised:hover { box-shadow: 0 0 15px rgba(168, 85, 247, 0.4); }
+
+/* Completion Certificates Styles */
+.downloadBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.certReady {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #34d399;
+}
+
+.certReady:hover {
+  background: rgba(16, 185, 129, 0.25);
+  border-color: #34d399;
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+  transform: translateY(-1px);
+}
+
+.certNotReady {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+
+.downloadIcon {
+  transition: transform 0.3s ease;
+}
+
+.downloadBtn:hover .downloadIcon {
+  transform: translateY(2px);
+  animation: bounceDown 0.6s infinite;
+}
+
+@keyframes bounceDown {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(3px); }
+}
+
+.iconPulse {
+  animation: pulseGlow 2s infinite;
+}
+
+@keyframes pulseGlow {
+  0% { transform: scale(1); filter: drop-shadow(0 0 0px rgba(52, 211, 153, 0)); }
+  50% { transform: scale(1.1); filter: drop-shadow(0 0 8px rgba(52, 211, 153, 0.5)); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 0px rgba(52, 211, 153, 0)); }
+}
+
+.zatcaBtn {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: #60a5fa;
+}
+
+.zatcaBtn:hover {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: #60a5fa;
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+  animation: linkPulse 1.5s infinite;
+}
+
+@keyframes linkPulse {
+  0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+}
+
