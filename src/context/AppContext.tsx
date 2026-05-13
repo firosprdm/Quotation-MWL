@@ -200,8 +200,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           '/api/v1/erpnext/purchase-invoices'
         ];
 
-        const results = [];
-        for (const ep of endpoints) {
+        const results = await Promise.all(endpoints.map(async (ep) => {
           try {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
@@ -211,15 +210,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             
             if (!r.ok) {
               console.warn(`Fetch failed for ${ep}: ${r.status}`);
-              results.push(null);
-            } else {
-              results.push(await r.json());
+              return null;
             }
+            return await r.json();
           } catch (err: any) {
             console.error(`Error fetching ${ep}:`, err.name === 'AbortError' ? 'Timeout' : err);
-            results.push(null);
+            return null;
           }
-        }
+        }));
 
         const [
           clientsRes, inventoryRes, quotationsRes, accountsRes, 

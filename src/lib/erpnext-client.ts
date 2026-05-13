@@ -77,7 +77,7 @@ export async function erpnextGet(doctype: string, filters: any[] = [], fields: s
   url.searchParams.append('limit_page_length', limit.toString());
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 1200);
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
 
   try {
     const response = await fetch(url.toString(), {
@@ -87,11 +87,17 @@ export async function erpnextGet(doctype: string, filters: any[] = [], fields: s
     });
     clearTimeout(timeoutId);
 
-    const data = await response.json();
-    if (!response.ok) return getMockList(doctype);
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      if (response.status >= 400 && response.status < 500 && response.status !== 404) {
+        throw new Error(`VALIDATION_ERROR: ${data.message || response.statusText || 'Bad Request'}`);
+      }
+      return getMockList(doctype);
+    }
     return data.data || [];
   } catch (error: any) {
     clearTimeout(timeoutId);
+    if (error.message?.startsWith('VALIDATION_ERROR')) throw error;
     return getMockList(doctype);
   }
 }
@@ -101,7 +107,7 @@ export async function erpnextGet(doctype: string, filters: any[] = [], fields: s
  */
 export async function erpnextGetDoc(doctype: string, name: string) {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 1200);
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
 
   try {
     const response = await fetch(`${ERPNEXT_URL}/api/resource/${doctype}/${name}`, {
@@ -111,11 +117,17 @@ export async function erpnextGetDoc(doctype: string, name: string) {
     });
     clearTimeout(timeoutId);
 
-    const data = await response.json();
-    if (!response.ok) return getMockDoc(doctype, name);
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      if (response.status >= 400 && response.status < 500 && response.status !== 404) {
+        throw new Error(`VALIDATION_ERROR: ${data.message || response.statusText || 'Bad Request'}`);
+      }
+      return getMockDoc(doctype, name);
+    }
     return data.data;
   } catch (error: any) {
     clearTimeout(timeoutId);
+    if (error.message?.startsWith('VALIDATION_ERROR')) throw error;
     return getMockDoc(doctype, name);
   }
 }
@@ -130,10 +142,16 @@ export async function erpnextCreate(doctype: string, doc: any) {
       headers: getHeaders(),
       body: JSON.stringify(doc),
     });
-    const data = await response.json();
-    if (!response.ok) throw new Error('failover');
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      if (response.status >= 400 && response.status < 500 && response.status !== 404) {
+        throw new Error(`VALIDATION_ERROR: ${data.message || response.statusText || 'Bad Request'}`);
+      }
+      throw new Error('failover');
+    }
     return data.data;
-  } catch (error) {
+  } catch (error: any) {
+    if (error.message?.startsWith('VALIDATION_ERROR')) throw error;
     if (!MOCK_STORE[doctype]) MOCK_STORE[doctype] = {};
     const name = doc.name || doc.title || doc.customer_name || doc.item_name || `MOCK-${Date.now().toString().slice(-4)}`;
     const record = { ...doc, name, creation: new Date().toISOString() };
@@ -152,10 +170,16 @@ export async function erpnextUpdate(doctype: string, name: string, doc: any) {
       headers: getHeaders(),
       body: JSON.stringify(doc),
     });
-    const data = await response.json();
-    if (!response.ok) throw new Error('failover');
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      if (response.status >= 400 && response.status < 500 && response.status !== 404) {
+        throw new Error(`VALIDATION_ERROR: ${data.message || response.statusText || 'Bad Request'}`);
+      }
+      throw new Error('failover');
+    }
     return data.data;
-  } catch (error) {
+  } catch (error: any) {
+    if (error.message?.startsWith('VALIDATION_ERROR')) throw error;
     if (!MOCK_STORE[doctype]) MOCK_STORE[doctype] = {};
     const existing = MOCK_STORE[doctype][name] || { name };
     const updated = { ...existing, ...doc, modified: new Date().toISOString() };
@@ -173,9 +197,15 @@ export async function erpnextDelete(doctype: string, name: string) {
       method: 'DELETE',
       headers: getHeaders(),
     });
-    if (!response.ok) throw new Error('failover');
+    if (!response.ok) {
+      if (response.status >= 400 && response.status < 500 && response.status !== 404) {
+        throw new Error(`VALIDATION_ERROR: ${response.statusText || 'Bad Request'}`);
+      }
+      throw new Error('failover');
+    }
     return true;
-  } catch (error) {
+  } catch (error: any) {
+    if (error.message?.startsWith('VALIDATION_ERROR')) throw error;
     if (MOCK_STORE[doctype]) delete MOCK_STORE[doctype][name];
     return true;
   }
@@ -191,10 +221,16 @@ export async function erpnextSubmit(doctype: string, name: string) {
       headers: getHeaders(),
       body: JSON.stringify({ doc: { doctype, name } }),
     });
-    const data = await response.json();
-    if (!response.ok) throw new Error('failover');
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      if (response.status >= 400 && response.status < 500 && response.status !== 404) {
+        throw new Error(`VALIDATION_ERROR: ${data.message || response.statusText || 'Bad Request'}`);
+      }
+      throw new Error('failover');
+    }
     return data.docs?.[0] || data.message;
-  } catch (error) {
+  } catch (error: any) {
+    if (error.message?.startsWith('VALIDATION_ERROR')) throw error;
     if (MOCK_STORE[doctype]?.[name]) {
       MOCK_STORE[doctype][name].docstatus = 1;
     }
@@ -212,10 +248,16 @@ export async function erpnextCall(method: string, args: any = {}) {
       headers: getHeaders(),
       body: JSON.stringify(args),
     });
-    const data = await response.json();
-    if (!response.ok) throw new Error('failover');
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      if (response.status >= 400 && response.status < 500 && response.status !== 404) {
+        throw new Error(`VALIDATION_ERROR: ${data.message || response.statusText || 'Bad Request'}`);
+      }
+      throw new Error('failover');
+    }
     return data.message;
-  } catch (error) {
+  } catch (error: any) {
+    if (error.message?.startsWith('VALIDATION_ERROR')) throw error;
     return { status: 'success', message: 'Simulated API Call execution finished' };
   }
 }
